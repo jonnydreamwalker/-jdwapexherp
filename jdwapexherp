@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JDW Apex Herp Bulk Supply</title>
+    <!-- Secure gateway script engine loaded directly from PayPal's network infrastructure -->
+    <script src="https://paypal.com"></script>
+    <style>
+        /* 🌌 Logo-Matched Midnight Canvas Base */
+        body { 
+            background-color: #0b0c10; 
+            color: #c5c6c7; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 40px 20px; 
+            margin: 0;
+        }
+        
+        /* 🌿 Brand Header Tuning */
+        h1 { 
+            color: #008f53; 
+            font-size: 28px; 
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        p.subtitle {
+            color: #858687;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+        
+        /* 🎛️ Distressed Industrial Card Components */
+        .lot-card { 
+            border: 2px solid #1f2833; 
+            padding: 30px 24px; 
+            border-radius: 12px; 
+            max-width: 420px; 
+            margin: 25px auto; 
+            background-color: #1f2124; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+        
+        h2 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-top: 0;
+        }
+        
+        .specs {
+            color: #858687;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        /* 💸 High-Contrast Price Display */
+        .price { 
+            font-size: 32px; 
+            font-weight: bold; 
+            margin: 20px 0; 
+            color: #008f53; 
+            text-shadow: 0 0 10px rgba(0,143,83,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>JDW APEX HERP SUPPLY</h1>
+    <p class="subtitle">Commercial Inventory Surplus • Direct Warehouse Dispatch</p>
+
+    <!-- 💡 INTERACTIVE 22-INCH MULTI-PACK DATA COMPONENT -->
+    <div class="lot-card">
+        <h2>LOT-10 (22-Inch HO T5 12% UVB)</h2>
+        <div class="specs">Factory-Sealed Case Pack • 10x Clinical-Grade UK Lamps</div>
+        <div class="price">$546.97</div>
+        <!-- PayPal native app code engine builds the dynamic swiping button grid inside this block -->
+        <div id="paypal-button-container-lot10"></div>
+    </div>
+
+    <script>
+        // Mounts the processing gate directly into your custom branded card framework
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        description: "LOT-10 Arcadia 22in T5 12% UVB 10-Pack Crate",
+                        amount: { value: '546.97' }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Transaction verified cleanly by ' + details.payer.name.given_name + '! Logging shipment queue.');
+                });
+            },
+            onError: function(err) {
+                alert('Fulfillment checkpoint failure. Verify processing liquidity.');
+            }
+        }).render('#paypal-button-container-lot10');
+    </script>
+
+</body>
+</html>
