@@ -3,105 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JDW Apex Herp Bulk Supply</title>
-    <!-- Secure gateway script engine loaded directly from PayPal's network infrastructure -->
-    <script src="https://paypal.com"></script>
-    <style>
-        /* 🌌 Logo-Matched Midnight Canvas Base */
-        body { 
-            background-color: #0b0c10; 
-            color: #c5c6c7; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            padding: 40px 20px; 
-            margin: 0;
-        }
-        
-        /* 🌿 Brand Header Tuning */
-        h1 { 
-            color: #008f53; 
-            font-size: 28px; 
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        p.subtitle {
-            color: #858687;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 40px;
-        }
-        
-        /* 🎛️ Distressed Industrial Card Components */
-        .lot-card { 
-            border: 2px solid #1f2833; 
-            padding: 30px 24px; 
-            border-radius: 12px; 
-            max-width: 420px; 
-            margin: 25px auto; 
-            background-color: #1f2124; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-        }
-        
-        h2 {
-            color: #ffffff;
-            font-size: 20px;
-            margin-top: 0;
-        }
-        
-        .specs {
-            color: #858687;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-        
-        /* 💸 High-Contrast Price Display */
-        .price { 
-            font-size: 32px; 
-            font-weight: bold; 
-            margin: 20px 0; 
-            color: #008f53; 
-            text-shadow: 0 0 10px rgba(0,143,83,0.2);
-        }
-    </style>
+    <title>JONNYDREAMWALKER APEX HERP SUPPLY | Premium Reptile Gear</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
+<body class="bg-zinc-950 text-white">
+    <!-- NAV -->
+    <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <img src="assets/logo.png" alt="Logo" class="h-12">
+                <div>
+                    <h1 class="text-2xl font-black tracking-tighter text-emerald-400">APEX HERP</h1>
+                    <p class="text-[10px] text-zinc-500 -mt-1">JONNYDREAMWALKER</p>
+                </div>
+            </div>
+          
+            <div class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="#" class="hover:text-emerald-400 transition">Shop</a>
+                <div class="relative group">
+                    <button class="hover:text-emerald-400 transition">Categories ▼</button>
+                    <div class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2">
+                        <a href="services/hardscape.html" class="block py-2 hover:text-emerald-400">Hardscape & Enclosures</a>
+                        <a href="services/lighting.html" class="block py-2 hover:text-emerald-400">Technical Hardware & Lighting</a>
+                        <a href="services/substrates.html" class="block py-2 hover:text-emerald-400">Premium Substrates</a>
+                        <a href="services/nutrition.html" class="block py-2 hover:text-emerald-400">Nutrition & Supplements</a>
+                        <a href="services/apparel.html" class="block py-2 hover:text-emerald-400">Apparel & Merch</a>
+                    </div>
+                </div>
+                <a href="#" class="hover:text-emerald-400 transition">Deals</a>
+                <a href="#" class="hover:text-emerald-400 transition">About</a>
+            </div>
+            <a href="#" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-full font-semibold transition">Shop Now</a>
+        </div>
+    </nav>
+    <!-- HERO -->
+    <header class="h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1015/2000/1200')] bg-cover opacity-40"></div>
+        <div class="relative z-10 text-center px-6">
+            <h1 class="text-7xl md:text-8xl font-black tracking-tighter mb-4">APEX HERP SUPPLY</h1>
+            <p class="text-3xl text-emerald-300 mb-10">Premium Reptile Equipment • Built Different</p>
+            <a href="#shop" class="inline-block bg-white text-black font-bold text-xl px-12 py-5 rounded-2xl hover:scale-105 transition">Browse Collections</a>
+        </div>
+    </header>
+    <!-- CATEGORIES -->
+    <section id="shop" class="py-24 bg-zinc-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-5xl font-bold text-center mb-16">Our Collections</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Hardscape -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
+                    <div class="h-56 bg-[url('https://picsum.photos/id/1015/600/400')] bg-cover bg-center"></div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">🪵 Hardscape & Enclosures</h3>
+                        <p class="text-zinc-400 mb-6">Premium cork bark, hand-selected branches, and custom bioactive enclosures built for serious keepers.</p>
+                        <a href="#" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
+                    </div>
+                </div>
 
-    <h1>JDW APEX HERP SUPPLY</h1>
-    <p class="subtitle">Commercial Inventory Surplus • Direct Warehouse Dispatch</p>
+                <!-- Lighting -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
+                    <div class="h-56 bg-[url('https://picsum.photos/id/201/600/400')] bg-cover bg-center"></div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">💡 Technical Hardware & Lighting</h3>
+                        <p class="text-zinc-400 mb-6">Arcadia Pro T5 UVB systems, deep forest LEDs, and commercial-grade heating & monitoring gear.</p>
+                        <a href="#" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
+                    </div>
+                </div>
 
-    <!-- 💡 INTERACTIVE 22-INCH MULTI-PACK DATA COMPONENT -->
-    <div class="lot-card">
-        <h2>LOT-10 (22-Inch HO T5 12% UVB)</h2>
-        <div class="specs">Factory-Sealed Case Pack • 10x Clinical-Grade UK Lamps</div>
-        <div class="price">$546.97</div>
-        <!-- PayPal native app code engine builds the dynamic swiping button grid inside this block -->
-        <div id="paypal-button-container-lot10"></div>
-    </div>
+                <!-- Substrates -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
+                    <div class="h-56 bg-[url('https://picsum.photos/id/106/600/400')] bg-cover bg-center"></div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">🥥 Premium Substrates & Accessories</h3>
+                        <p class="text-zinc-400 mb-6">Lugarti coco peat, bioactive soils, leaf litter, and drainage layers for perfect microclimates.</p>
+                        <a href="#" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
+                    </div>
+                </div>
 
-    <script>
-        // Mounts the processing gate directly into your custom branded card framework
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        description: "LOT-10 Arcadia 22in T5 12% UVB 10-Pack Crate",
-                        amount: { value: '546.97' }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function(details) {
-                    alert('Transaction verified cleanly by ' + details.payer.name.given_name + '! Logging shipment queue.');
-                });
-            },
-            onError: function(err) {
-                alert('Fulfillment checkpoint failure. Verify processing liquidity.');
-            }
-        }).render('#paypal-button-container-lot10');
-    </script>
+                <!-- Nutrition -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
+                    <div class="h-56 bg-[url('https://picsum.photos/id/292/600/400')] bg-cover bg-center"></div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">🔬 Nutrition, Vitamins & Supplements</h3>
+                        <p class="text-zinc-400 mb-6">Rep-Cal, high-quality gut loaders, multivitamins, and specialized insect diets.</p>
+                        <a href="#" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
+                    </div>
+                </div>
 
+                <!-- Apparel -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
+                    <div class="h-56 bg-[url('https://picsum.photos/id/64/600/400')] bg-cover bg-center"></div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">👕 Apparel & Merchandise</h3>
+                        <p class="text-zinc-400 mb-6">Limited edition bioactive crew gear, isopod schematics, and collector prints.</p>
+                        <a href="#" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="bg-black py-16 border-t border-zinc-800">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="flex justify-center gap-8 text-3xl mb-8">
+                <a href="#" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
+                <a href="#" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
+            </div>
+            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
+        </div>
+    </footer>
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script>
 </body>
 </html>
