@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
+<script 
+    src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD">
+</script>
 </head>
 <body class="bg-zinc-950 text-white">
     <!-- NAV (Exact copy of your home page layout) -->
@@ -71,6 +74,12 @@
                     <div class="p-8 pt-0">
                         <p class="text-3xl font-black text-white mb-4">$185.00</p>
                         <div class="bg-zinc-950 border border-emerald-900/50 rounded-2xl p-4 flex justify-center items-center min-h-[70px]">
+                            <div id="paypal-container-M5A82QGQQWA52"></div>
+<script>
+  paypal.HostedButtons({
+    hostedButtonId: "M5A82QGQQWA52",
+  }).render("#paypal-container-M5A82QGQQWA52")
+</script>
                             <!-- !!! DROP PAYPAL BUTTON CODE HERE !!! -->
                             <span class="text-xs font-mono text-zinc-600">[Paste 10lb Box PayPal Script Here]</span>
                         </div>
