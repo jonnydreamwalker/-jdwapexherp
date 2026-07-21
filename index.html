@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Premium Reptile Gear</title>
+    <title>Home | Premium Reptile Supply | JDW Apex Herp</title>
+<meta name="description" content="Veteran-owned premium reptile hardscape, UVB lighting, substrates & bioactive gear. DeFuniak Springs FL hub. FL-TX-CA distribution. No drop-ship.">
+<meta name="robots" content="index, follow">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="assets/style.css">
@@ -35,7 +37,7 @@
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
                         </button>
-                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/10 backdrop-blur-sm backdrop-brightness-105 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z z-50 shadow-2xl dropdown-menu">
+                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/10 backdrop-blur-sm backdrop-brightness-105 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
                             <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                             <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                             <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -56,7 +58,6 @@
             </div>
         </div>
     </nav>
-
     <header class="h-screen flex items-center justify-center relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('assets/images/gallery/Action_Logo.mp4')] bg-cover opacity-40"></div>
         <div class="relative z-10 text-center px-6">
@@ -65,7 +66,6 @@
             <p class="text-3xl text-emerald-300 mb-10">🚨Apex K9 Supply & Apex Feline Supply Coming Soon🚨</p>
         </div>
     </header>
-
     <section id="shop" class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-bold text-center mb-16">Top Tier Gear</h2>
@@ -125,7 +125,6 @@
             </div>
         </div>
     </section>
-
     <footer class="bg-black py-16 border-t border-zinc-800">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <div class="flex justify-center gap-8 text-3xl mb-8">
@@ -139,7 +138,6 @@
             <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
         </div>
     </footer>
-
     <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-emerald-900 w-full max-w-lg rounded-3xl p-8 max-h-[85vh] flex flex-col justify-between shadow-2xl">
             <div>
@@ -172,7 +170,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script>
@@ -180,18 +177,17 @@
         const SQUARE_LOCATION_ID = 'L4J8AVPE7GFN6';
         const STRIPE_PK = 'pk_test_51TuIAXIREDbjXKi1cTXUjTItosq36ALCJJ3ahCDMEANL3oAdChz12Bq8job6fxT2rYWZW9ogrHmAbGG6khG6Hlub001fetYryZ';
         const stripe = Stripe(STRIPE_PK);
-
         function startSquarePayment() {
             const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
             if (cart.length === 0) { alert('Your cart is empty.'); return; }
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2));
+            alert('Square connected!\nTotal: $' + total.toFixed(2));
         }
         function startStripePayment() {
             const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
             if (cart.length === 0) { alert('Your cart is empty.'); return; }
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert('Stripe connected!\n\nOrder Total: $' + total.toFixed(2));
+            alert('Stripe connected!\nTotal: $' + total.toFixed(2));
         }
         function toggleDropdown(event) {
             event.stopPropagation();
