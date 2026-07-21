@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- NAV -->
+    <!-- NAV - Fixed to match other pages -->
     <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
         <div class="absolute inset-0 bg-[url('assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
@@ -24,30 +24,32 @@
             <div class="hidden md:flex gap-8 text-sm font-medium">
                 <a href="#" class="hover:text-emerald-400 transition">Shop</a>
                 <div class="relative group">
-                    <button class="hover:text-emerald-400 transition">Categories ▼</button>
-                    <div class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2">
-                        <a href="services/hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
-                        <a href="services/lighting.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>                        
-                        <a href="services/substrates.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
-                        <a href="services/nutrition.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
-                        <a href="services/apparel.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
+                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
+                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
+                        <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
+                        <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
+                        <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
+                        <a href="services/nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
+                        <a href="services/apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
                     </div>
                 </div>
                 <a href="#" class="hover:text-emerald-400 transition">Deals</a>
                 <a href="about.html" class="hover:text-emerald-400 transition">About</a>
             </div>
-            <a href="#" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-full font-semibold transition">Shop Now</a>
+            <a href="#shop" class="bg-emerald-600 hover:bg-emerald-500 px-6 py-3 rounded-full font-semibold transition">Shop Now</a>
         </div>
     </nav>
+
     <!-- HERO -->
     <header class="h-screen flex items-center justify-center relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('assets/images/gallery/Action_Logo.mp4')] bg-cover opacity-40"></div>
         <div class="relative z-10 text-center px-6">
-            <h1 class="text-7xl md:text-8xl font-black tracking-tighter mb-4">APEX  HERPTILE 🦎UPPLY</h1>
-            <p class="text-3xl text-emerald-300 mb-10">JonnyDreamWalker</p>  
-            <p class="text-3xl text-emerald-300 mb-10">🚨Apex K9 Supply & Apex Feline Supply Coming Soon🚨</p>   
+            <h1 class="text-7xl md:text-8xl font-black tracking-tighter mb-4">APEX HERPTILE 🦎UPPLY</h1>
+            <p class="text-3xl text-emerald-300 mb-10">JonnyDreamWalker</p>
+            <p class="text-3xl text-emerald-300 mb-10">🚨Apex K9 Supply & Apex Feline Supply Coming Soon🚨</p>
         </div>
     </header>
+
     <!-- CATEGORIES -->
     <section id="shop" class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
@@ -60,14 +62,12 @@
         <source src="assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
     </video>
 </div>
-
                     <div class="p-8">
                         <h3 class="text-2xl font-bold mb-3 text-emerald-400">🪵 Hardscape & Enclosures</h3>
                         <p class="text-zinc-400 mb-6">Premium cork bark, hand-selected branches, and custom bioactive enclosures built for serious keepers.</p>
                         <a href="services/hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
                     </div>
                 </div>
-
                 <!-- Lighting -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
                     <div class="h-56 bg-[url('assets/wholesale-arcadia-d3-12-uvb-t5-bulb-34.jpg')] bg-cover bg-center"></div>
@@ -77,7 +77,6 @@
                         <a href="services/lighting.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
                     </div>
                 </div>
-
                 <!-- Substrates -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
                     <div class="h-56 bg-[url('assets/wholesale-lugarti-premium-coco-peat-block.jpg')] bg-cover bg-center"></div>
@@ -87,7 +86,6 @@
                         <a href="services/substrates.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
                     </div>
                 </div>
-
                 <!-- Nutrition -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
                     <div class="h-56 bg-[url('assets/images/gallery/Coming_Soon_Reptile_Nutrition.png')] bg-cover bg-center"></div>
@@ -97,11 +95,9 @@
                         <a href="services/nutrition.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
                     </div>
                 </div>
-
                 <!-- Apparel -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all">
                     <div class="h-56 bg-[url('assets/images/gallery/Apparel_Crick.png')] bg-cover bg-center"></div>
-
                     <div class="p-8">
                         <h3 class="text-2xl font-bold mb-3 text-emerald-400">👕 Apparel & Merchandise</h3>
                         <p class="text-zinc-400 mb-6">Limited edition bioactive crew gear, isopod schematics, and collector prints.</p>
@@ -130,5 +126,18 @@
         </div>
     </footer>
     <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script>
+
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown(btn) {
+            const menu = btn.parentElement.querySelector('.dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+    </script>
 </body>
 </html>
