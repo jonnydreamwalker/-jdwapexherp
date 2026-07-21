@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Hardscape & Enclosures</title>
+    <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Enclosures</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
@@ -45,7 +45,7 @@
                         <p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p>
                     </div>
                 </div>
-                <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 gap-8 text-sm font-medium items-center">
+                <div class="hidden md md:flex absolute left-1/2 transform -translate-x-1/2 gap-8 text-sm font-medium items-center">
                     <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
                     <div class="relative">
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
@@ -77,8 +77,8 @@
             <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
         </video>
         <div class="relative z-10 text-center px-6">
-            <h1 class="text-6xl md:text-7xl font-black tracking-tighter mb-4">HARDSCAPE & ENCLOSURES</h1>
-            <p class="text-2xl text-emerald-300">Premium Materials. Engineered For Elite Displays.</p>
+            <h1 class="text-6xl md:text-7xl font-black tracking-tighter mb-4">ENCLOSURES</h1>
+            <p class="text-2xl text-emerald-300">Custom Built. Engineered For Elite Habitats.</p>
         </div>
     </header>
     <section class="py-24 bg-zinc-900">
@@ -87,24 +87,20 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div>
-                        <div class="h-56 overflow-hidden relative">
-                            <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-70">
-                                <source src="../assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
-                            </video>
-                        </div>
+                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50"><span class="text-zinc-600 font-mono text-sm">[Custom Enclosures]</span></div>
                         <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Hardscape Lots</h3>
-                            <p class="text-zinc-400 mb-6">Curated mix of premium cork bark and hardscape materials.</p>
-                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Box Size:</label>
-                            <select id="hardscape-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
-                                <option value="10lb Box" data-price="185.00">10lb Premium Box — $185.00</option>
-                                <option value="20lb Box" data-price="345.00">20lb Premium Box — $345.00</option>
-                                <option value="50lb Box" data-price="645.00">50lb Premium Box — $645.00</option>
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Custom Bioactive Enclosures</h3>
+                            <p class="text-zinc-400 mb-6">Hand-built enclosures engineered for elite bioactive setups.</p>
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Size:</label>
+                            <select id="enc-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="18x18x24" data-price="285.00">18x18x24 — $285.00</option>
+                                <option value="24x18x36" data-price="425.00">24x18x36 — $425.00</option>
+                                <option value="36x18x36" data-price="595.00">36x18x36 — $595.00</option>
                             </select>
                         </div>
                     </div>
                     <div class="p-8 pt-0">
-                        <button onclick="addToCart('Premium Hardscape Lots', 185.00, 'hardscape-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition">Add To Cart 🛒</button>
+                        <button onclick="addToCart('Custom Bioactive Enclosures', 285.00, 'enc-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition">Add To Cart 🛒</button>
                     </div>
                 </div>
             </div>
