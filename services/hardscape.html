@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Hardscape & Hides</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cloudflare.com">
     <link rel="stylesheet" href="../assets/style.css">
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
+    <script src="https://paypal.com"></script>
     
-    <!-- GLOBAL SHOP CART ENGINE -->
+    <!-- GLOBAL SHOP CART ENGINE & INTERACTIVE LOGIC -->
     <script>
+        // Set up the global client-side storage array if empty
         if (!localStorage.getItem('jdw_cart')) {
             localStorage.setItem('jdw_cart', JSON.stringify([]));
         }
@@ -46,6 +47,37 @@
             });
         }
 
+        // Click Controller: Keeps the category dropdown open cleanly until clicked off
+        function toggleCategoryMenu(event) {
+            event.stopPropagation(); 
+            let dropdown = document.getElementById('category-dropdown');
+            let arrow = document.getElementById('dropdown-arrow');
+            
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                arrow.innerText = '▲';
+                arrow.classList.add('text-emerald-400');
+            } else {
+                dropdown.classList.add('hidden');
+                arrow.innerText = '▼';
+                arrow.classList.remove('text-emerald-400');
+            }
+        }
+
+        // Global handler to snap dropdown shut when clicking raw body workspace elements
+        window.addEventListener('click', function(e) {
+            let dropdown = document.getElementById('category-dropdown');
+            let arrow = document.getElementById('dropdown-arrow');
+            
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+                if(arrow) {
+                    arrow.innerText = '▼';
+                    arrow.classList.remove('text-emerald-400');
+                }
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", updateCartCount);
     </script>
 </head>
@@ -61,29 +93,36 @@
                     <p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p>
                 </div>
             </div>
-            <div class="hidden md:flex gap-8 text-sm font-medium">
-                <a href="../index.html" class="hover:text-emerald-400 transition">HOME</a>
-                <div class="relative group">
-                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
-                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
-                        <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
-                        <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
-                        <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
-                        <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
-                        <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
+            
+            <div class="hidden md:flex gap-8 text-sm font-medium items-center">
+                <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
+                
+                <!-- STABLE CLOCKED DROPDOWN INTERFACE -->
+                <div class="relative">
+                    <button onclick="toggleCategoryMenu(event)" class="hover:text-emerald-400 text-white transition focus:outline-none flex items-center gap-1 font-medium">
+                        Categories <span id="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl">
+                        <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Shop Hardscape →</a>
+                        <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Explore Lighting →</a>
+                        <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Browse Substrates →</a>
+                        <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Fuel Your Herps →</a>
+                        <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Gear Up →</a>
                     </div>
                 </div>
+                
                 <a href="../index.html" class="hover:text-emerald-400 transition">Deals</a>
                 <a href="../about.html" class="hover:text-emerald-400 transition">About</a>
             </div>
-            <<a href="#" onclick="openCartModal(); return false;" class="hover:text-emerald-400 transition flex items-center gap-2 relative">
+
+            <a href="#" onclick="openCartModal(); return false;" class="hover:text-emerald-400 transition flex items-center gap-2 relative">
                 <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
                 <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
             </a>
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- HERO (With Alpha/Delta Video Loop integration compatibility) -->
     <header class="h-[60vh] flex items-center justify-center relative overflow-hidden">
         <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-40">
             <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
@@ -94,13 +133,13 @@
         </div>
     </header>
 
-    <!-- SALES SECTION -->
+    <!-- SALES GRID DISPLAY INTERFACE -->
     <section class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Cork & Other Hardscape</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 
-                <!-- Product 1: Bulk Hardscape Box -->
+                <!-- Product 1: Bulk Hardscape Mix Box -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div>
                         <div class="h-56 overflow-hidden relative">
@@ -109,8 +148,11 @@
                             </video>
                         </div>
                         <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Hardscape Dropdown Lots</h3>
-                            <p class="text-zinc-400 text-sm mb-4">Curated mix of premium hardscape materials tailored specifically to your enclosure dimensions. Free shipping included.</p>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-2xl font-bold text-emerald-400">Premium Hardscape Lots</h3>
+                                <span class="text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Free Ship</span>
+                            </div>
+                            <p class="text-zinc-400 text-sm mb-4">Curated mix of premium hardscape materials tailored specifically to your enclosure dimensions.</p>
                             
                             <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Box Size:</label>
                             <select id="hardscape-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
@@ -120,29 +162,4 @@
                             </select>
                         </div>
                     </div>    
-                    <div class="p-8 pt-0">
-                        <button onclick="addToCart('Premium Hardscape Box', 185.00, 'hardscape-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
-                            Add To Cart 🛒
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Product 2: Bulk Premium Virgin Cork Bark Rounds -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
-                            <span class="text-zinc-600 font-mono text-sm">[Virgin Cork Rounds Media]</span>
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Bulk Premium Virgin Cork Bark Rounds</h3>
-                            <p class="text-zinc-400 text-sm mb-4">Premium, raw imported virgin cork rounds perfect for natural hides, nesting tubes, and structural climbing parameters.</p>
-                            
-                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Weight Lot:</label>
-                            <select id="cork-rounds-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
-                                <option value="10lb Lot" data-price="100.00">10lb Cork Lot — $100.00</option>
-                                <option value="20lb Lot" data-price="190.00">20lb Cork Lot — $190.00</option>
-                                <option value="50lb Lot" data-price="420.00">50lb Cork Lot — $420.00</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="p-8 pt-0">
