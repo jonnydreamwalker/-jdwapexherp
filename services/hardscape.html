@@ -10,7 +10,7 @@
     <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- NAV -->
+    <!-- NAV - Mirrors Index -->
     <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
         <div class="absolute inset-0 bg-[url('../assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center relative z-10">
@@ -54,7 +54,7 @@
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Example Product Card -->
+                <!-- Product 1 -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col">
                     <div class="h-56 overflow-hidden relative">
                         <video autoplay loop muted playsinline class="w-full h-full object-cover">
@@ -62,19 +62,18 @@
                         </video>
                     </div>
                     <div class="p-8 flex-1">
-                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Hardscape Mix</h3>
-                        <p class="text-zinc-400 mb-6">Curated cork bark and branches for elite setups.</p>
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">10lb 20lb & 50lb $185-$645</h3>
+                        <p class="text-zinc-400">Curated mix of premium hardscape materials tailored to your enclosure.</p>
                     </div>
                     <div class="p-8 pt-0 border-t border-emerald-900">
-                        <div class="bg-zinc-950 border-2 border-emerald-500 rounded-3xl p-8 min-h-[220px] flex flex-col justify-center items-center">
+                        <div class="bg-zinc-950 border-2 border-emerald-500 rounded-3xl p-6 min-h-[180px] flex items-center justify-center">
+                            <!-- Your PayPal / Amazon button goes here - full space -->
                             <div id="paypal-container-M5A82QGQQWA52" class="w-full"></div>
-                            <script>
-                                paypal.HostedButtons({ hostedButtonId: "M5A82QGQQWA52" }).render("#paypal-container-M5A82QGQQWA52");
-                            </script>
                         </div>
                     </div>
                 </div>
-                <!-- Repeat similar cards for other products -->
+
+                <!-- Add your other product cards here with the same structure -->
             </div>
         </div>
     </section>
@@ -100,7 +99,6 @@
             const menu = btn.parentElement.querySelector('.dropdown-menu');
             menu.classList.toggle('hidden');
         }
-        // Click outside to close
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.group')) {
                 document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
