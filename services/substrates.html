@@ -8,9 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
     <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
-    <!-- GLOBAL SHOP CART ENGINE -->
+        <!-- GLOBAL SHOP CART ENGINE -->
     <script>
-        // Initialize the global store array if it doesn't exist yet
         if (!localStorage.getItem('jdw_cart')) {
             localStorage.setItem('jdw_cart', JSON.stringify([]));
         }
@@ -20,13 +19,11 @@
             let variantSelect = document.getElementById(variantId);
             let selectedVariant = variantSelect ? variantSelect.value : 'Standard';
             
-            // Extract price if it's tied to a dropdown variant change
             let finalPrice = parseFloat(price);
             if (variantSelect && variantSelect.options[variantSelect.selectedIndex].getAttribute('data-price')) {
                 finalPrice = parseFloat(variantSelect.options[variantSelect.selectedIndex].getAttribute('data-price'));
             }
 
-            // Check if item already exists in cart
             let existingItem = cart.find(item => item.name === name && item.variant === selectedVariant);
             if (existingItem) {
                 existingItem.quantity += 1;
@@ -47,8 +44,6 @@
                 badge.innerText = totalItems;
             });
         }
-
-        // Run badge check on page load
         document.addEventListener("DOMContentLoaded", updateCartCount);
     </script>
 </head>
@@ -83,7 +78,6 @@
     <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
     <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
 </a>
-        </div>
     </nav>
 
     <!-- HERO -->
@@ -96,8 +90,7 @@
             <p class="text-2xl text-emerald-300">Bioactive Formulations. Engineered For Perfect Microclimates.</p>
         </div>
     </header>
-
-    <!-- SALES SECTION -->
+   <!-- SALES SECTION -->
     <section class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
