@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Hardscape & Hides</title>
+    <!-- Core Tailwind Rendering Engine -->
     <script src="https://tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cloudflare.com">
-    <link rel="stylesheet" href="../assets/style.css">
     <script src="https://paypal.com"></script>
     
+    <!-- EMBEDDED SITE STYLES (Guarantees background stays 100% Dark) -->
+    <style>
+        body {
+            background-color: #09090b !important; /* Forces background to stay bg-zinc-950 */
+            color: #ffffff;
+        }
+        /* Clean transition animations for your menu buttons */
+        .dropdown-menu {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+
     <!-- GLOBAL SHOP CART ENGINE & INTERACTIVE LOGIC -->
     <script>
         // Set up the global client-side storage array if empty
@@ -102,7 +114,7 @@
                     <button onclick="toggleCategoryMenu(event)" class="hover:text-emerald-400 text-white transition focus:outline-none flex items-center gap-1 font-medium">
                         Categories <span id="dropdown-arrow">▼</span>
                     </button>
-                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl">
+                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
                         <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Shop Hardscape →</a>
                         <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Explore Lighting →</a>
                         <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Browse Substrates →</a>
@@ -122,7 +134,7 @@
         </div>
     </nav>
 
-    <!-- HERO (With Alpha/Delta Video Loop integration compatibility) -->
+    <!-- HERO -->
     <header class="h-[60vh] flex items-center justify-center relative overflow-hidden">
         <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-40">
             <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
@@ -158,8 +170,3 @@
                             <select id="hardscape-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
                                 <option value="10lb Box" data-price="185.00">10lb Premium Box — $185.00</option>
                                 <option value="20lb Box" data-price="345.00">20lb Premium Box — $345.00</option>
-                                <option value="50lb Box" data-price="645.00">50lb Premium Box — $645.00</option>
-                            </select>
-                        </div>
-                    </div>    
-                    <div class="p-8 pt-0">
