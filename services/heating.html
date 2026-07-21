@@ -30,7 +30,7 @@
                     </div>
                 </div>
                 <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 gap-8 text-sm font-medium items-center">
-                    <a href="../index.html" class="hover:text-emerald-400 transition">Home</aa>
+                    <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
                     <div class="relative">
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
@@ -115,7 +115,7 @@
             <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
         </div>
     </footer>
-    <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 50 hidden flex items-center justify-center p-4">
+    <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-emerald-900 w-full max-w-lg rounded-3xl p-8 max-h-[85vh] flex flex-col justify-between shadow-2xl">
             <div>
                 <div class="flex justify-between items-center border-b border-emerald-900 pb-4 mb-6">
@@ -140,7 +140,7 @@
     <script>
         function toggleDropdown(event) { event.stopPropagation(); const d=document.getElementById('category-dropdown'); const a=document.getElementById('dropdown-arrow'); if(!d)return; d.classList.toggle('hidden'); if(a)a.innerText=d.classList.contains('hidden')?'▼':'▲'; }
         document.addEventListener('click', function(e) { const d=document.getElementById('category-dropdown'); const a=document.getElementById('dropdown-arrow'); if(d&&!d.contains(e.target)&&!e.target.closest('button')){d.classList.add('hidden');if(a)a.innerText='▼';} });
-        function openCartModal() { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; let list=document.getElementById('cart-items-list'); let totalEl=document.getElementById('cart-grand-total'); list.innerHTML=''; if(cart.length===0){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);} document.getElementById('cart-modal').classList.remove('hidden'); }
+        function openCartModal() { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; let list=document.getElementById('cart-items-list'); let totalEl=document.getElementById('cart-grand-total'); list.innerHTML=''; if(cart.length===0){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+ + total.toFixed(2);} document.getElementById('cart-modal').classList.remove('hidden'); }
         function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
         function removeSingleCartItem(i) { let c=JSON.parse(localStorage.getItem('jdw_cart')); c.splice(i,1); localStorage.setItem('jdw_cart',JSON.stringify(c)); openCartModal(); updateCartCount(); }
         function clearAllCartItems() { localStorage.setItem('jdw_cart','[]'); openCartModal(); updateCartCount(); }
