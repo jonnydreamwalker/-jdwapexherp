@@ -35,7 +35,7 @@
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
                         </button>
-                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/27 backdrop-blur-xl border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
+                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/15 backdrop-blur-lg backdrop-brightness-125 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
                             <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                             <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                             <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -192,7 +192,7 @@
                 let total = 0;
                 cart.forEach((item, i) => {
                     total += item.price * item.quantity;
-                    list.innerHTML += `<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;
+                    list.innerHTML += `<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p remdiv><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;
                 });
                 totalEl.innerText = '$' + total.toFixed(2);
             }
