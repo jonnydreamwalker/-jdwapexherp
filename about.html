@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- NAV (Exact copy of your home page layout) -->
+    <!-- NAV - Matches all other pages -->
     <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
         <div class="absolute inset-0 bg-[url('assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center relative z-10">
@@ -20,17 +20,16 @@
                     <p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p>
                 </div>
             </div>
-          
             <div class="hidden md:flex gap-8 text-sm font-medium">
                 <a href="index.html" class="hover:text-emerald-400 transition">Shop</a>
                 <div class="relative group">
-                    <button class="hover:text-emerald-400 transition">Categories ▼</button>
-                    <div class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2">
-                        <a href="services/hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
-                        <a href="services/lighting.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>                        
-                        <a href="services/substrates.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
-                        <a href="services/nutrition.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
-                        <a href="services/apparel.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
+                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
+                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
+                        <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
+                        <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
+                        <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
+                        <a href="services/nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
+                        <a href="services/apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
                     </div>
                 </div>
                 <a href="index.html" class="hover:text-emerald-400 transition">Deals</a>
@@ -49,45 +48,54 @@
         </div>
     </header>
 
-    <!-- BRAND STORY SECTION -->
+    <!-- BRAND STORY -->
     <section class="py-24 bg-zinc-900 border-t border-emerald-900/30">
         <div class="max-w-4xl mx-auto px-6">
             <h2 class="text-4xl font-black tracking-tighter mb-8 text-emerald-400">About JonnyDreamWalker Apex Herp Supply</h2>
-            
             <div class="space-y-6 text-zinc-300 leading-relaxed text-lg">
                 <p>
                     At <strong class="text-white">JONNYDREAMWALKER APEX HERP SUPPLY</strong>, No mass-market shortcuts. We source rugged, high-performance tools, premium raw materials, and heavy-duty gear built to keep your setups clean and pristine.
                 </p>
                 <p>
                     Veteran Owned and Operated. Our entire workflow runs on tactical execution, strict attention to detail, and absolute customer satisfaction. We manage high-volume supply chains alongside custom retail packs to serve high-level breeders, bioactive enthusiasts, pet stores, and zoos nationwide.
+                </p>
                 <p>
                     Whether you are dialing in complex Ferguson zones with our technical lighting layouts or mapping pristine water tables using our advanced substrates, our inventory is built to uphold elite biological parameters.
                 </p>
             </div>
-
-            <!-- INFRASTRUCTURE DETAILS METRICS GRID -->
-            <div class="grid sm:grid-cols-2 gap-6 mt-16">
-                <div class="p-6 bg-zinc-800 border border-emerald-900 rounded-2xl">
-                    <h3 class="text-xl font-bold text-emerald-400 mb-2">⚡ Direct Sourcing</h3>
-                    <p class="text-zinc-400 text-sm">We maintain raw inventories directly from foundational distribution networks, ensuring absolute structural quality controls.</p>
-                </div>
-                <div class="p-6 bg-zinc-800 border border-emerald-900 rounded-2xl">
-                    <h3 class="text-xl font-bold text-emerald-400 mb-2">🔬 Laboratory Testing</h3>
-                    <p class="text-zinc-400 text-sm">Every soil block, hardscape line, and technical monitor is benchmarked against commercial facility parameters before launch.</p>
-                </div>
-            </div>
         </div>
     </section>
 
-    <!-- FOOTER (Exact copy of your home page layout) -->
+    <!-- FOOTER -->
     <footer class="bg-black py-16 border-t border-zinc-800">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <div class="flex justify-center gap-8 text-3xl mb-8">
-                <a href="https://instagram.com" target="_blank" class="hover:text-emerald-400 transition text-zinc-400"><i class="fab fa-instagram"></i></a>
-                <a href="https://tiktok.com" target="_blank" class="hover:text-emerald-400 transition text-zinc-400"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
+                <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.patreon.com/customize?step=settings" target="_blank" class="hover:text-emerald-400"><i class="fab fa-patreon"></i></a>
+                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
             </div>
-            <p class="text-xs text-zinc-600">&copy; 2026 JONNYDREAMWALKER APEX HERP SUPPLY. All rights reserved.</p>
+            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
+            <p class="text-emerald-500 text-sm mt-4">
+                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:underline">Linktree Hub</a> • 
+                <a href="https://www.facebook.com/marketplace/profile/100026234462510/?ref=share_attachment" target="_blank" class="hover:underline">Facebook Marketplace</a>
+            </p>
         </div>
     </footer>
+
+    <script>
+        function toggleDropdown(btn) {
+            const menu = btn.parentElement.querySelector('.dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+    </script>
 </body>
 </html>
