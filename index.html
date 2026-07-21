@@ -35,7 +35,7 @@
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
                         </button>
-                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/20 backdrop-blur-md backdrop-brightness-110 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
+                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/10 backdrop-blur-sm backdrop-brightness-105 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z z-50 shadow-2xl dropdown-menu">
                             <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                             <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                             <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -156,6 +156,9 @@
                     <button onclick="startSquarePayment()" class="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2 border border-emerald-700">
                         <i class="fas fa-credit-card"></i> Pay with Square / Card
                     </button>
+                    <button onclick="startStripePayment()" class="w-full bg-[#635bff] hover:bg-[#5851db] text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                        <i class="fab fa-stripe-s"></i> Pay with Stripe
+                    </button>
                     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);">
                         <input type="hidden" name="cmd" value="_cart">
                         <input type="hidden" name="upload" value="1">
@@ -171,17 +174,25 @@
     </div>
 
     <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script>
         const SQUARE_APP_ID = 'sandbox-sq0idb-dVkl9lkCHK4U1KMe_Bo58g';
         const SQUARE_LOCATION_ID = 'L4J8AVPE7GFN6';
+        const STRIPE_PK = 'pk_test_51TuIAXIREDbjXKi1cTXUjTItosq36ALCJJ3ahCDMEANL3oAdChz12Bq8job6fxT2rYWZW9ogrHmAbGG6khG6Hlub001fetYryZ';
+        const stripe = Stripe(STRIPE_PK);
 
         function startSquarePayment() {
             const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
             if (cart.length === 0) { alert('Your cart is empty.'); return; }
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2) + '\n\nBoth Square + PayPal are live.');
+            alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2));
         }
-
+        function startStripePayment() {
+            const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
+            if (cart.length === 0) { alert('Your cart is empty.'); return; }
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            alert('Stripe connected!\n\nOrder Total: $' + total.toFixed(2));
+        }
         function toggleDropdown(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('category-dropdown');
