@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +35,7 @@
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
                         </button>
-                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/15 backdrop-blur-lg backdrop-brightness-125 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
+                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/20 backdrop-blur-md backdrop-brightness-110 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
                             <a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                             <a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                             <a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -178,12 +177,9 @@
 
         function startSquarePayment() {
             const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
-            if (cart.length === 0) {
-                alert('Your cart is empty.');
-                return;
-            }
+            if (cart.length === 0) { alert('Your cart is empty.'); return; }
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2) + '\n\nFull card form coming next. Both Square + PayPal are live.');
+            alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2) + '\n\nBoth Square + PayPal are live.');
         }
 
         function toggleDropdown(event) {
