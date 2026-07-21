@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
     <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
+    
     <!-- GLOBAL SHOP CART ENGINE -->
     <script>
-        // Initialize the global store array if it doesn't exist yet
         if (!localStorage.getItem('jdw_cart')) {
             localStorage.setItem('jdw_cart', JSON.stringify([]));
         }
@@ -20,13 +20,11 @@
             let variantSelect = document.getElementById(variantId);
             let selectedVariant = variantSelect ? variantSelect.value : 'Standard';
             
-            // Extract price if it's tied to a dropdown variant change
             let finalPrice = parseFloat(price);
             if (variantSelect && variantSelect.options[variantSelect.selectedIndex].getAttribute('data-price')) {
                 finalPrice = parseFloat(variantSelect.options[variantSelect.selectedIndex].getAttribute('data-price'));
             }
 
-            // Check if item already exists in cart
             let existingItem = cart.find(item => item.name === name && item.variant === selectedVariant);
             if (existingItem) {
                 existingItem.quantity += 1;
@@ -48,12 +46,11 @@
             });
         }
 
-        // Run badge check on page load
         document.addEventListener("DOMContentLoaded", updateCartCount);
     </script>
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- NAV - Mirrors Index -->
+    <!-- NAV -->
     <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
         <div class="absolute inset-0 bg-[url('../assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center relative z-10">
@@ -67,8 +64,8 @@
             <div class="hidden md:flex gap-8 text-sm font-medium">
                 <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
                 <div class="relative group">
-                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
-                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
+                    <button class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
+                    <div id="category-dropdown" class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
                         <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                         <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                         <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -80,15 +77,17 @@
                 <a href="../about.html" class="hover:text-emerald-400 transition">About</a>
             </div>
             <a href="#" onclick="openCartModal(); return false;" class="hover:text-emerald-400 transition flex items-center gap-2 relative">
-    <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
-    <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
-</a>
+                <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
+                <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
+            </a>
         </div>
     </nav>
 
     <!-- HERO -->
     <header class="h-[60vh] flex items-center justify-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-[url('../assets/images/gallery/Action_Logo.mp4')] bg-cover opacity-40"></div>
+        <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-40">
+            <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
+        </video>
         <div class="relative z-10 text-center px-6">
             <h1 class="text-6xl md:text-7xl font-black tracking-tighter mb-4">HARDSCAPE & ENCLOSURES</h1>
             <p class="text-2xl text-emerald-300">Premium Materials. Engineered For Elite Displays.</p>
@@ -100,56 +99,50 @@
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Cork & Other Hardscape</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Product 1 -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col">
-                    <div class="h-56 overflow-hidden relative">
-                        <video autoplay loop muted playsinline class="w-full h-full object-cover">
-                            <source src="../assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
-                        </video>
-                    </div>
-                    <div class="p-8 flex-1">
-                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">10lb 20lb & 50lb $185-$645</h3>
-                        <p class="text-zinc-400">Curated mix of premium hardscape materials tailored to your enclosure.</p>
-                    </div>
-                    <div class="p-8 pt-0 border-t border-emerald-900">
-                        <div class="bg-zinc-950 border-2 border-emerald-500 rounded-3xl p-6 min-h-[180px] flex items-center justify-center">
-                            <!-- Your PayPal / Amazon button goes here - full space -->
-                            <div id="paypal-container-M5A82QGQQWA52" class="w-full"></div>
+                
+                <!-- Product 1: Bulk Hardscape Box -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 overflow-hidden relative">
+                            <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-70">
+                                <source src="../assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
+                            </video>
                         </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Hardscape Dropdown Lots</h3>
+                            <p class="text-zinc-400 text-sm mb-4">Curated mix of premium hardscape materials tailored specifically to your enclosure dimensions. Free shipping included.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Box Size:</label>
+                            <select id="hardscape-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="10lb Box" data-price="185.00">10lb Premium Box — $185.00</option>
+                                <option value="20lb Box" data-price="345.00">20lb Premium Box — $345.00</option>
+                                <option value="50lb Box" data-price="645.00">50lb Premium Box — $645.00</option>
+                            </select>
+                        </div>
+                    </div>    
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Premium Hardscape Box', 185.00, 'hardscape-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
                     </div>
                 </div>
 
-                <!-- Add your other product cards here with the same structure -->
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="bg-black py-16 border-t border-zinc-800">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="flex justify-center gap-8 text-3xl mb-8">
-                <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
-                <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
-                <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
-                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.patreon.com/customize?step=settings" target="_blank" class="hover:text-emerald-400"><i class="fab fa-patreon"></i></a>
-                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
-            </div>
-            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
-        </div>
-    </footer>
-
-    <script>
-        function toggleDropdown(btn) {
-            const menu = btn.parentElement.querySelector('.dropdown-menu');
-            menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.group')) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-            }
-        });
-    </script>
-</body>
-</html>
+                <!-- Product 2: Bulk Premium Virgin Cork Bark Rounds -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
+                            <span class="text-zinc-600 font-mono text-sm">[Virgin Cork Rounds Media]</span>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Bulk Premium Virgin Cork Bark Rounds</h3>
+                            <p class="text-zinc-400 text-sm mb-4">Premium, raw imported virgin cork rounds perfect for natural hides, nesting tubes, and structural climbing parameters.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Weight Lot:</label>
+                            <select id="cork-rounds-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="10lb Lot" data-price="100.00">10lb Cork Lot — $100.00</option>
+                                <option value="20lb Lot" data-price="190.00">20lb Cork Lot — $190.00</option>
+                                <option value="50lb Lot" data-price="420.00">50lb Cork Lot — $420.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-8 pt-0">
