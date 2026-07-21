@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
     <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
-        <!-- GLOBAL SHOP CART ENGINE -->
+    
+    <!-- GLOBAL SHOP CART ENGINE -->
     <script>
         if (!localStorage.getItem('jdw_cart')) {
             localStorage.setItem('jdw_cart', JSON.stringify([]));
@@ -62,8 +63,8 @@
             <div class="hidden md:flex gap-8 text-sm font-medium">
                 <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
                 <div class="relative group">
-                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
-                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
+                    <button class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
+                    <div id="category-dropdown" class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
                         <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                         <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                         <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
@@ -75,9 +76,10 @@
                 <a href="../about.html" class="hover:text-emerald-400 transition">About</a>
             </div>
             <a href="#" onclick="openCartModal(); return false;" class="hover:text-emerald-400 transition flex items-center gap-2 relative">
-    <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
-    <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
-</a>
+                <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
+                <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
+            </a>
+        </div>
     </nav>
 
     <!-- HERO -->
@@ -90,58 +92,60 @@
             <p class="text-2xl text-emerald-300">Bioactive Formulations. Engineered For Perfect Microclimates.</p>
         </div>
     </header>
-   <!-- SALES SECTION -->
+
+    <!-- SALES SECTION -->
     <section class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Lugarti Coco Peat Card -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col">
-                    <div class="h-56 overflow-hidden relative">
-                        <div class="w-full h-full bg-[url('../assets/wholesale-lugarti-premium-coco-peat-block.jpg')] bg-cover bg-center"></div>
-                    </div>
-                    <div class="p-8 flex-1">
-                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">Lugarti Premium Coco Peat</h3>
-                        <p class="text-zinc-400 mb-6">Clean, triple-washed coco peat blocks for optimal moisture retention.</p>
-                    </div>
-                    <div class="p-8 pt-0 border-t border-emerald-900">
-                        <div class="bg-zinc-950 border-2 border-emerald-500 rounded-3xl p-8 min-h-[220px] flex flex-col justify-center items-center">
-                            <!-- Paste your PayPal button code here -->
-                            <div id="paypal-substrates-1"></div>
+                
+                <!-- Item 1: Lugarti Coco Peat Card -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 overflow-hidden relative">
+                            <div class="w-full h-full bg-[url('../assets/wholesale-lugarti-premium-coco-peat-block.jpg')] bg-cover bg-center"></div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Lugarti Premium Coco Peat</h3>
+                            <p class="text-zinc-400 mb-6">Clean, triple-washed coco peat blocks optimized for clinical moisture retention parameters.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Lot Size:</label>
+                            <select id="coco-peat-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="Single Block" data-price="12.00">Single Block — $12.00</option>
+                                <option value="5-Pack Cargo" data-price="55.00">5-Pack Cargo — $55.00</option>
+                                <option value="Bulk Pallet" data-price="220.00">Bulk Master Pallet — $220.00</option>
+                            </select>
                         </div>
                     </div>
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Lugarti Premium Coco Peat', 12.00, 'coco-peat-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
+                    </div>
                 </div>
-                <!-- Add more cards for Bioactive Soils and Drainage Layers similarly -->
-            </div>
-        </div>
-    </section>
 
-    <!-- FOOTER -->
-    <footer class="bg-black py-16 border-t border-zinc-800">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="flex justify-center gap-8 text-3xl mb-8">
-                <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
-                <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
-                <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
-                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.patreon.com/customize?step=settings" target="_blank" class="hover:text-emerald-400"><i class="fab fa-patreon"></i></a>
-                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
-            </div>
-            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
-        </div>
-    </footer>
+                <!-- Item 2: Bioactive Soils Card -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
+                            <span class="text-zinc-600 font-mono text-sm">[Bioactive Soil Media]</span>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Bioactive Soils & Leaf Litter</h3>
+                            <p class="text-zinc-400 mb-6">Hand-blended nutrient matrices combined with premium forest floor materials for healthy breakdown networks.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Blend Pack:</label>
+                            <select id="bio-soil-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="Standard Mix" data-price="18.00">Standard Mix Pack — $18.00</option>
+                                <option value="Breeder Pro Pack" data-price="45.00">Breeder Pro Pack — $45.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Bioactive Soils & Leaf Litter', 18.00, 'bio-soil-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
+                    </div>
+                </div>
 
-    <script>
-        function toggleDropdown(btn) {
-            const menu = btn.parentElement.querySelector('.dropdown-menu');
-            menu.classList.toggle('hidden');
-        }
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.group')) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
-            }
-        });
-    </script>
-</body>
-</html>
+            </div>
