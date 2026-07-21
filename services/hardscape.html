@@ -3,27 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Hardscape & Hides</title>
-    <!-- Core Tailwind Rendering Engine -->
-    <script src="https://tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cloudflare.com">
-    <script src="https://paypal.com"></script>
+    <title>JONNYDREAMWALKER APEX HERP 🦎UPPLY | Hardscape & Enclosures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
     
-    <!-- EMBEDDED SITE STYLES (Guarantees background stays 100% Dark) -->
-    <style>
-        body {
-            background-color: #09090b !important; /* Forces background to stay bg-zinc-950 */
-            color: #ffffff;
-        }
-        /* Clean transition animations for your menu buttons */
-        .dropdown-menu {
-            transition: all 0.2s ease-in-out;
-        }
-    </style>
-
-    <!-- GLOBAL SHOP CART ENGINE & INTERACTIVE LOGIC -->
+    <!-- GLOBAL SHOP CART ENGINE -->
     <script>
-        // Set up the global client-side storage array if empty
         if (!localStorage.getItem('jdw_cart')) {
             localStorage.setItem('jdw_cart', JSON.stringify([]));
         }
@@ -58,38 +45,6 @@
                 badge.innerText = totalItems;
             });
         }
-
-        // Click Controller: Keeps the category dropdown open cleanly until clicked off
-        function toggleCategoryMenu(event) {
-            event.stopPropagation(); 
-            let dropdown = document.getElementById('category-dropdown');
-            let arrow = document.getElementById('dropdown-arrow');
-            
-            if (dropdown.classList.contains('hidden')) {
-                dropdown.classList.remove('hidden');
-                arrow.innerText = '▲';
-                arrow.classList.add('text-emerald-400');
-            } else {
-                dropdown.classList.add('hidden');
-                arrow.innerText = '▼';
-                arrow.classList.remove('text-emerald-400');
-            }
-        }
-
-        // Global handler to snap dropdown shut when clicking raw body workspace elements
-        window.addEventListener('click', function(e) {
-            let dropdown = document.getElementById('category-dropdown');
-            let arrow = document.getElementById('dropdown-arrow');
-            
-            if (dropdown && !dropdown.contains(e.target)) {
-                dropdown.classList.add('hidden');
-                if(arrow) {
-                    arrow.innerText = '▼';
-                    arrow.classList.remove('text-emerald-400');
-                }
-            }
-        });
-
         document.addEventListener("DOMContentLoaded", updateCartCount);
     </script>
 </head>
@@ -105,28 +60,23 @@
                     <p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p>
                 </div>
             </div>
-            
             <div class="hidden md:flex gap-8 text-sm font-medium items-center">
-                <a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
-                
-                <!-- STABLE CLOCKED DROPDOWN INTERFACE -->
+                <a href="../index.html" class="hover:text-emerald-400 transition">Shop</a>
                 <div class="relative">
-                    <button onclick="toggleCategoryMenu(event)" class="hover:text-emerald-400 text-white transition focus:outline-none flex items-center gap-1 font-medium">
+                    <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                         Categories <span id="dropdown-arrow">▼</span>
                     </button>
                     <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
-                        <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Shop Hardscape →</a>
-                        <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Explore Lighting →</a>
-                        <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Browse Substrates →</a>
-                        <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Fuel Your Herps →</a>
-                        <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors">Gear Up →</a>
+                        <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
+                        <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
+                        <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
+                        <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
+                        <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
                     </div>
                 </div>
-                
                 <a href="../index.html" class="hover:text-emerald-400 transition">Deals</a>
                 <a href="../about.html" class="hover:text-emerald-400 transition">About</a>
             </div>
-
             <a href="#" onclick="openCartModal(); return false;" class="hover:text-emerald-400 transition flex items-center gap-2 relative">
                 <i class="fas fa-shopping-cart text-emerald-400"></i> Cart 
                 <span class="cart-count bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full -mt-2">0</span>
@@ -145,13 +95,13 @@
         </div>
     </header>
 
-    <!-- SALES GRID DISPLAY INTERFACE -->
+    <!-- SALES SECTION -->
     <section class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-5xl font-black text-center mb-16">Cork & Other Hardscape</h2>
+            <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 
-                <!-- Product 1: Bulk Hardscape Mix Box -->
+                <!-- Product 1 -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div>
                         <div class="h-56 overflow-hidden relative">
@@ -160,13 +110,232 @@
                             </video>
                         </div>
                         <div class="p-8">
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="text-2xl font-bold text-emerald-400">Premium Hardscape Lots</h3>
-                                <span class="text-[10px] bg-emerald-950 border border-emerald-500 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Free Ship</span>
-                            </div>
-                            <p class="text-zinc-400 text-sm mb-4">Curated mix of premium hardscape materials tailored specifically to your enclosure dimensions.</p>
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Hardscape Lots</h3>
+                            <p class="text-zinc-400 mb-6">Curated mix of premium cork bark and hardscape materials tailored to your enclosure.</p>
                             
                             <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Box Size:</label>
                             <select id="hardscape-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
                                 <option value="10lb Box" data-price="185.00">10lb Premium Box — $185.00</option>
                                 <option value="20lb Box" data-price="345.00">20lb Premium Box — $345.00</option>
+                                <option value="50lb Box" data-price="645.00">50lb Premium Box — $645.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Premium Hardscape Lots', 185.00, 'hardscape-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
+                            <span class="text-zinc-600 font-mono text-sm">[Virgin Cork Rounds]</span>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Bulk Virgin Cork Bark</h3>
+                            <p class="text-zinc-400 mb-6">Premium imported virgin cork rounds perfect for natural hides and nesting tubes.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Lot:</label>
+                            <select id="cork-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="10lb Cork" data-price="95.00">10lb Cork Lot — $95.00</option>
+                                <option value="25lb Cork" data-price="210.00">25lb Cork Lot — $210.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Bulk Virgin Cork Bark', 95.00, 'cork-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
+                            <span class="text-zinc-600 font-mono text-sm">[Wood Accent Pieces]</span>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Wood Accents</h3>
+                            <p class="text-zinc-400 mb-6">Hand-selected branches and structural wood elements for active climbing behaviors.</p>
+                            
+                            <label class="text-xs text-zinc-500 block mb-2 uppercase font-bold tracking-wider">Select Pack:</label>
+                            <select id="wood-select" class="w-full bg-zinc-950 border border-emerald-900/60 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-emerald-400 mb-4">
+                                <option value="Starter Pack" data-price="45.00">Starter Pack — $45.00</option>
+                                <option value="Pro Pack" data-price="95.00">Pro Pack — $95.00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-8 pt-0">
+                        <button onclick="addToCart('Premium Wood Accents', 45.00, 'wood-select')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wide text-xs py-4 rounded-xl transition shadow-lg shadow-emerald-950/50">
+                            Add To Cart 🛒
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black py-16 border-t border-zinc-800">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <div class="flex justify-center gap-8 text-3xl mb-8">
+                <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
+                <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.patreon.com/customize?step=settings" target="_blank" class="hover:text-emerald-400"><i class="fab fa-patreon"></i></a>
+                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
+            </div>
+            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
+            <p class="text-emerald-500 text-sm mt-4">
+                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:underline">Linktree Hub</a> • 
+                <a href="https://www.facebook.com/marketplace/profile/100026234462510/?ref=share_attachment" target="_blank" class="hover:underline">Facebook Marketplace</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- SHOPPING CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-emerald-900 w-full max-w-lg rounded-3xl p-8 max-h-[85vh] flex flex-col justify-between shadow-2xl">
+            <div>
+                <div class="flex justify-between items-center border-b border-emerald-900 pb-4 mb-6">
+                    <h3 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">🛒 YOUR SHOPPING CART</h3>
+                    <button onclick="closeCartModal()" class="text-zinc-500 hover:text-white text-xl font-bold transition">&times;</button>
+                </div>
+                <div id="cart-items-list" class="space-y-4 overflow-y-auto max-h-[40vh] pr-2 text-sm">
+                </div>
+            </div>
+            
+            <div class="border-t border-emerald-900 pt-6 mt-6">
+                <div class="flex justify-between items-center text-xl font-black mb-6">
+                    <span>TOTAL:</span>
+                    <span id="cart-grand-total" class="text-emerald-400">$0.00</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="clearAllCartItems()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide">Empty Cart</button>
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" id="paypal-checkout-form" onsubmit="return populatePayPalFormFields(this);">
+                        <input type="hidden" name="cmd" value="_cart">
+                        <input type="hidden" name="upload" value="1">
+                        <input type="hidden" name="business" value="YOUR_PAYPAL_BUSINESS_EMAIL_HERE">
+                        <input type="hidden" name="currency_code" value="USD">
+                        <input type="hidden" name="no_shipping" value="1">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide shadow-lg shadow-emerald-950/40">Checkout 💳</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sticky Dropdown that stays open
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('category-dropdown');
+            const arrow = document.getElementById('dropdown-arrow');
+            dropdown.classList.toggle('hidden');
+            if (dropdown.classList.contains('hidden')) {
+                arrow.innerText = '▼';
+            } else {
+                arrow.innerText = '▲';
+            }
+        }
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('category-dropdown');
+            const arrow = document.getElementById('dropdown-arrow');
+            if (dropdown && !dropdown.contains(e.target) && !e.target.closest('button')) {
+                dropdown.classList.add('hidden');
+                if (arrow) arrow.innerText = '▼';
+            }
+        });
+
+        // Cart Modal Functions
+        function openCartModal() {
+            let cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
+            let listContainer = document.getElementById('cart-items-list');
+            let totalContainer = document.getElementById('cart-grand-total');
+            listContainer.innerHTML = '';
+            
+            if (cart.length === 0) {
+                listContainer.innerHTML = '<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';
+                totalContainer.innerText = '$0.00';
+            } else {
+                let total = 0;
+                cart.forEach((item, index) => {
+                    total += (item.price * item.quantity);
+                    listContainer.innerHTML += `
+                        <div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                            <div>
+                                <h4 class="font-bold text-white text-base">${item.name}</h4>
+                                <p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p>
+                                <p class="text-xs text-zinc-500 mt-1">QTY: ${item.quantity}</p>
+                            </div>
+                            <button onclick="removeSingleCartItem(${index})" class="text-zinc-600 hover:text-red-400 transition"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                });
+                totalContainer.innerText = '$' + total.toFixed(2);
+            }
+            document.getElementById('cart-modal').classList.remove('hidden');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        }
+
+        function removeSingleCartItem(index) {
+            let cart = JSON.parse(localStorage.getItem('jdw_cart'));
+            cart.splice(index, 1);
+            localStorage.setItem('jdw_cart', JSON.stringify(cart));
+            openCartModal();
+            updateCartCount();
+        }
+
+        function clearAllCartItems() {
+            localStorage.setItem('jdw_cart', JSON.stringify([]));
+            openCartModal();
+            updateCartCount();\n        }
+
+        function populatePayPalFormFields(form) {
+            let cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return false;
+            }
+            let dynamicInputs = form.querySelectorAll('.dynamic-item');
+            dynamicInputs.forEach(input => input.remove());
+
+            cart.forEach((item, index) => {
+                let itemNum = index + 1;
+                
+                let inputName = document.createElement('input');
+                inputName.type = 'hidden';
+                inputName.className = 'dynamic-item';
+                inputName.name = 'item_name_' + itemNum;
+                inputName.value = item.name + ' (' + item.variant + ')';
+                form.appendChild(inputName);
+
+                let inputAmount = document.createElement('input');
+                inputAmount.type = 'hidden';
+                inputAmount.className = 'dynamic-item';
+                inputAmount.name = 'amount_' + itemNum;
+                inputAmount.value = item.price.toFixed(2);
+                form.appendChild(inputAmount);
+
+                let inputQty = document.createElement('input');
+                inputQty.type = 'hidden';
+                inputQty.className = 'dynamic-item';
+                inputQty.name = 'quantity_' + itemNum;
+                inputQty.value = item.quantity;
+                form.appendChild(inputQty);
+            });
+            return true;
+        }
+    </script>
+</body>
+</html>
