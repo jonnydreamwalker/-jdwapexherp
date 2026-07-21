@@ -7,9 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/style.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=BAAzA9eM-0iYChYW29cdEokUHuqFfiFFoLc0wJ3o7BlQq42HEMYtTNIFzp8ThJUs-lcoFYxN5JUS4dKk5E&components=hosted-buttons&enable-funding=venmo&currency=USD"></script>
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- NAV (Exact copy of your home page layout) -->
+    <!-- NAV -->
     <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
         <div class="absolute inset-0 bg-[url('../assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center relative z-10">
@@ -20,17 +21,16 @@
                     <p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p>
                 </div>
             </div>
-          
             <div class="hidden md:flex gap-8 text-sm font-medium">
                 <a href="../index.html" class="hover:text-emerald-400 transition">Shop</a>
                 <div class="relative group">
-                    <button class="hover:text-emerald-400 transition">Categories ▼</button>
-                    <div class="absolute hidden group-hover:block bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2">
-                        <a href="hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
-                        <a href="lighting.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>                        
-                        <a href="substrates.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
-                        <a href="nutrition.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
-                        <a href="apparel.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
+                    <button onclick="toggleDropdown(this)" class="hover:text-emerald-400 transition focus:outline-none">Categories ▼</button>
+                    <div id="category-dropdown" class="absolute hidden bg-zinc-900 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 dropdown-menu">
+                        <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Hardscape →</a>
+                        <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
+                        <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
+                        <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
+                        <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
                     </div>
                 </div>
                 <a href="../index.html" class="hover:text-emerald-400 transition">Deals</a>
@@ -40,96 +40,70 @@
         </div>
     </nav>
 
-    <!-- HERO SECTION (With your video playing on the banner) -->
+    <!-- HERO -->
     <header class="h-[60vh] flex items-center justify-center relative overflow-hidden">
         <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-40">
             <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
         </video>
         <div class="relative z-10 text-center px-6">
             <h1 class="text-6xl md:text-7xl font-black tracking-tighter mb-4">TECHNICAL HARDWARE & LIGHTING</h1>
-            <p class="text-2xl text-emerald-300">Precision Environmental Systems. Engineered For Elite Growth.</p>  
+            <p class="text-2xl text-emerald-300">Precision Environmental Systems. Engineered For Elite Growth.</p>
         </div>
     </header>
 
-    <!-- DIRECT SALES PRODUCT SECTION -->
-    <section class="py-24 bg-zinc-900 border-t border-emerald-900/30">
+    <!-- SALES SECTION -->
+    <section class="py-24 bg-zinc-900">
         <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-5xl font-black text-center mb-16 tracking-tight">Direct Purchase Store</h2>
+            <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                <!-- Lighting Item 1: Arcadia Pro T5 -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="h-56 overflow-hidden relative">
-                            <div class="w-full h-full bg-[url('../assets/wholesale-arcadia-d3-12-uvb-t5-bulb-34.jpg')] bg-cover bg-center absolute top-0 left-0 opacity-70"></div>
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Arcadia Pro T5 UVB Systems</h3>
-                            <p class="text-zinc-400 mb-6">High-output linear UVB kits designed to provide optimal, stable Ferguson zone lighting parameters for elite reptile breeding layouts.</p>
-                        </div>
+                <!-- Arcadia Pro T5 Card -->
+                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col">
+                    <div class="h-56 overflow-hidden relative">
+                        <div class="w-full h-full bg-[url('../assets/wholesale-arcadia-d3-12-uvb-t5-bulb-34.jpg')] bg-cover bg-center"></div>
                     </div>
-                    <div class="p-8 pt-0">
-                        <p class="text-3xl font-black text-white mb-4">$0.00</p>
-                        <div class="bg-zinc-950 border border-emerald-900/50 rounded-2xl p-4 flex justify-center items-center min-h-[70px]">
-                            <!-- !!! DROP PAYPAL BUTTON CODE HERE !!! -->
-                            <span class="text-xs font-mono text-zinc-600">[Paste Arcadia T5 PayPal Script Here]</span>
+                    <div class="p-8 flex-1">
+                        <h3 class="text-2xl font-bold mb-3 text-emerald-400">Arcadia Pro T5 UVB Systems</h3>
+                        <p class="text-zinc-400 mb-6">High-output linear UVB kits for optimal reptile lighting.</p>
+                    </div>
+                    <div class="p-8 pt-0 border-t border-emerald-900">
+                        <div class="bg-zinc-950 border-2 border-emerald-500 rounded-3xl p-8 min-h-[220px] flex flex-col justify-center items-center">
+                            <!-- Paste your PayPal button code here -->
+                            <div id="paypal-lighting-1"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Lighting Item 2: Deep Forest LEDs -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
-                            <span class="text-zinc-600 font-mono text-sm">[Product Image Placeholder]</span>
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Deep Forest LEDs</h3>
-                            <p class="text-zinc-400 mb-6">High-PAR output LED bars engineered specifically to blast deep vivarium layouts and sustain lush, bioactive vegetation growth.</p>
-                        </div>
-                    </div>
-                    <div class="p-8 pt-0">
-                        <p class="text-3xl font-black text-white mb-4">$0.00</p>
-                        <div class="bg-zinc-950 border border-emerald-900/50 rounded-2xl p-4 flex justify-center items-center min-h-[70px]">
-                            <!-- !!! DROP PAYPAL BUTTON CODE HERE !!! -->
-                            <span class="text-xs font-mono text-zinc-600">[Paste Deep Forest LED PayPal Script Here]</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lighting Item 3: Heating & Monitoring Gear -->
-                <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
-                            <span class="text-zinc-600 font-mono text-sm">[Product Image Placeholder]</span>
-                        </div>
-                        <div class="p-8">
-                            <h3 class="text-2xl font-bold mb-3 text-emerald-400">Heating & Monitoring Gear</h3>
-                            <p class="text-zinc-400 mb-6">Commercial-grade proportional pulse thermostats, deep heat emitters, and ultra-precise digital hardware probes.</p>
-                        </div>
-                    </div>
-                    <div class="p-8 pt-0">
-                        <p class="text-3xl font-black text-white mb-4">$0.00</p>
-                        <div class="bg-zinc-950 border border-emerald-900/50 rounded-2xl p-4 flex justify-center items-center min-h-[70px]">
-                            <!-- !!! DROP PAYPAL BUTTON CODE HERE !!! -->
-                            <span class="text-xs font-mono text-zinc-600">[Paste Heating/Monitoring PayPal Script Here]</span>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Add more cards for Deep Forest LEDs and Heating Gear similarly -->
             </div>
         </div>
     </section>
 
-    <!-- FOOTER (Exact copy of your home page layout) -->
+    <!-- FOOTER -->
     <footer class="bg-black py-16 border-t border-zinc-800">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <div class="flex justify-center gap-8 text-3xl mb-8">
-                <a href="https://instagram.com" target="_blank" class="hover:text-emerald-400 transition text-zinc-400"><i class="fab fa-instagram"></i></a>
-                <a href="https://tiktok.com" target="_blank" class="hover:text-emerald-400 transition text-zinc-400"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
+                <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.patreon.com/customize?step=settings" target="_blank" class="hover:text-emerald-400"><i class="fab fa-patreon"></i></a>
+                <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
             </div>
-            <p class="text-xs text-zinc-600">&copy; 2026 JONNYDREAMWALKER APEX HERP SUPPLY. All rights reserved.</p>
+            <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
         </div>
     </footer>
+
+    <script>
+        function toggleDropdown(btn) {
+            const menu = btn.parentElement.querySelector('.dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+            }
+        });
+    </script>
 </body>
 </html>
