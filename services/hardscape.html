@@ -35,14 +35,14 @@
                         <button onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">
                             Categories <span id="dropdown-arrow">▼</span>
                         </button>
-                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/20 backdrop-blur-md backdrop-brightness-110 border border-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
+                        <div id="category-dropdown" class="absolute hidden bg-zinc-900/20 backdrop-blur-md backdrop-brightness-110 border border-emerald-900-emerald-900 rounded-xl py-4 px-6 w-64 mt-2 z-50 shadow-2xl dropdown-menu">
                             <a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
                             <a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting →</a>
                             <a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates →</a>
                             <a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps →</a>
                             <a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up →</a>
                             <a href="enclosures.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Enclosures →</a>
-                            <a href="heating.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Heating & Basking →
+                            <a href="heating.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Heating & Basking →</a>
                             <a href="hardware.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware →</a>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
     </nav>
     <header class="h-[60vh] flex items-center justify-center relative overflow-hidden">
         <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0 opacity-40">
-            <source src="../assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
+            <source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4">
         </video>
         <div class="relative z-10 text-center px-6">
             <h1 class="text-6xl md:text-7xl font-black tracking-tighter mb-4">HARDSCAPE</h1>
@@ -69,11 +69,12 @@
         <div class="max-w-7xl mx-auto px-6">
             <h2 class="text-5xl font-black text-center mb-16">Direct Purchase Store</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Product cards would go here - keeping structure for launch -->
                 <div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden group hover:border-emerald-500 transition-all flex flex-col justify-between">
                     <div>
-                        <div class="h-56 bg-zinc-950 flex items-center justify-center border-b border-emerald-900/50">
-                            <span class="text-emerald-400 font-black text-2xl">UFO CORK</span>
+                        <div class="h-56 overflow-hidden relative border-b border-emerald-900/50">
+                            <video autoplay loop muted playsinline class="w-full h-full object-cover absolute top-0 left-0">
+                                <source src="../assets/images/gallery/Acton_UFO_Cork_Bulk.mp4" type="video/mp4">
+                            </video>
                         </div>
                         <div class="p-8 text-center">
                             <h3 class="text-2xl font-bold mb-3 text-emerald-400">UFO Cork Flats</h3>
@@ -95,7 +96,7 @@
                 <a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
                 <a href="https://x.com/JonnyDreamWalk" target="_blank" class="hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
                 <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
-                <a href="https://www.youtube.com/@JDWAHS" target" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
                 <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="hover:text-emerald-400"><i class="fas fa-link"></i></a>
             </div>
             <p class="text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply • All Rights Reserved</p>
@@ -117,12 +118,15 @@
                     <button onclick="startSquarePayment()" class="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2 border border-emerald-700">
                         <i class="fas fa-credit-card"></i> Pay with Square / Card
                     </button>
+                    <button onclick="startStripePayment()" class="w-full bg-[#635bff] hover:bg-[#5851db] text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                        <i class="fab fa-stripe-s"></i> Pay with Stripe
+                    </button>
                     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);">
                         <input type="hidden" name="cmd" value="_cart">
                         <input type="hidden" name="upload" value="1">
                         <input type="hidden" name="business" value="jonnydreamwalker@gmail.com">
                         <input type="hidden" name="currency_code" value="USD">
-                        <button type="submit" class="w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                        <button type="submit" class="w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded--xl transition text-xs uppercase tracking-wide flex items-center justify-center gap-2">
                             <i class="fab fa-paypal"></i> Pay with PayPal
                         </button>
                     </form>
@@ -131,14 +135,24 @@
         </div>
     </div>
     <script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script>
         const SQUARE_APP_ID = 'sandbox-sq0idb-dVkl9lkCHK4U1KMe_Bo58g';
         const SQUARE_LOCATION_ID = 'L4J8AVPE7GFN6';
+        const STRIPE_PK = 'pk_test_51TuIAXIREDbjXKi1cTXUjTItosq36ALCJJ3ahCDMEANL3oAdChz12Bq8job6fxT2rYWZW9ogrHmAbGG6khG6Hlub001fetYryZ';
+        const stripe = Stripe(STRIPE_PK);
+
         function startSquarePayment() {
             const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
             if (cart.length === 0) { alert('Your cart is empty.'); return; }
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             alert('Square Sandbox connected!\n\nOrder Total: $' + total.toFixed(2));
+        }
+        function startStripePayment() {
+            const cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
+            if (cart.length === 0) { alert('Your cart is empty.'); return; }
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            alert('Stripe connected!\n\nOrder Total: $' + total.toFixed(2));
         }
         function addToCart(name, variant, price) {
             let cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
@@ -151,11 +165,11 @@
         }
         function toggleDropdown(event) { event.stopPropagation(); const d=document.getElementById('category-dropdown'); const a=document.getElementById('dropdown-arrow'); if(!d)return; d.classList.toggle('hidden'); if(a)a.innerText=d.classList.contains('hidden')?'▼':'▲'; }
         document.addEventListener('click', function(e) { const d=document.getElementById('category-dropdown'); const a=document.getElementById('dropdown-arrow'); if(d&&!d.contains(e.target)&&!e.target.closest('button')){d.classList.add('hidden');if(a)a.innerText='▼';} });
-        function openCartModal() { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; let list=document.getElementById('cart-items-list'); let totalEl=document.getElementById('cart-grand-total'); list.innerHTML=''; if(cart.length===0){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);} document.getElementById('cart-modal').classList.remove('hidden'); }
+        function openCartModalCartModal() { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; let list=document.getElementById('cart-items-list'); let totalEl=document.getElementById('cart-grand-total'); list.innerHTML=''; if(cart.length===0){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">${item.variant} — $${item.price.toFixed(2)}</p><p class="text-xs text-zinc-500">QTY: ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-zinc-600 hover:text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);} document.getElementById('cart-modal').classList.remove('hidden'); }
         function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
         function removeSingleCartItem(i) { let c=JSON.parse(localStorage.getItem('jdw_cart')); c.splice(i,1); localStorage.setItem('jdw_cart',JSON.stringify(c)); openCartModal(); updateCartCount(); }
         function clearAllCartItems() { localStorage.setItem('jdw_cart','[]'); openCartModal(); updateCartCount(); }
-        function populatePayPalFormFields(form) { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; if(!cart.length){alert('Your cart is empty.');return false;} form.querySelectorAll('.dynamic-item').forEach(el=>el.remove()); cart.forEach((item,idx)=>{let n=idx+1;[['item_name_',item.name+' ('+item.variant+')'],['amount_',item.price.toFixed(2)],['quantity_',item.quantity]].forEach(([k,v])=>{let i=document.createElement('input');i.type='hidden';i.className='dynamic-item';i.name=k+n;i.value=v;form.appendChild(i);});}); return true; }
+        function populatePayPalFormFields(form) { let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[]; if(!cart.length){alert('Your cart is empty.');return false;} form.querySelectorAll('.dynamic-item').forEach(el=>el.remove()); cart.forEach((item,idx)=>{let n=idx+1;[['item_name_',item.name+' ('+item.variant+')'],['amount_',item.price.toFixed(2)],['quantity_',item.quantity]].forEach(([k,v])=>{let i=document.createElement('input');i.type='hidden';iclassName='dynamic-item';i.name=k+n;i.value=v;form.appendChild(i);});}); return true; }
     </script>
 </body>
 </html>
