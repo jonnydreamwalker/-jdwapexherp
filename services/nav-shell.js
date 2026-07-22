@@ -1,4 +1,3 @@
-/* Shared nav/cart helpers for service pages */
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 function updateCartCount() {
   var c = JSON.parse(localStorage.getItem("jdw_cart")) || [];
@@ -27,10 +26,7 @@ function toggleMobileMenu() {
 function closeMobileMenu() {
   var m = document.getElementById("mobile-menu");
   var i = document.getElementById("hamburger-icon");
-  if (m) {
-    m.classList.add("hidden");
-    m.classList.remove("flex");
-  }
+  if (m) { m.classList.add("hidden"); m.classList.remove("flex"); }
   document.body.style.overflow = "";
   if (i) i.className = "fas fa-bars";
 }
@@ -58,7 +54,7 @@ document.addEventListener("click", function (e) {
   var d = document.getElementById("category-dropdown");
   var a = document.getElementById("dropdown-arrow");
   if (!d) return;
-  if (!d.contains(e.target) && !e.target.closest('[onclick*="toggleDropdown"]')) {
+  if (!d.contains(e.target) && !e.target.closest("[data-dropdown-toggle]")) {
     d.classList.add("hidden");
     if (a) a.innerText = "▼";
   }
@@ -81,7 +77,7 @@ function openCartModal() {
   list.innerHTML = "";
   if (!cart.length) {
     list.innerHTML = '<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';
-    totalEl.innerText = "$0.00";
+    if (totalEl) totalEl.innerText = "$0.00";
   } else {
     var total = 0;
     cart.forEach(function (item, i) {
@@ -93,18 +89,18 @@ function openCartModal() {
         item.price.toFixed(2) +
         " × " +
         item.quantity +
-        '</p></div><button onclick="removeSingleCartItem(' +
+        '</p></div><button type="button" onclick="removeSingleCartItem(' +
         i +
         ')" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>';
     });
-    totalEl.innerText = "$" + total.toFixed(2);
+    if (totalEl) totalEl.innerText = "$" + total.toFixed(2);
   }
-  document.getElementById("cart-modal").classList.remove("hidden");
-  document.getElementById("cart-modal").classList.add("flex");
+  var modal = document.getElementById("cart-modal");
+  if (modal) { modal.classList.remove("hidden"); modal.classList.add("flex"); }
 }
 function closeCartModal() {
-  document.getElementById("cart-modal").classList.add("hidden");
-  document.getElementById("cart-modal").classList.remove("flex");
+  var modal = document.getElementById("cart-modal");
+  if (modal) { modal.classList.add("hidden"); modal.classList.remove("flex"); }
 }
 function removeSingleCartItem(i) {
   var c = JSON.parse(localStorage.getItem("jdw_cart")) || [];
