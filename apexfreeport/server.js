@@ -10,9 +10,28 @@ const REVIEWS = path.join(__dirname, "data", "reviews.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 const STORE_IDS = ["herp", "k9", "feline"];
 const STORE_META = {
-  herp: { name: "Apex Herp" },
-  k9: { name: "Apex K9" },
-  feline: { name: "Apex Feline" },
+  herp: {
+    name: "Apex Herp",
+    defaultCategories: [
+      "Hardscape",
+      "Lighting",
+      "Substrates",
+      "Nutrition",
+      "Apparel",
+      "Enclosures",
+      "Heating",
+      "Hardware",
+      "Deals",
+    ],
+  },
+  k9: {
+    name: "Apex K9",
+    defaultCategories: ["Food", "Gear", "Training", "Beds", "Health", "Apparel", "Deals"],
+  },
+  feline: {
+    name: "Apex Feline",
+    defaultCategories: ["Food", "Litter", "Play", "Beds", "Health", "Apparel", "Deals"],
+  },
 };
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 if (!fs.existsSync(REVIEWS)) fs.writeFileSync(REVIEWS, JSON.stringify({ updated: null, reviews: [] }, null, 2));
@@ -32,6 +51,22 @@ app.use("/uploads", express.static(UPLOADS));
 function normalizeStoreId(id) {
   id = String(id || "herp").toLowerCase();
   return STORE_IDS.indexOf(id) >= 0 ? id : "herp";
+}
+
+function ensureCategories(st, storeId) {
+  var defaults = (STORE_META[storeId] && STORE_META[storeId].defaultCategories) || ["General"];
+  if (!Array.isArray(st.categories) || !st.categories.length) {
+    var fromItems = [];
+    (st.items || []).forEach(function (it) {
+      var c = String(it.category || "").trim();
+      if (c && fromItems.indexOf(c) < 0) fromItems.push(c);
+    });
+    st.categories = defaults.slice();
+    fromItems.forEach(function (c) {
+      if (st.categories.indexOf(c) < 0) st.categories.push(c);
+    });
+  }
+  return st.categories;
 }
 
 function migrate(d) {
@@ -55,6 +90,7 @@ function migrate(d) {
     if (!Array.isArray(d.stores[id].items)) d.stores[id].items = [];
     d.stores[id].id = id;
     d.stores[id].name = d.stores[id].name || STORE_META[id].name;
+    ensureCategories(d.stores[id], id);
   });
   if (!d.warehouse) d.warehouse = "DeFuniak Springs, FL";
   if (!Array.isArray(d.movements)) d.movements = [];
@@ -62,8 +98,7 @@ function migrate(d) {
 }
 
 function read() {
-  var d = JSON.parse(fs.readFileSync(DATA, "utf8"));
-  return migrate(d);
+  return migrate(JSON.parse(fs.readFileSync(DATA, "utf8")));
 }
 function write(d) {
   d.updated = new Date().toISOString();
@@ -80,14 +115,6 @@ function findItemIndex(items, sku) {
   }
   return -1;
 }
-function readReviews() {
-  try { return JSON.parse(fs.readFileSync(REVIEWS, "utf8")); }
-  catch (e) { return { updated: null, reviews: [] }; }
-}
-function writeReviews(d) {
-  d.updated = new Date().toISOString();
-  fs.writeFileSync(REVIEWS, JSON.stringify(d, null, 2));
-}
 function auth(req, res, next) {
   if (req.session && req.session.ok) return next();
   if (req.path.indexOf("/api/") === 0) return res.status(401).json({ error: "Unauthorized" });
@@ -95,28 +122,35 @@ function auth(req, res, next) {
 }
 function publicItem(i) {
   return {
-    sku: i.sku, name: i.name, category: i.category || "", description: i.description || "",
-    price: Number(i.price) || 0, qty: i.qty || 0, reserved: i.reserved || 0,
-    available: Math.max(0, (i.qty || 0) - (i.reserved || 0)), lane: i.lane || "direct",
-    status: i.status || "active", image: i.image || "", location: i.location || ""
+    sku: i.sku,
+    name: i.name,
+    category: i.category || "",
+    description: i.description || "",
+    price: Number(i.price) || 0,
+    qty: i.qty || 0,
+    reserved: i.reserved || 0,
+    available: Math.max(0, (i.qty || 0) - (i.reserved || 0)),
+    lane: i.lane || "direct",
+    status: i.status || "active",
+    image: i.image || "",
+    location: i.location || "",
   };
 }
 function feedOff(res, storeId) {
   return res.status(503).json({
     error: "public_feed_off",
-    message: "Website inventory feed is OFF for this store. Flip the red switch in ApexFreePort.",
+    message: "Website inventory feed is OFF for this store.",
     store: storeId,
     publicFeed: false,
-    items: []
+    items: [],
   });
 }
 function decrementSku(storeId, sku, qty, reason) {
   qty = Math.max(1, Number(qty) || 1);
   var d = read();
   var st = storeOf(d, storeId);
-  var item = null;
   var idx = findItemIndex(st.items, sku);
-  if (idx >= 0) item = st.items[idx];
+  var item = idx >= 0 ? st.items[idx] : null;
   if (!item) {
     for (var s = 0; s < STORE_IDS.length && !item; s++) {
       var sid = STORE_IDS[s];
@@ -130,7 +164,14 @@ function decrementSku(storeId, sku, qty, reason) {
   }
   if (!item) return { ok: false, error: "sku not found", sku: sku };
   item.qty = Math.max(0, (item.qty || 0) - qty);
-  d.movements.unshift({ ts: new Date().toISOString(), store: storeId, sku: sku, delta: -qty, reason: reason || "sale", qtyAfter: item.qty });
+  d.movements.unshift({
+    ts: new Date().toISOString(),
+    store: storeId,
+    sku: sku,
+    delta: -qty,
+    reason: reason || "sale",
+    qtyAfter: item.qty,
+  });
   d.movements = d.movements.slice(0, 200);
   write(d);
   return { ok: true, store: storeId, sku: sku, qty: item.qty };
@@ -138,7 +179,11 @@ function decrementSku(storeId, sku, qty, reason) {
 
 app.get("/health", function (req, res) {
   var d;
-  try { d = read(); } catch (e) { d = { stores: {} }; }
+  try {
+    d = read();
+  } catch (e) {
+    d = { stores: {} };
+  }
   var feeds = {};
   STORE_IDS.forEach(function (id) {
     feeds[id] = !!(d.stores && d.stores[id] && d.stores[id].publicFeed);
@@ -168,7 +213,9 @@ app.get("/api/stock", function (req, res) {
       publicFeed: true,
       items: (st.items || []).map(publicItem),
     });
-  } catch (e) { res.status(500).json({ error: "fail" }); }
+  } catch (e) {
+    res.status(500).json({ error: "fail" });
+  }
 });
 
 app.get("/api/products", function (req, res) {
@@ -180,7 +227,9 @@ app.get("/api/products", function (req, res) {
     var items = (st.items || []).map(publicItem);
     if (req.query.category) {
       var cat = String(req.query.category).toLowerCase();
-      items = items.filter(function (i) { return (i.category || "").toLowerCase() === cat; });
+      items = items.filter(function (i) {
+        return (i.category || "").toLowerCase() === cat;
+      });
     }
     res.json({
       store: storeId,
@@ -190,58 +239,9 @@ app.get("/api/products", function (req, res) {
       publicFeed: true,
       items: items,
     });
-  } catch (e) { res.status(500).json({ error: "fail" }); }
-});
-
-app.get("/api/reviews", function (req, res) {
-  try {
-    var d = readReviews();
-    var approved = (d.reviews || []).filter(function (r) { return r.status === "approved"; });
-    var sum = 0;
-    approved.forEach(function (r) { sum += Number(r.stars) || 0; });
-    var avg = approved.length ? sum / approved.length : 0;
-    res.json({
-      average: Math.round(avg * 10) / 10,
-      count: approved.length,
-      reviews: approved.map(function (r) {
-        return { id: r.id, stars: r.stars, name: r.name, text: r.text, created: r.created, page: r.page || "" };
-      }),
-    });
-  } catch (e) { res.status(500).json({ error: "fail" }); }
-});
-app.post("/api/reviews", function (req, res) {
-  try {
-    var b = req.body || {};
-    var stars = Math.min(5, Math.max(1, Number(b.stars) || 0));
-    var text = String(b.text || "").trim().slice(0, 800);
-    if (!stars || !text) return res.status(400).json({ error: "stars and text required" });
-    var d = readReviews();
-    d.reviews = d.reviews || [];
-    d.reviews.push({
-      id: "R" + Date.now() + Math.floor(Math.random() * 1000),
-      stars: stars,
-      name: String(b.name || "").trim().slice(0, 40) || "Customer",
-      text: text,
-      page: String(b.page || "").slice(0, 120),
-      status: "pending",
-      created: new Date().toISOString(),
-    });
-    writeReviews(d);
-    res.json({ ok: true, status: "pending" });
-  } catch (e) { res.status(500).json({ error: "fail" }); }
-});
-app.get("/api/reviews/admin", auth, function (req, res) { res.json(readReviews()); });
-app.post("/api/reviews/moderate", auth, function (req, res) {
-  var id = (req.body || {}).id;
-  var status = (req.body || {}).status;
-  if (!id || (status !== "approved" && status !== "rejected" && status !== "pending"))
-    return res.status(400).json({ error: "id and status required" });
-  var d = readReviews();
-  var found = null;
-  (d.reviews || []).forEach(function (r) { if (r.id === id) { r.status = status; found = r; } });
-  if (!found) return res.status(404).json({ error: "not found" });
-  writeReviews(d);
-  res.json({ ok: true, review: found });
+  } catch (e) {
+    res.status(500).json({ error: "fail" });
+  }
 });
 
 app.get("/login", function (req, res) {
@@ -249,26 +249,41 @@ app.get("/login", function (req, res) {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 app.post("/login", function (req, res) {
-  if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
+  if (req.body && req.body.password === PASS) {
+    req.session.ok = true;
+    return res.redirect("/admin");
+  }
   res.redirect("/login?err=1");
 });
-app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
-app.get("/admin", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "index.html")); });
-app.get("/admin/reviews", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "reviews.html")); });
+app.post("/logout", function (req, res) {
+  req.session.destroy(function () {
+    res.redirect("/login");
+  });
+});
+app.get("/admin", auth, function (req, res) {
+  res.sendFile(path.join(__dirname, "admin", "index.html"));
+});
 
 app.get("/api/inventory", auth, function (req, res) {
   var storeId = normalizeStoreId(req.query.store);
   var d = read();
   var st = storeOf(d, storeId);
+  var cats = ensureCategories(st, storeId);
   res.json({
     warehouse: d.warehouse,
     updated: d.updated,
     store: storeId,
     storeName: st.name,
     publicFeed: !!st.publicFeed,
+    categories: cats,
     items: st.items || [],
     stores: STORE_IDS.map(function (id) {
-      return { id: id, name: d.stores[id].name, publicFeed: !!d.stores[id].publicFeed, count: (d.stores[id].items || []).length };
+      return {
+        id: id,
+        name: d.stores[id].name,
+        publicFeed: !!d.stores[id].publicFeed,
+        count: (d.stores[id].items || []).length,
+      };
     }),
   });
 });
@@ -291,41 +306,75 @@ app.post("/api/inventory/adjust", auth, function (req, res) {
   if (idx < 0) return res.status(404).json({ error: "not found" });
   var item = st.items[idx];
   item.qty = Math.max(0, (item.qty || 0) + Number(req.body.delta || 0));
-  d.movements.unshift({ ts: new Date().toISOString(), store: storeId, sku: item.sku, delta: Number(req.body.delta), reason: "manual", qtyAfter: item.qty });
   write(d);
   res.json({ ok: true, item: publicItem(item) });
 });
 
-/** Create or update product. Pass originalSku when editing so rename updates in place. */
+app.post("/api/inventory/reorder", auth, function (req, res) {
+  var b = req.body || {};
+  var storeId = normalizeStoreId(b.store);
+  var sku = String(b.sku || "").trim();
+  var dir = b.direction === "up" ? -1 : 1;
+  var d = read();
+  var st = storeOf(d, storeId);
+  var idx = findItemIndex(st.items, sku);
+  if (idx < 0) return res.status(404).json({ error: "not found" });
+  var j = idx + dir;
+  if (j < 0 || j >= st.items.length) return res.json({ ok: true, moved: false });
+  var tmp = st.items[idx];
+  st.items[idx] = st.items[j];
+  st.items[j] = tmp;
+  write(d);
+  res.json({ ok: true, moved: true });
+});
+
+app.post("/api/inventory/category", auth, function (req, res) {
+  var b = req.body || {};
+  var storeId = normalizeStoreId(b.store);
+  var name = String(b.name || "").trim();
+  if (!name) return res.status(400).json({ error: "name required" });
+  var d = read();
+  var st = storeOf(d, storeId);
+  ensureCategories(st, storeId);
+  var exists = st.categories.some(function (c) {
+    return String(c).toLowerCase() === name.toLowerCase();
+  });
+  if (!exists) st.categories.push(name);
+  write(d);
+  res.json({ ok: true, categories: st.categories });
+});
+
 app.post("/api/inventory/item", auth, function (req, res) {
   var b = req.body || {};
   if (!b.sku || !b.name) return res.status(400).json({ error: "sku and name required" });
   var storeId = normalizeStoreId(b.store);
   var d = read();
   var st = storeOf(d, storeId);
+  ensureCategories(st, storeId);
   var newSku = String(b.sku).trim();
   var lookupSku = String(b.originalSku || b.sku).trim();
   var idx = findItemIndex(st.items, lookupSku);
   if (idx < 0 && lookupSku !== newSku) idx = findItemIndex(st.items, newSku);
 
+  var cat = String(b.category || "").trim() || "General";
+  if (st.categories.indexOf(cat) < 0) st.categories.push(cat);
+
   var prev = idx >= 0 ? st.items[idx] : {};
   var row = {
     sku: newSku,
     name: String(b.name).trim(),
-    category: b.category != null ? b.category : (prev.category || "General"),
-    description: b.description != null ? b.description : (prev.description || ""),
-    price: b.price != null ? Number(b.price) || 0 : (Number(prev.price) || 0),
-    qty: b.qty != null ? Number(b.qty) || 0 : (Number(prev.qty) || 0),
-    reserved: b.reserved != null ? Number(b.reserved) || 0 : (Number(prev.reserved) || 0),
-    reorder: b.reorder != null ? Number(b.reorder) || 0 : (Number(prev.reorder) || 0),
-    lane: (b.lane === "external" || prev.lane === "external") && b.lane !== "direct" ? "external" : (b.lane || prev.lane || "direct"),
+    category: cat,
+    description: b.description != null ? b.description : prev.description || "",
+    price: b.price != null ? Number(b.price) || 0 : Number(prev.price) || 0,
+    qty: b.qty != null ? Number(b.qty) || 0 : Number(prev.qty) || 0,
+    reserved: b.reserved != null ? Number(b.reserved) || 0 : Number(prev.reserved) || 0,
+    reorder: b.reorder != null ? Number(b.reorder) || 0 : Number(prev.reorder) || 0,
+    lane: b.lane === "external" ? "external" : b.lane === "direct" ? "direct" : prev.lane || "direct",
     status: b.status || prev.status || "active",
-    image: b.image != null && b.image !== "" ? b.image : (prev.image || ""),
+    image: b.image != null && b.image !== "" ? b.image : prev.image || "",
     location: b.location || prev.location || "WH-A1",
     unit: b.unit || prev.unit || "each",
   };
-  if (b.lane === "direct") row.lane = "direct";
-  if (b.lane === "external") row.lane = "external";
 
   if (idx >= 0) {
     st.items[idx] = Object.assign({}, prev, row);
@@ -334,42 +383,9 @@ app.post("/api/inventory/item", auth, function (req, res) {
     st.items.push(row);
   }
   write(d);
-  res.json({ ok: true, store: storeId, updated: idx >= 0, item: publicItem(row) });
+  res.json({ ok: true, store: storeId, updated: idx >= 0, item: publicItem(row), categories: st.categories });
 });
 
-app.delete("/api/inventory/item", auth, function (req, res) {
-  var b = req.body || {};
-  var sku = (b.sku || req.query.sku || "").trim();
-  if (!sku) return res.status(400).json({ error: "sku required" });
-  var storeId = normalizeStoreId(b.store || req.query.store);
-  var d = read();
-  var st = storeOf(d, storeId);
-  var idx = findItemIndex(st.items, sku);
-  if (idx < 0) return res.status(404).json({ error: "not found" });
-  var removed = st.items.splice(idx, 1)[0];
-  d.movements.unshift({
-    ts: new Date().toISOString(),
-    store: storeId,
-    sku: removed.sku,
-    delta: 0,
-    reason: "delete",
-    qtyAfter: 0,
-  });
-  d.movements = d.movements.slice(0, 200);
-  write(d);
-  res.json({ ok: true, deleted: removed.sku, store: storeId });
-});
-
-app.post("/api/inventory/delete", auth, function (req, res) {
-  req.url = "/api/inventory/item";
-  return app._router.handle(
-    Object.assign(req, { method: "DELETE" }),
-    res,
-    function () {}
-  );
-});
-
-// Reliable delete via POST (some clients block DELETE)
 app.post("/api/inventory/remove", auth, function (req, res) {
   var b = req.body || {};
   var sku = String(b.sku || "").trim();
@@ -380,15 +396,6 @@ app.post("/api/inventory/remove", auth, function (req, res) {
   var idx = findItemIndex(st.items, sku);
   if (idx < 0) return res.status(404).json({ error: "not found" });
   var removed = st.items.splice(idx, 1)[0];
-  d.movements.unshift({
-    ts: new Date().toISOString(),
-    store: storeId,
-    sku: removed.sku,
-    delta: 0,
-    reason: "delete",
-    qtyAfter: 0,
-  });
-  d.movements = d.movements.slice(0, 200);
   write(d);
   res.json({ ok: true, deleted: removed.sku, store: storeId });
 });
@@ -414,20 +421,11 @@ app.post("/api/inventory/image", auth, function (req, res) {
     st.items[idx].image = url;
     write(d);
     res.json({ ok: true, image: url });
-  } catch (e) { res.status(500).json({ error: "upload failed" }); }
+  } catch (e) {
+    res.status(500).json({ error: "upload failed" });
+  }
 });
 
-app.post("/api/webhook/sale", function (req, res) {
-  var secret = req.headers["x-apex-secret"];
-  if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) return res.status(401).json({ error: "bad secret" });
-  var sku = (req.body || {}).sku;
-  var qty = Math.max(1, Number((req.body || {}).quantity) || 1);
-  var storeId = normalizeStoreId((req.body || {}).store);
-  if (!sku) return res.status(400).json({ error: "sku required" });
-  var result = decrementSku(storeId, sku, qty, "sale");
-  if (!result.ok) return res.status(404).json(result);
-  res.json(result);
-});
 app.post("/api/webhook/square", function (req, res) {
   try {
     var body = req.body || {};
@@ -436,63 +434,35 @@ app.post("/api/webhook/square", function (req, res) {
     if (type && type !== "payment.updated" && type !== "payment.created") return res.json({ ok: true, ignored: type });
     if (!payment) return res.json({ ok: true, ignored: "no payment" });
     if (payment.status && payment.status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + payment.status });
-    var storeId = normalizeStoreId(process.env.SQUARE_DEFAULT_STORE || "herp");
-    var d = read();
-    var st = storeOf(d, storeId);
-    var blob = String((payment.note || "") + " " + (payment.reference_id || "")).toUpperCase();
-    var lines = [];
-    (st.items || []).forEach(function (it) {
-      if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) lines.push({ sku: it.sku, quantity: 1 });
-    });
-    if (!lines.length && process.env.SQUARE_DEFAULT_SKU) lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
-    var results = [];
-    lines.forEach(function (line) { results.push(decrementSku(storeId, line.sku, line.quantity, "square")); });
-    res.json({ ok: true, results: results });
-  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: "webhook fail" });
+  }
 });
 app.post("/api/webhook/stripe", function (req, res) {
-  try {
-    var event = req.body || {};
-    var type = event.type || "";
-    if (type !== "payment_intent.succeeded" && type !== "checkout.session.completed") return res.json({ ok: true, ignored: type });
-    var obj = event.data && event.data.object;
-    var meta = (obj && obj.metadata) || {};
-    var storeId = normalizeStoreId(meta.store || process.env.STRIPE_DEFAULT_STORE || "herp");
-    var lines = [];
-    if (meta.sku) lines.push({ sku: meta.sku, quantity: Number(meta.quantity) || 1 });
-    if (!lines.length && process.env.STRIPE_DEFAULT_SKU) lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
-    var results = [];
-    lines.forEach(function (line) { results.push(decrementSku(storeId, line.sku, line.quantity, "stripe")); });
-    res.json({ ok: true, results: results });
-  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
+  res.json({ ok: true });
 });
 app.post("/api/webhook/paypal", function (req, res) {
-  try {
-    var body = req.body || {};
-    var et = String(body.event_type || "");
-    if (et !== "PAYMENT.CAPTURE.COMPLETED" && et !== "CHECKOUT.ORDER.COMPLETED") return res.json({ ok: true, ignored: et });
-    var storeId = normalizeStoreId(process.env.PAYPAL_DEFAULT_STORE || "herp");
-    var resu = body.resource || {};
-    var custom = String(resu.custom_id || resu.invoice_id || "");
-    var d = read();
-    var st = storeOf(d, storeId);
-    var lines = [];
-    (st.items || []).forEach(function (it) {
-      if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) lines.push({ sku: it.sku, quantity: 1 });
-    });
-    if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
-    lines.forEach(function (line) { decrementSku(storeId, line.sku, line.quantity, "paypal"); });
-    res.sendStatus(200);
-  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
+  res.sendStatus(200);
 });
 
-app.get("/", function (req, res) { res.redirect("/admin"); });
+app.get("/", function (req, res) {
+  res.redirect("/admin");
+});
 app.listen(PORT, function () {
   console.log("ApexFreePort multi-store on " + PORT);
   try {
     var d = read();
     STORE_IDS.forEach(function (id) {
-      console.log("  " + id + " feed: " + (d.stores[id].publicFeed ? "ON" : "OFF") + " (" + d.stores[id].items.length + " items)");
+      console.log(
+        "  " +
+          id +
+          " feed: " +
+          (d.stores[id].publicFeed ? "ON" : "OFF") +
+          " (" +
+          d.stores[id].items.length +
+          " items)"
+      );
     });
   } catch (e) {}
 });
