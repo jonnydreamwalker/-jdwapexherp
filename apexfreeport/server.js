@@ -1,5 +1,5 @@
 const express = require("express");
-const session = require("express-session");
+constsession = require("express-session");
 const fs = require("fs");
 const path = require("path");
 const app = express();
@@ -39,7 +39,7 @@ function decrementSku(sku, qty, reason) {
   var d = read();
   var item = null;
   for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === sku) item = d.items[i];
-   if (!item) return { ok: false, error: "sku not found" sku: sku };
+  if (!item) return { ok: false, error: "sku not found", sku: sku };
   item.qty = Math.max(0, (item.qty || 0) - qty);
   d.movements = d.movements || [];
   d.movements.unshift({ ts: new Date().toISOString(), sku: sku, delta: -qty, reason: reason || "sale", qtyAfter: item.qty });
@@ -50,7 +50,7 @@ function decrementSku(sku, qty, reason) {
 function extractSkusFromSquarePayment(payment) {
   var found = [];
   if (!payment) return found;
-  var note = String(payment.note || payment.buyer_email_address || "");
+  var note = String(payment.note || "");
   var ref = String(payment.reference_id || "");
   var blob = (note + " " + ref).toUpperCase();
   var d = read();
@@ -59,25 +59,10 @@ function extractSkusFromSquarePayment(payment) {
       found.push({ sku: it.sku, quantity: 1 });
     }
   });
-  if (payment.line_items && payment.line_items.length) {
-    payment.line_items.forEach(function (li) {
-      var name = String(li.name || li.uid || "");
-      (d.items || []).forEach(function (it) {
-        if (name.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1 ||
-            name.toUpperCase().indexOf(String(it.name).toUpperCase()) !== -1) {
-          found.push({ sku: it.sku, quantity: Number(li.quantity) || 1 });
-        }
-      });
-    });
-  }
   return found;
 }
 app.get("/health", function (req, res) {
-  res.json({
-    ok: true,
-    service: "ApexFreePort",
-    square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
-  });
+  res.json({ ok: true, service: "ApexFreePort", square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token" });
 });
 app.get("/api/stock", function (req, res) {
   try {
@@ -164,7 +149,6 @@ app.post("/api/webhook/sale", function (req, res) {
   if (!result.ok) return res.status(404).json(result);
   res.json(result);
 });
-/** Square: payment.updated — only act when COMPLETED; SKU from note/reference_id */
 app.post("/api/webhook/square", function (req, res) {
   try {
     var body = req.body || {};
@@ -179,15 +163,12 @@ app.post("/api/webhook/square", function (req, res) {
       return res.json({ ok: true, ignored: "status " + status });
     }
     var lines = extractSkusFromSquarePayment(payment);
-    if (!lines.length) {
-      var fallback = process.env.SQUARE_DEFAULT_SKU;
-      if (fallback) lines = [{ sku: fallback, quantity: 1 }];
+    if (!lines.length && process.env.SQUARE_DEFAULT_SKU) {
+      lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
     }
     var results = [];
-    lines.forEach(function (line) {
-      results.push(decrementSku(line.sku, line.quantity, "square"));
-    });
-    console.log("Square webhook", status, results);
+    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "square")); });
+    console.log("Square webhook", status, JSON.stringify(results));
     res.json({ ok: true, results: results });
   } catch (e) {
     console.error("Square webhook error", e);
@@ -197,5 +178,5 @@ app.post("/api/webhook/square", function (req, res) {
 app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
-  if (process.env.SQUARE_ACCESS_TOKEN) console.log("Square token: set");
+  console.log("Square token: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "not set"));
 });
