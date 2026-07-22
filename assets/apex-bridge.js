@@ -1,4 +1,4 @@
-/** ApexFreePort bridge — multi-store (default store=herp) */
+/** ApexFreePort bridge — multi-store + photo carousel (up to 10) */
 (function (global) {
   var APEX_API = "https://api.jdwapexherp.com";
 
@@ -10,7 +10,7 @@
   }
   function imgUrl(path) {
     if (!path) return "";
-    if (path.indexOf("http") === 0) return path;
+    if (String(path).indexOf("http") === 0) return path;
     return base() + path;
   }
   function esc(s) {
@@ -18,6 +18,16 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/"/g, "&quot;");
+  }
+  function productImages(i) {
+    var list = [];
+    if (Array.isArray(i.images)) {
+      i.images.forEach(function (p) {
+        if (p) list.push(imgUrl(p));
+      });
+    }
+    if (!list.length && i.image) list.push(imgUrl(i.image));
+    return list.slice(0, 10);
   }
   async function fetchProducts(category) {
     var q = "?store=" + encodeURIComponent(storeId());
@@ -30,7 +40,95 @@
     return "$" + (Number(n) || 0).toFixed(2);
   }
 
-  /** Clean card: title + price + expand description + cart */
+  function mediaBlock(imgs, idx) {
+    if (!imgs.length) {
+      return "";
+    }
+    if (imgs.length === 1) {
+      return (
+        '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950">' +
+        '<img src="' +
+        esc(imgs[0]) +
+        '" alt="" class="w-full h-full object-cover" loading="lazy">' +
+        "</div>"
+      );
+    }
+    var slides = imgs
+      .map(function (src, n) {
+        return (
+          '<div class="apex-slide absolute inset-0 transition-opacity duration-300 ' +
+          (n === 0 ? "opacity-100" : "opacity-0 pointer-events-none") +
+          '" data-slide="' +
+          n +
+          '">' +
+          '<img src="' +
+          esc(src) +
+          '" alt="" class="w-full h-full object-cover" loading="lazy">' +
+          "</div>"
+        );
+      })
+      .join("");
+    var dots = imgs
+      .map(function (_, n) {
+        return (
+          '<button type="button" class="apex-dot w-2 h-2 rounded-full ' +
+          (n === 0 ? "bg-emerald-400" : "bg-zinc-600") +
+          '" data-go="' +
+          n +
+          '" aria-label="Photo ' +
+          (n + 1) +
+          '"></button>'
+        );
+      })
+      .join("");
+    return (
+      '<div class="apex-carousel relative h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950" data-car="' +
+      idx +
+      '">' +
+      slides +
+      '<button type="button" class="apex-prev absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Previous">‹</button>' +
+      '<button type="button" class="apex-next absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Next">›</button>' +
+      '<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">' +
+      dots +
+      "</div></div>"
+    );
+  }
+
+  function wireCarousels(root) {
+    root.querySelectorAll(".apex-carousel").forEach(function (car) {
+      var slides = car.querySelectorAll(".apex-slide");
+      var dots = car.querySelectorAll(".apex-dot");
+      var cur = 0;
+      function go(n) {
+        if (!slides.length) return;
+        cur = (n + slides.length) % slides.length;
+        slides.forEach(function (s, i) {
+          if (i === cur) {
+            s.classList.remove("opacity-0", "pointer-events-none");
+            s.classList.add("opacity-100");
+          } else {
+            s.classList.add("opacity-0", "pointer-events-none");
+            s.classList.remove("opacity-100");
+          }
+        });
+        dots.forEach(function (d, i) {
+          d.className =
+            "apex-dot w-2 h-2 rounded-full " + (i === cur ? "bg-emerald-400" : "bg-zinc-600");
+        });
+      }
+      var prev = car.querySelector(".apex-prev");
+      var next = car.querySelector(".apex-next");
+      if (prev) prev.onclick = function (e) { e.preventDefault(); go(cur - 1); };
+      if (next) next.onclick = function (e) { e.preventDefault(); go(cur + 1); };
+      dots.forEach(function (d) {
+        d.onclick = function (e) {
+          e.preventDefault();
+          go(Number(d.getAttribute("data-go")) || 0);
+        };
+      });
+    });
+  }
+
   async function renderCatalog(selector, category) {
     var el = document.querySelector(selector || "#apex-catalog");
     if (!el) return;
@@ -50,6 +148,7 @@
       }
       el.innerHTML = items
         .map(function (i, idx) {
+          var imgs = productImages(i);
           var disabled =
             i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
           var desc = i.description || "";
@@ -74,7 +173,8 @@
               "</div>"
             : "";
           return (
-            '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-6 flex flex-col text-center">' +
+            '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center">' +
+            mediaBlock(imgs, idx) +
             '<h3 class="text-xl font-bold text-emerald-400 mb-2">' +
             esc(i.name) +
             "</h3>" +
@@ -104,14 +204,11 @@
           }
         });
       });
+      wireCarousels(el);
 
       if (status) {
         status.textContent =
-          "Live · " +
-          (data.storeName || data.store || "") +
-          " · " +
-          items.length +
-          " items";
+          "Live · " + (data.storeName || data.store || "") + " · " + items.length + " items";
         status.className = "text-emerald-400 text-sm mt-3";
       }
     } catch (e) {
