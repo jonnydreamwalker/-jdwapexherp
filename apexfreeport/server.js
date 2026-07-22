@@ -73,11 +73,21 @@ function extractSkusFromStripeEvent(event) {
       }
     });
   }
-  if (obj.line_items && obj.line_items.data) {
-    obj.line_items.data.forEach(function (li) {
-      var m = (li.price && li.price.product_data && li.price.product_data.metadata) || li.metadata || {};
-      if (m.sku) found.push({ sku: m.sku, quantity: Number(li.quantity) || 1 });
-    });
+  return found;
+}
+function extractSkusFromPaypalEvent(body) {
+  var found = [];
+  var res = body && body.resource;
+  if (!res) return found;
+  var custom = String(res.custom_id || res.invoice_id || "");
+  var d = read();
+  (d.items || []).forEach(function (it) {
+    if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) {
+      found.push({ sku: it.sku, quantity: 1 });
+    }
+  });
+  if (res.supplementary_data && res.supplementary_data.related_ids) {
+    /* no-op */
   }
   return found;
 }
@@ -87,6 +97,7 @@ app.get("/health", function (req, res) {
     service: "ApexFreePort",
     square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
     stripe: process.env.STRIPE_SECRET_KEY ? "token-set" : "no-token",
+    paypal: process.env.PAYPAL_CLIENT_ID ? "client-set" : "no-client",
   });
 });
 app.get("/api/stock", function (req, res) {
@@ -111,7 +122,7 @@ app.get("/login", function (req, res) {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 app.post("/login", function (req, res) {
-  if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
+  if (if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
   res.redirect("/login?err=1");
 });
 app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
@@ -202,9 +213,7 @@ app.post("/api/webhook/stripe", function (req, res) {
       return res.json({ ok: true, ignored: type });
     }
     var lines = extractSkusFromStripeEvent(event);
-    if (!lines.length && process.env.STRIPE_DEFAULT_SKU) {
-      lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
-    }
+    if (!lines.length && process.env.STRIPE_DEFAULT_SKU) lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "stripe")); });
     console.log("Stripe webhook", type, JSON.stringify(results));
@@ -214,9 +223,30 @@ app.post("/api/webhook/stripe", function (req, res) {
     res.status(500).json({ error: "webhook fail" });
   }
 });
+app.post("/api/webhook/paypal", function (req, res) {
+  try {
+    var body = req.body || {};
+    var et = String(body.event_type || "");
+    if (et !== "PAYMENT.CAPTURE.COMPLETED" && et !== "CHECKOUT.ORDER.COMPLETED") {
+      return res.json({ ok: true, ignored: et });
+    }
+    var lines = extractSkusFromPaypalEvent(body);
+    if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) {
+      lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
+    }
+    var results = [];
+    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "paypal")); });
+    console.log("PayPal webhook", et, JSON.stringify(results));
+    res.sendStatus(200);
+  } catch (e) {
+    console.error("PayPal webhook error", e);
+    res.status(500).json({ error: "webhook fail" });
+  }
+});
 app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
   console.log("Square token: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "not set"));
   console.log("Stripe key: " + (process.env.STRIPE_SECRET_KEY ? "set" : "not set"));
+  console.log("PayPal client: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "not set"));
 });
