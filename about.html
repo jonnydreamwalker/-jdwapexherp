@@ -20,7 +20,7 @@ function toggleMobileMenu(){const m=document.getElementById('mobile-menu');if(!m
 function closeMobileMenu(){const m=document.getElementById('mobile-menu');const i=document.getElementById('hamburger-icon');if(m){m.classList.add('hidden');m.classList.remove('flex');}document.body.style.overflow='';if(i)i.className='fas fa-bars';}
 function toggleMobileCats(){const c=document.getElementById('mobile-cats');const a=document.getElementById('mobile-cat-arrow');if(!c)return;c.classList.toggle('hidden');if(a)a.innerText=c.classList.contains('hidden')?'▼':'▲';}
 function toggleDropdown(e){if(e)e.stopPropagation();const d=document.getElementById('category-dropdown');const a=document.getElementById('dropdown-arrow');if(!d)return;const isHidden=d.classList.contains('hidden');if(isHidden){d.classList.remove('hidden');if(a)a.innerText='▲';}else{d.classList.add('hidden');if(a)a.innerText='▼';}}
-document.addEventListener('click',function(e){const d=document.getElementById('category-dropdown');const a=document.getElementById('dropdown-arrow');if(!d)return;if(!d.contains(e.target)&&!e.target.closest('[onclick*="toggleDropdown"]')){d.classList.add('hidden');if(a)a.innerText='▼';}});
+document.addEventListener('click',function(e){const d=document.getElementById('category-dropdown');const a=document.getElementById('dropdown-arrow');if(!d)return;if(!d.contains(e.target)&&!e.target.closest('[data-dropdown-toggle]')){d.classList.add('hidden');if(a)a.innerText='▼';}});
 function openCartModal(){closeMobileMenu();let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];let list=document.getElementById('cart-items-list');let totalEl=document.getElementById('cart-grand-total');if(!list||!totalEl)return;list.innerHTML='';if(!cart.length){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold text-white">${item.name}</h4><p class="text-xs text-emerald-400">$${item.price.toFixed(2)} × ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);}document.getElementById('cart-modal').classList.remove('hidden');document.getElementById('cart-modal').classList.add('flex');}
 function closeCartModal(){document.getElementById('cart-modal').classList.add('hidden');document.getElementById('cart-modal').classList.remove('flex');}
 function removeSingleCartItem(i){let c=JSON.parse(localStorage.getItem('jdw_cart'))||[];c.splice(i,1);localStorage.setItem('jdw_cart',JSON.stringify(c));updateCartCount();openCartModal();}
@@ -30,29 +30,30 @@ function startStripePayment(){alert('Stripe ready');}
 </script>
 </head>
 <body class="bg-zinc-950 text-white">
-<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium hardscape • UVB lighting • bioactive substrates. Florida warehouse. Direct hardscape source. Fast ship FL-TX-CA. SHOP HARDSCAPE</div>
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</div>
 <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
+<div class="absolute inset-0 bg-[url('assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative z-10">
 <div class="flex items-center justify-between gap-3">
 <div class="flex items-center gap-3 min-w-0 flex-1"><a href="index.html"><img src="assets/images/gallery/Logo.png" alt="Logo" class="h-10 sm:h-12 logo-placeholder flex-shrink-0"></a>
-<div class="min-w-0"><h1 class="text-lg sm:text-2xl font-black tracking-tighter text-emerald-400 truncate">JONNYDREAMWALKER</h1><p class="text-[10px] text-zinc-500 -mt-1">APEX HERP 🦎UPPLY</p></div></div>
+<div class="min-w-0"><h1 class="text-lg sm:text-2xl font-black tracking-tighter text-emerald-400 truncate">JONNYDREAMWALKER</h1><p class="text-[10px] text-zinc-500 -mt-1">APEX HERP SUPPLY</p></div></div>
 <div class="hidden md:flex absolute left-1/2 -translate-x-1/2 gap-6 lg:gap-8 text-sm font-medium items-center justify-center">
-<a href="index.html" class="hover:text-emerald-400">Home</a>
+<a href="index.html" class="hover:text-emerald-400 transition">Home</a>
 <div class="relative">
-<button onclick="toggleDropdown(event)" class="hover:text-emerald-400 flex items-center gap-1">Categories <span id="dropdown-arrow">▼</span></button>
+<button type="button" data-dropdown-toggle onclick="toggleDropdown(event)" class="hover:text-emerald-400 transition focus:outline-none flex items-center gap-1">Categories <span id="dropdown-arrow">▼</span></button>
 <div id="category-dropdown" class="absolute hidden rounded-xl py-4 px-6 w-72 mt-2 z-50 dropdown-menu left-1/2 -translate-x-1/2">
-<a href="services/hardscape.html" class="block py-2 text-emerald-400 font-semibold">🪵 Shop Hardscape →</a>
-<a href="services/lighting.html" class="block py-2 text-emerald-400 font-semibold">💡 Explore Lighting →</a>
-<a href="services/substrates.html" class="block py-2 text-emerald-400 font-semibold">🥥 Browse Substrates →</a>
-<a href="services/nutrition.html" class="block py-2 text-emerald-400 font-semibold">🔬 Fuel Your Herps →</a>
-<a href="services/apparel.html" class="block py-2 text-emerald-400 font-semibold">👕 Gear Up →</a>
-<a href="services/enclosures.html" class="block py-2 text-emerald-400 font-semibold">🏠 Shop Enclosures →</a>
-<a href="services/heating.html" class="block py-2 text-emerald-400 font-semibold">🔥 Heating & Basking →</a>
-<a href="services/hardware.html" class="block py-2 text-emerald-400 font-semibold">🔨 Shop Hardware →</a>
-<a href="services/deals.html" class="block py-2 text-amber-400 font-semibold border-t border-zinc-700 mt-2 pt-2">🤑 Deals & Specials →</a>
+<a href="services/hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape</a>
+<a href="services/lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting</a>
+<a href="services/substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates</a>
+<a href="services/nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps</a>
+<a href="services/apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up</a>
+<a href="services/enclosures.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Enclosures</a>
+<a href="services/heating.html" class="block py-2 text-emerald-400:text-emerald-300 font-semibold">Heating and Basking</a>
+<a href="services/hardware.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware</a>
+<a href="services/deals.html" class="block py-2 text-amber-400 hover:text-amber-300 font-semibold border-t border-zinc-700 mt-2 pt-2">Deals and Specials</a>
 </div></div>
-<a href="services/deals.html" class="hover:text-emerald-400">Deals</a>
-<a href="about.html" class="hover:text-emerald-400">About</a>
+<a href="services/deals.html" class="hover:text-emerald-400 transition">Deals</a>
+<a href="about.html" class="text-emerald-400 transition">About</a>
 </div>
 <div class="flex items-center gap-3 flex-shrink-0 relative z-50">
 <a href="#" onclick="openCartModal();return false;" class="relative hover:text-emerald-400 p-2"><i class="fas fa-shopping-cart text-xl"></i><span class="cart-count absolute top-0 right-0 bg-emerald-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full">0</span></a>
@@ -63,18 +64,18 @@ function startStripePayment(){alert('Stripe ready');}
 <a href="index.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Home</a>
 <button type="button" onclick="toggleMobileCats()" class="py-4 border-b border-zinc-800 hover:text-emerald-400 flex justify-between items-center w-full text-left">Categories <span id="mobile-cat-arrow">▼</span></button>
 <div id="mobile-cats" class="hidden bg-zinc-900 rounded-xl my-2 overflow-hidden">
-<a href="services/hardscape.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🪵 Shop Hardscape →</a>
-<a href="services/lighting.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">💡 Explore Lighting →</a>
-<a href="services/substrates.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🥥 Browse Substrates →</a>
-<a href="services/nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🔬 Fuel Your Herps →</a>
-<a href="services/apparel.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">👕 Gear Up →</a>
-<a href="services/enclosures.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🏠 Shop Enclosures →</a>
-<a href="services/heating.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🔥 Heating & Basking →</a>
-<a href="services/hardware.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🔨 Shop Hardware →</a>
-<a href="services/deals.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenu()">🤑 Deals & Specials →</a>
+<a href="services/hardscape.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardscape</a>
+<a href="services/lighting.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Explore Lighting</a>
+<a href="services/substrates.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Browse Substrates</a>
+<a href="services/nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Fuel Your Herps</a>
+<a href="services/apparel.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Gear Up</a>
+<a href="services/enclosures.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Enclosures</a>
+<a href="services/heating.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Heating and Basking</a>
+<a href="services/hardware.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardware</a>
+<a href="services/deals.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenu()">Deals and Specials</a>
 </div>
 <a href="services/deals.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Deals</a>
-<a href="about.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">About</a>
+<a href="about.html" class="py-4 border-b border-zinc-800 text-emerald-400" onclick="closeMobileMenu()">About</a>
 </div></div>
 <main class="max-w-7xl mx-auto px-6 py-16">
 <h1 class="text-4xl md:text-5xl font-black text-emerald-400 mb-6">About Apex Herp</h1>
