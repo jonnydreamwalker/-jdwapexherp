@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApexFreePort Control</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+<header class="border-b border-emerald-900 bg-black sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">JDW Apex</p>
+      <h1 class="text-xl font-black text-emerald-400">ApexFreePort</h1>
+    </div>
+    <div class="flex items-center gap-3 text-sm">
+      <span id="warehouse" class="text-zinc-500 text-xs"></span>
+      <button type="button" onclick="openForm()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">+ Product</button>
+      <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg text-xs uppercase">Logout</button></form>
+    </div>
+  </div>
+</header>
+<main class="max-w-6xl mx-auto px-4 py-8">
+  <p class="text-zinc-500 text-sm mb-4">Add products with price, description, and photo. Website reads category pages from this list.</p>
+  <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
+    <table class="w-full text-sm text-left">
+      <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
+        <tr>
+          <th class="px-3 py-3">Img</th>
+          <th class="px-3 py-3">SKU</th>
+          <th class="px-3 py-3">Name / Price</th>
+          <th class="px-3 py-3">Cat</th>
+          <th class="px-3 py-3">Qty</th>
+          <th class="px-3 py-3">Status</th>
+          <th class="px-3 py-3">Adj</th>
+        </tr>
+      </thead>
+      <tbody id="body" class="divide-y divide-zinc-800"></tbody>
+    </table>
+  </div>
+</main>
+<div id="modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+  <form id="form" class="bg-zinc-900 border border-emerald-900 rounded-2xl p-6 w-full max-w-lg space-y-3 my-8">
+    <h3 class="text-lg font-bold text-emerald-400">Product</h3>
+    <input name="sku" placeholder="SKU *" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <input name="name" placeholder="Name *" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <textarea name="description" placeholder="Description" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"></textarea>
+    <div class="grid grid-cols-2 gap-2">
+      <input name="price" type="number" step="0.01" placeholder="Price" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+      <input name="qty" type="number" placeholder="Qty" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <select name="category" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <option>Hardscape</option><option>Lighting</option><option>Substrates</option>
+        <option>Nutrition</option><option>Apparel</option><option>Enclosures</option>
+        <option>Heating</option><option>Hardware</option><option>Deals</option>
+      </select>
+      <select name="lane" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <option value="direct">Direct (FL WH)</option>
+        <option value="external">External</option>
+      </select>
+    </div>
+    <select name="status" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+      <option value="active">Active</option>
+      <option value="coming_soon">Coming soon</option>
+      <option value="hold">Hold</option>
+    </select>
+    <input name="image" placeholder="Image URL (optional if uploading)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <label class="block text-xs text-zinc-500">Photo upload (max ~1.5MB)</label>
+    <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
+    <div class="flex gap-2 pt-2">
+      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save</button>
+      <button type="button" onclick="closeForm()" class="px-4 border border-zinc-700 rounded-xl text-xs uppercase">Cancel</button>
+    </div>
+  </form>
+</div>
+<script>
+async function load() {
+  var r = await fetch("/api/inventory");
+  if (!r.ok) { location.href = "/login"; return; }
+  var d = await r.json();
+  document.getElementById("warehouse").textContent = d.warehouse || "";
+  document.getElementById("body").innerHTML = (d.items || []).map(function (i) {
+    var img = i.image ? (i.image.indexOf("http") === 0 ? i.image : i.image) : "";
+    var thumb = img
+      ? '<img src="' + img + '" class="h-10 w-10 object-cover rounded" onerror="this.style.display=\'none\'">'
+      : '<div class="h-10 w-10 bg-zinc-800 rounded"></div>';
+    return '<tr class="hover:bg-zinc-900/80">' +
+      '<td class="px-3 py-2">' + thumb + '</td>' +
+      '<td class="px-3 py-2 font-mono text-xs text-emerald-400 cursor-pointer" data-sku="' + i.sku + '">' + i.sku + '</td>' +
+      '<td class="px-3 py-2 cursor-pointer" onclick="editSku(\'' + i.sku + '\')">' + i.name +
+      '<div class="text-[10px] text-zinc-500">$' + (Number(i.price) || 0).toFixed(2) + '</div></td>' +
+      '<td class="px-3 py-2 text-xs">' + (i.category || '') + '</td>' +
+      '<td class="px-3 py-2 font-bold">' + i.qty + '</td>' +
+      '<td class="px-3 py-2 text-xs">' + (i.status || '') + '</td>' +
+      '<td class="px-3 py-2 whitespace-nowrap">' +
+      '<button type="button" class="text-emerald-400 px-1" onclick="adj(\'' + i.sku + '\',1)">+</button>' +
+      '<button type="button" class="text-zinc-400 px-1" onclick="adj(\'' + i.sku + '\',-1)">−</button></td></tr>';
+  }).join("");
+  window.__ITEMS__ = d.items || [];
+}
+async function adj(sku, delta) {
+  await fetch("/api/inventory/adjust", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sku: sku, delta: delta }),
+  });
+  load();
+}
+function openForm() {
+  document.getElementById("form").reset();
+  document.getElementById("modal").classList.remove("hidden");
+  document.getElementById("modal").classList.add("flex");
+}
+function closeForm() {
+  document.getElementById("modal").classList.add("hidden");
+  document.getElementById("modal").classList.remove("flex");
+}
+function editSku(sku) {
+  var i = (window.__ITEMS__ || []).find(function (x) { return x.sku === sku; });
+  if (!i) return;
+  openForm();
+  var f = document.getElementById("form");
+  f.sku.value = i.sku || "";
+  f.name.value = i.name || "";
+  f.description.value = i.description || "";
+  f.price.value = i.price || 0;
+  f.qty.value = i.qty || 0;
+  f.category.value = i.category || "Hardscape";
+  f.lane.value = i.lane || "direct";
+  f.status.value = i.status || "active";
+  f.image.value = i.image || "";
+}
+document.getElementById("form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  var f = e.target;
+  var body = {
+    sku: f.sku.value.trim(),
+    name: f.name.value.trim(),
+    description: f.description.value,
+    price: Number(f.price.value) || 0,
+    qty: Number(f.qty.value) || 0,
+    category: f.category.value,
+    lane: f.lane.value,
+    status: f.status.value,
+    image: f.image.value.trim(),
+  };
+  await fetch("/api/inventory/item", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  var file = document.getElementById("imgfile").files[0];
+  if (file) {
+    var dataUrl = await new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(r.result); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+    await fetch("/api/inventory/image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sku: body.sku, dataUrl: dataUrl }),
+    });
+  }
+  closeForm();
+  load();
+});
+load();
+</script>
+</body>
+</html>
