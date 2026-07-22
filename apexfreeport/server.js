@@ -21,8 +21,15 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: process.env.SESSION_SECRET || "apex-secret", resave: false, saveUninitialized: false }));
 app.use("/uploads", express.static(UPLOADS));
-function read() { return JSON.parse(fs.readFileSync(DATA, "utf8")); }
-function write(d) { d.updated = new Date().toISOString(); fs.writeFileSync(DATA, JSON.stringify(d, null, 2)); }
+function read() {
+  var d = JSON.parse(fs.readFileSync(DATA, "utf8"));
+  if (typeof d.publicFeed !== "boolean") d.publicFeed = false;
+  return d;
+}
+function write(d) {
+  d.updated = new Date().toISOString();
+  fs.writeFileSync(DATA, JSON.stringify(d, null, 2));
+}
 function readReviews() {
   try { return JSON.parse(fs.readFileSync(REVIEWS, "utf8")); }
   catch (e) { return { updated: null, reviews: [] }; }
@@ -43,6 +50,14 @@ function publicItem(i) {
     available: Math.max(0, (i.qty || 0) - (i.reserved || 0)), lane: i.lane || "direct",
     status: i.status || "active", image: i.image || "", location: i.location || ""
   };
+}
+function feedOff(res) {
+  return res.status(503).json({
+    error: "public_feed_off",
+    message: "Website inventory feed is OFF. Flip the red switch in ApexFreePort to go live.",
+    publicFeed: false,
+    items: []
+  });
 }
 function decrementSku(sku, qty, reason) {
   qty = Math.max(1, Number(qty) || 1);
@@ -87,9 +102,12 @@ function extractSkusFromPaypalEvent(body) {
   return found;
 }
 app.get("/health", function (req, res) {
+  var d;
+  try { d = read(); } catch (e) { d = { publicFeed: false }; }
   res.json({
     ok: true,
     service: "ApexFreePort",
+    publicFeed: !!d.publicFeed,
     square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
     stripe: process.env.STRIPE_SECRET_KEY ? "token-set" : "no-token",
     paypal: process.env.PAYPAL_CLIENT_ID ? "client-set" : "no-client",
@@ -100,21 +118,22 @@ app.get("/health", function (req, res) {
 app.get("/api/stock", function (req, res) {
   try {
     var d = read();
-    res.json({ warehouse: d.warehouse, updated: d.updated, items: (d.items || []).map(publicItem) });
+    if (!d.publicFeed) return feedOff(res);
+    res.json({ warehouse: d.warehouse, updated: d.updated, publicFeed: true, items: (d.items || []).map(publicItem) });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
 app.get("/api/products", function (req, res) {
   try {
     var d = read();
+    if (!d.publicFeed) return feedOff(res);
     var items = (d.items || []).map(publicItem);
     if (req.query.category) {
       var cat = String(req.query.category).toLowerCase();
       items = items.filter(function (i) { return (i.category || "").toLowerCase() === cat; });
     }
-    res.json({ warehouse: d.warehouse, updated: d.updated, items: items });
+    res.json({ warehouse: d.warehouse, updated: d.updated, publicFeed: true, items: items });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
-/** Public: approved reviews only + average rank */
 app.get("/api/reviews", function (req, res) {
   try {
     var d = readReviews();
@@ -131,7 +150,6 @@ app.get("/api/reviews", function (req, res) {
     });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
-/** Public submit → pending only */
 app.post("/api/reviews", function (req, res) {
   try {
     var b = req.body || {};
@@ -153,11 +171,7 @@ app.post("/api/reviews", function (req, res) {
     res.json({ ok: true, status: "pending" });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
-/** Admin: all reviews */
-app.get("/api/reviews/admin", auth, function (req, res) {
-  res.json(readReviews());
-});
-/** Admin: moderate */
+app.get("/api/reviews/admin", auth, function (req, res) { res.json(readReviews()); });
 app.post("/api/reviews/moderate", auth, function (req, res) {
   var id = (req.body || {}).id;
   var status = (req.body || {}).status;
@@ -185,6 +199,14 @@ app.post("/logout", function (req, res) { req.session.destroy(function () { res.
 app.get("/admin", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "index.html")); });
 app.get("/admin/reviews", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "reviews.html")); });
 app.get("/api/inventory", auth, function (req, res) { res.json(read()); });
+/** Big red switch — flips website inventory feed on/off */
+app.post("/api/admin/public-feed", auth, function (req, res) {
+  var d = read();
+  if (typeof req.body.enabled === "boolean") d.publicFeed = req.body.enabled;
+  else d.publicFeed = !d.publicFeed;
+  write(d);
+  res.json({ ok: true, publicFeed: d.publicFeed });
+});
 app.post("/api/inventory/adjust", auth, function (req, res) {
   var d = read(); var item = null;
   for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === req.body.sku) item = d.items[i];
@@ -302,7 +324,8 @@ app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
   console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
-  console.log("Stripe: " + (process.env.STRIPE_SECRET_KEY ? "set" : "no"));
-  console.log("PayPal: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "no"));
-  console.log("Etsy: " + (process.env.ETSY_KEYSTRING ? "set" : "no"));
+  try {
+    var d = read();
+    console.log("Public website feed: " + (d.publicFeed ? "ON" : "OFF (default)"));
+  } catch (e) {}
 });

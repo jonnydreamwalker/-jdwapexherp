@@ -22,8 +22,20 @@
   </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 py-8">
+
+  <!-- BIG RED DON'T TOUCH FEED SWITCH -->
+  <div class="mb-8 border-4 border-red-700 bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
+    <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-2">Website inventory feed</p>
+    <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
+    <button type="button" id="btn-dont-touch"
+      class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-2xl md:text-3xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">
+      DON'T TOUCH
+    </button>
+    <p class="text-zinc-500 text-xs mt-4 max-w-xl mx-auto">OFF = shop pages show inventory offline. ON = live catalog pushes to the website. Admin inventory still works either way.</p>
+  </div>
+
   <p class="text-zinc-400 text-sm mb-2">Click <span class="text-emerald-400 font-bold">Edit</span> to change price, description, photo, qty.</p>
-  <p class="text-zinc-600 text-xs mb-4">Password is set on the server when you start Node (not in this screen). Ask your host session: export ADMIN_PASSWORD=...</p>
+  <p class="text-zinc-600 text-xs mb-4">Password is set on the server when you start Node (not in this screen).</p>
   <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
     <table class="w-full text-sm text-left">
       <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
@@ -49,7 +61,7 @@
     <label class="block text-xs text-zinc-500">Name</label>
     <input name="name" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
     <label class="block text-xs text-zinc-500">Description</label>
-    <textarea name="description" rows="2" class="w-full bg-zinc-950 border border-zinc-700-700 rounded-lg px-3 py-2 text-sm"></textarea>
+    <textarea name="description" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"></textarea>
     <div class="grid grid-cols-2 gap-2">
       <div>
         <label class="block text-xs text-zinc-500">Price (USD)</label>
@@ -108,11 +120,38 @@ function showModal(show) {
   else { m.classList.add("hidden"); m.classList.remove("flex"); }
 }
 
+function paintFeed(on) {
+  var st = document.getElementById("feed-status");
+  var btn = document.getElementById("btn-dont-touch");
+  if (on) {
+    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span> — website can pull inventory';
+    btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
+    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 active:bg-red-700 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
+  } else {
+    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span> — website shows inventory offline';
+    btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
+    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
+  }
+}
+
+document.getElementById("btn-dont-touch").onclick = async function () {
+  if (!confirm("Flip the website inventory feed?")) return;
+  var r = await fetch("/api/admin/public-feed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  if (!r.ok) { alert("Failed — are you logged in?"); return; }
+  var j = await r.json();
+  paintFeed(!!j.publicFeed);
+};
+
 async function load() {
   var r = await fetch("/api/inventory");
   if (!r.ok) { location.href = "/login"; return; }
   var d = await r.json();
   document.getElementById("warehouse").textContent = d.warehouse || "";
+  paintFeed(!!d.publicFeed);
   window.__ITEMS__ = d.items || [];
   document.getElementById("body").innerHTML = window.__ITEMS__.map(function (i) {
     return "<tr>" +
