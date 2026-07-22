@@ -73,6 +73,13 @@ function storeOf(d, id) {
   id = normalizeStoreId(id);
   return d.stores[id];
 }
+function findItemIndex(items, sku) {
+  sku = String(sku || "").trim();
+  for (var i = 0; i < items.length; i++) {
+    if (String(items[i].sku).trim() === sku) return i;
+  }
+  return -1;
+}
 function readReviews() {
   try { return JSON.parse(fs.readFileSync(REVIEWS, "utf8")); }
   catch (e) { return { updated: null, reviews: [] }; }
@@ -108,17 +115,16 @@ function decrementSku(storeId, sku, qty, reason) {
   var d = read();
   var st = storeOf(d, storeId);
   var item = null;
-  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === sku) item = st.items[i];
+  var idx = findItemIndex(st.items, sku);
+  if (idx >= 0) item = st.items[idx];
   if (!item) {
     for (var s = 0; s < STORE_IDS.length && !item; s++) {
       var sid = STORE_IDS[s];
-      for (var j = 0; j < d.stores[sid].items.length; j++) {
-        if (d.stores[sid].items[j].sku === sku) {
-          item = d.stores[sid].items[j];
-          storeId = sid;
-          st = d.stores[sid];
-          break;
-        }
+      var j = findItemIndex(d.stores[sid].items, sku);
+      if (j >= 0) {
+        item = d.stores[sid].items[j];
+        storeId = sid;
+        st = d.stores[sid];
       }
     }
   }
@@ -281,34 +287,110 @@ app.post("/api/inventory/adjust", auth, function (req, res) {
   var storeId = normalizeStoreId((req.body || {}).store);
   var d = read();
   var st = storeOf(d, storeId);
-  var item = null;
-  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === req.body.sku) item = st.items[i];
-  if (!item) return res.status(404).json({ error: "not found" });
+  var idx = findItemIndex(st.items, req.body.sku);
+  if (idx < 0) return res.status(404).json({ error: "not found" });
+  var item = st.items[idx];
   item.qty = Math.max(0, (item.qty || 0) + Number(req.body.delta || 0));
   d.movements.unshift({ ts: new Date().toISOString(), store: storeId, sku: item.sku, delta: Number(req.body.delta), reason: "manual", qtyAfter: item.qty });
   write(d);
   res.json({ ok: true, item: publicItem(item) });
 });
 
+/** Create or update product. Pass originalSku when editing so rename updates in place. */
 app.post("/api/inventory/item", auth, function (req, res) {
   var b = req.body || {};
   if (!b.sku || !b.name) return res.status(400).json({ error: "sku and name required" });
   var storeId = normalizeStoreId(b.store);
   var d = read();
   var st = storeOf(d, storeId);
-  var idx = -1;
-  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === b.sku) idx = i;
+  var newSku = String(b.sku).trim();
+  var lookupSku = String(b.originalSku || b.sku).trim();
+  var idx = findItemIndex(st.items, lookupSku);
+  if (idx < 0 && lookupSku !== newSku) idx = findItemIndex(st.items, newSku);
+
+  var prev = idx >= 0 ? st.items[idx] : {};
   var row = {
-    sku: String(b.sku).trim(), name: String(b.name).trim(), category: b.category || "General",
-    description: b.description || "", price: Number(b.price) || 0, qty: Number(b.qty) || 0,
-    reserved: Number(b.reserved) || 0, reorder: Number(b.reorder) || 0,
-    lane: b.lane === "external" ? "external" : "direct", status: b.status || "active",
-    image: b.image || "", location: b.location || "WH-A1", unit: b.unit || "each"
+    sku: newSku,
+    name: String(b.name).trim(),
+    category: b.category != null ? b.category : (prev.category || "General"),
+    description: b.description != null ? b.description : (prev.description || ""),
+    price: b.price != null ? Number(b.price) || 0 : (Number(prev.price) || 0),
+    qty: b.qty != null ? Number(b.qty) || 0 : (Number(prev.qty) || 0),
+    reserved: b.reserved != null ? Number(b.reserved) || 0 : (Number(prev.reserved) || 0),
+    reorder: b.reorder != null ? Number(b.reorder) || 0 : (Number(prev.reorder) || 0),
+    lane: (b.lane === "external" || prev.lane === "external") && b.lane !== "direct" ? "external" : (b.lane || prev.lane || "direct"),
+    status: b.status || prev.status || "active",
+    image: b.image != null && b.image !== "" ? b.image : (prev.image || ""),
+    location: b.location || prev.location || "WH-A1",
+    unit: b.unit || prev.unit || "each",
   };
-  if (idx >= 0) { st.items[idx] = Object.assign({}, st.items[idx], row); row = st.items[idx]; }
-  else st.items.push(row);
+  if (b.lane === "direct") row.lane = "direct";
+  if (b.lane === "external") row.lane = "external";
+
+  if (idx >= 0) {
+    st.items[idx] = Object.assign({}, prev, row);
+    row = st.items[idx];
+  } else {
+    st.items.push(row);
+  }
   write(d);
-  res.json({ ok: true, store: storeId, item: publicItem(row) });
+  res.json({ ok: true, store: storeId, updated: idx >= 0, item: publicItem(row) });
+});
+
+app.delete("/api/inventory/item", auth, function (req, res) {
+  var b = req.body || {};
+  var sku = (b.sku || req.query.sku || "").trim();
+  if (!sku) return res.status(400).json({ error: "sku required" });
+  var storeId = normalizeStoreId(b.store || req.query.store);
+  var d = read();
+  var st = storeOf(d, storeId);
+  var idx = findItemIndex(st.items, sku);
+  if (idx < 0) return res.status(404).json({ error: "not found" });
+  var removed = st.items.splice(idx, 1)[0];
+  d.movements.unshift({
+    ts: new Date().toISOString(),
+    store: storeId,
+    sku: removed.sku,
+    delta: 0,
+    reason: "delete",
+    qtyAfter: 0,
+  });
+  d.movements = d.movements.slice(0, 200);
+  write(d);
+  res.json({ ok: true, deleted: removed.sku, store: storeId });
+});
+
+app.post("/api/inventory/delete", auth, function (req, res) {
+  req.url = "/api/inventory/item";
+  return app._router.handle(
+    Object.assign(req, { method: "DELETE" }),
+    res,
+    function () {}
+  );
+});
+
+// Reliable delete via POST (some clients block DELETE)
+app.post("/api/inventory/remove", auth, function (req, res) {
+  var b = req.body || {};
+  var sku = String(b.sku || "").trim();
+  if (!sku) return res.status(400).json({ error: "sku required" });
+  var storeId = normalizeStoreId(b.store);
+  var d = read();
+  var st = storeOf(d, storeId);
+  var idx = findItemIndex(st.items, sku);
+  if (idx < 0) return res.status(404).json({ error: "not found" });
+  var removed = st.items.splice(idx, 1)[0];
+  d.movements.unshift({
+    ts: new Date().toISOString(),
+    store: storeId,
+    sku: removed.sku,
+    delta: 0,
+    reason: "delete",
+    qtyAfter: 0,
+  });
+  d.movements = d.movements.slice(0, 200);
+  write(d);
+  res.json({ ok: true, deleted: removed.sku, store: storeId });
 });
 
 app.post("/api/inventory/image", auth, function (req, res) {
@@ -327,11 +409,9 @@ app.post("/api/inventory/image", auth, function (req, res) {
     var url = "/uploads/" + fname;
     var d = read();
     var st = storeOf(d, storeId);
-    var item = null;
-    for (var i = 0; i < st.items.length; i++) {
-      if (st.items[i].sku === b.sku) { st.items[i].image = url; item = st.items[i]; }
-    }
-    if (!item) return res.status(404).json({ error: "save product first" });
+    var idx = findItemIndex(st.items, b.sku);
+    if (idx < 0) return res.status(404).json({ error: "save product first" });
+    st.items[idx].image = url;
     write(d);
     res.json({ ok: true, image: url });
   } catch (e) { res.status(500).json({ error: "upload failed" }); }

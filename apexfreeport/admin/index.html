@@ -60,8 +60,9 @@
 <div id="modal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-50 overflow-y-auto">
   <form id="form" class="bg-zinc-900 border border-emerald-900 rounded-2xl p-6 w-full max-w-lg space-y-3 my-8">
     <h3 id="form-title" class="text-lg font-bold text-emerald-400">Edit product</h3>
-    <label class="block text-xs text-zinc-500">SKU</label>
-    <input name="sku" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <input type="hidden" name="originalSku" id="originalSku" value="">
+    <label class="block text-xs text-zinc-500">SKU <span id="sku-hint" class="text-zinc-600 font-normal"></span></label>
+    <input name="sku" id="skuInput" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
     <label class="block text-xs text-zinc-500">Name</label>
     <input name="name" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
     <label class="block text-xs text-zinc-500">Description</label>
@@ -114,6 +115,7 @@
 
 <script>
 var STORE = "herp";
+var EDITING = false;
 
 function showModal(show) {
   var m = document.getElementById("modal");
@@ -165,6 +167,13 @@ document.getElementById("btn-dont-touch").onclick = async function () {
   paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
 };
 
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/"/g, "&quot;");
+}
+
 async function load() {
   paintTabs();
   var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
@@ -174,21 +183,26 @@ async function load() {
   paintFeed(!!d.publicFeed, d.storeName || STORE);
   window.__ITEMS__ = d.items || [];
   document.getElementById("body").innerHTML = window.__ITEMS__.map(function (i) {
+    var skuAttr = String(i.sku).replace(/"/g, "&quot;");
     return "<tr>" +
-      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + i.sku + "</td>" +
-      "<td class=\"px-3 py-3\">" + i.name + "</td>" +
+      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
+      "<td class=\"px-3 py-3\">" + esc(i.name) + "</td>" +
       "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
       "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
-      "<td class=\"px-3 py-3 text-xs\">" + (i.category || "") + "</td>" +
+      "<td class=\"px-3 py-3 text-xs\">" + esc(i.category || "") + "</td>" +
       "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-edit=\"" + i.sku + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
-      "<button type=\"button\" data-plus=\"" + i.sku + "\" class=\"text-emerald-400 px-1\">+</button>" +
-      "<button type=\"button\" data-minus=\"" + i.sku + "\" class=\"text-zinc-400 px-1\">−</button>" +
+      "<button type=\"button\" data-edit=\"" + skuAttr + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
+      "<button type=\"button\" data-del=\"" + skuAttr + "\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button>" +
+      "<button type=\"button\" data-plus=\"" + skuAttr + "\" class=\"text-emerald-400 px-1\">+</button>" +
+      "<button type=\"button\" data-minus=\"" + skuAttr + "\" class=\"text-zinc-400 px-1\">−</button>" +
       "</td></tr>";
   }).join("") || "<tr><td colspan=\"6\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this store yet. Click + Product.</td></tr>";
 
   document.querySelectorAll("[data-edit]").forEach(function (btn) {
     btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
+  });
+  document.querySelectorAll("[data-del]").forEach(function (btn) {
+    btn.onclick = function () { removeItem(btn.getAttribute("data-del")); };
   });
   document.querySelectorAll("[data-plus]").forEach(function (btn) {
     btn.onclick = function () { adj(btn.getAttribute("data-plus"), 1); };
@@ -207,12 +221,30 @@ async function adj(sku, delta) {
   load();
 }
 
+async function removeItem(sku) {
+  if (!confirm("Delete " + sku + " from " + STORE.toUpperCase() + " permanently?")) return;
+  var r = await fetch("/api/inventory/remove", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, sku: sku }),
+  });
+  if (!r.ok) {
+    var t = await r.text();
+    alert("Delete failed: " + t);
+    return;
+  }
+  load();
+}
+
 function openEdit(sku) {
-  var i = (window.__ITEMS__ || []).find(function (x) { return x.sku === sku; });
+  var i = (window.__ITEMS__ || []).find(function (x) { return String(x.sku) === String(sku); });
   var f = document.getElementById("form");
+  EDITING = !!i;
   document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
+  document.getElementById("sku-hint").textContent = i ? "(editing — save updates this row)" : "(new)";
   f.reset();
   document.getElementById("imgfile").value = "";
+  document.getElementById("originalSku").value = i ? (i.sku || "") : "";
   if (i) {
     f.sku.value = i.sku || "";
     f.name.value = i.name || "";
@@ -223,13 +255,18 @@ function openEdit(sku) {
     f.lane.value = i.lane || "direct";
     f.status.value = i.status || "active";
     f.image.value = i.image || "";
+  } else {
+    document.getElementById("originalSku").value = "";
   }
   showModal(true);
 }
 
 document.getElementById("btn-add").onclick = function () {
+  EDITING = false;
   document.getElementById("form-title").textContent = "New product";
+  document.getElementById("sku-hint").textContent = "(new)";
   document.getElementById("form").reset();
+  document.getElementById("originalSku").value = "";
   document.getElementById("imgfile").value = "";
   showModal(true);
 };
@@ -238,9 +275,11 @@ document.getElementById("btn-cancel").onclick = function () { showModal(false); 
 document.getElementById("form").onsubmit = async function (e) {
   e.preventDefault();
   var f = e.target;
+  var originalSku = document.getElementById("originalSku").value.trim();
   var body = {
     store: STORE,
     sku: f.sku.value.trim(),
+    originalSku: originalSku || undefined,
     name: f.name.value.trim(),
     description: f.description.value,
     price: Number(f.price.value) || 0,
@@ -255,7 +294,10 @@ document.getElementById("form").onsubmit = async function (e) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) { alert("Save failed"); return; }
+  if (!res.ok) {
+    alert("Save failed");
+    return;
+  }
   var file = document.getElementById("imgfile").files[0];
   if (file) {
     var dataUrl = await new Promise(function (resolve, reject) {
