@@ -83,6 +83,8 @@ app.get("/health", function (req, res) {
     square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
     stripe: process.env.STRIPE_SECRET_KEY ? "token-set" : "no-token",
     paypal: process.env.PAYPAL_CLIENT_ID ? "client-set" : "no-client",
+    etsy: process.env.ETSY_KEYSTRING ? "key-set" : "no-key",
+    etsyShop: process.env.ETSY_SHOP_NAME || null,
   });
 });
 app.get("/api/stock", function (req, res) {
@@ -150,7 +152,7 @@ app.post("/api/inventory/image", auth, function (req, res) {
     var buf = Buffer.from(m[2], "base64");
     if (buf.length > 1500000) return res.status(400).json({ error: "image too large" });
     fs.writeFileSync(path.join(UPLOADS, fname), buf);
-    var url = "/uploads/" + fname;
+    var url = "/uploads/" + diff + fname;
     var d = read(); var item = null;
     for (var i = 0; i < d.items.length; i++) {
       if (d.items[i].sku === b.sku) { d.items[i].image = url; item = d.items[i]; }
@@ -182,7 +184,6 @@ app.post("/api/webhook/square", function (req, res) {
     if (!lines.length && process.env.SQUARE_DEFAULT_SKU) lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "square")); });
-    console.log("Square webhook", JSON.stringify(results));
     res.json({ ok: true, results: results });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
@@ -195,7 +196,6 @@ app.post("/api/webhook/stripe", function (req, res) {
     if (!lines.length && process.env.STRIPE_DEFAULT_SKU) lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "stripe")); });
-    console.log("Stripe webhook", type, JSON.stringify(results));
     res.json({ ok: true, results: results });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
@@ -208,8 +208,29 @@ app.post("/api/webhook/paypal", function (req, res) {
     if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "paypal")); });
-    console.log("PayPal webhook", et, JSON.stringify(results));
     res.sendStatus(200);
+  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
+});
+/** Etsy: credentials registered; full order sync needs OAuth token (next step) */
+app.get("/api/etsy/status", auth, function (req, res) {
+  res.json({
+    keystring: process.env.ETSY_KEYSTRING ? "set" : "missing",
+    sharedSecret: process.env.ETSY_SHARED_SECRET ? "set" : "missing",
+    shop: process.env.ETSY_SHOP_NAME || null,
+    oauth: process.env.ETSY_ACCESS_TOKEN ? "authorized" : "needs-oauth",
+    note: "Order sync requires OAuth shop authorization after app approval.",
+  });
+});
+app.post("/api/webhook/etsy", function (req, res) {
+  try {
+    var body = req.body || {};
+    var sku = body.sku || (body.data && body.data.sku);
+    var qty = Number(body.quantity) || 1;
+    if (sku) {
+      var result = decrementSku(sku, qty, "etsy");
+      return res.json(result);
+    }
+    res.json({ ok: true, ignored: "no sku — full Etsy order sync needs OAuth" });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
 app.get("/", function (req, res) { res.redirect("/admin"); });
@@ -218,4 +239,5 @@ app.listen(PORT, function () {
   console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
   console.log("Stripe: " + (process.env.STRIPE_SECRET_KEY ? "set" : "no"));
   console.log("PayPal: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "no"));
+  console.log("Etsy: " + (process.env.ETSY_KEYSTRING ? "set" : "no") + " shop=" + (process.env.ETSY_SHOP_NAME || "?"));
 });
