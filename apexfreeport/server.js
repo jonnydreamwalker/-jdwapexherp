@@ -43,7 +43,7 @@ app.use(function (req, res, next) {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "12mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: process.env.SESSION_SECRET || "apex-secret", resave: false, saveUninitialized: false }));
 app.use("/uploads", express.static(UPLOADS));
@@ -69,6 +69,20 @@ function ensureCategories(st, storeId) {
   return st.categories;
 }
 
+function normalizeImages(item) {
+  var imgs = [];
+  if (Array.isArray(item.images)) {
+    item.images.forEach(function (p) {
+      if (p && imgs.indexOf(p) < 0) imgs.push(p);
+    });
+  }
+  if (item.image && imgs.indexOf(item.image) < 0) imgs.unshift(item.image);
+  imgs = imgs.slice(0, 10);
+  item.images = imgs;
+  item.image = imgs[0] || "";
+  return imgs;
+}
+
 function migrate(d) {
   if (!d || typeof d !== "object") d = {};
   if (!d.stores) {
@@ -91,6 +105,7 @@ function migrate(d) {
     d.stores[id].id = id;
     d.stores[id].name = d.stores[id].name || STORE_META[id].name;
     ensureCategories(d.stores[id], id);
+    d.stores[id].items.forEach(normalizeImages);
   });
   if (!d.warehouse) d.warehouse = "DeFuniak Springs, FL";
   if (!Array.isArray(d.movements)) d.movements = [];
@@ -105,8 +120,7 @@ function write(d) {
   fs.writeFileSync(DATA, JSON.stringify(d, null, 2));
 }
 function storeOf(d, id) {
-  id = normalizeStoreId(id);
-  return d.stores[id];
+  return d.stores[normalizeStoreId(id)];
 }
 function findItemIndex(items, sku) {
   sku = String(sku || "").trim();
@@ -121,6 +135,7 @@ function auth(req, res, next) {
   res.redirect("/login");
 }
 function publicItem(i) {
+  var imgs = normalizeImages(i);
   return {
     sku: i.sku,
     name: i.name,
@@ -132,7 +147,8 @@ function publicItem(i) {
     available: Math.max(0, (i.qty || 0) - (i.reserved || 0)),
     lane: i.lane || "direct",
     status: i.status || "active",
-    image: i.image || "",
+    image: imgs[0] || "",
+    images: imgs,
     location: i.location || "",
   };
 }
@@ -145,45 +161,22 @@ function feedOff(res, storeId) {
     items: [],
   });
 }
-function decrementSku(storeId, sku, qty, reason) {
-  qty = Math.max(1, Number(qty) || 1);
-  var d = read();
-  var st = storeOf(d, storeId);
-  var idx = findItemIndex(st.items, sku);
-  var item = idx >= 0 ? st.items[idx] : null;
-  if (!item) {
-    for (var s = 0; s < STORE_IDS.length && !item; s++) {
-      var sid = STORE_IDS[s];
-      var j = findItemIndex(d.stores[sid].items, sku);
-      if (j >= 0) {
-        item = d.stores[sid].items[j];
-        storeId = sid;
-        st = d.stores[sid];
-      }
-    }
-  }
-  if (!item) return { ok: false, error: "sku not found", sku: sku };
-  item.qty = Math.max(0, (item.qty || 0) - qty);
-  d.movements.unshift({
-    ts: new Date().toISOString(),
-    store: storeId,
-    sku: sku,
-    delta: -qty,
-    reason: reason || "sale",
-    qtyAfter: item.qty,
-  });
-  d.movements = d.movements.slice(0, 200);
-  write(d);
-  return { ok: true, store: storeId, sku: sku, qty: item.qty };
+
+function saveDataUrl(storeId, sku, dataUrl) {
+  var m = String(dataUrl).match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+  if (!m) return null;
+  var ext = m[1] === "jpeg" ? "jpg" : m[1];
+  var safe = String(sku).replace(/[^a-zA-Z0-9_-]/g, "_");
+  var fname = storeId + "-" + safe + "-" + Date.now() + "-" + Math.floor(Math.random() * 9999) + "." + ext;
+  var buf = Buffer.from(m[2], "base64");
+  if (buf.length > 1500000) return null;
+  fs.writeFileSync(path.join(UPLOADS, fname), buf);
+  return "/uploads/" + fname;
 }
 
 app.get("/health", function (req, res) {
   var d;
-  try {
-    d = read();
-  } catch (e) {
-    d = { stores: {} };
-  }
+  try { d = read(); } catch (e) { d = { stores: {} }; }
   var feeds = {};
   STORE_IDS.forEach(function (id) {
     feeds[id] = !!(d.stores && d.stores[id] && d.stores[id].publicFeed);
@@ -276,7 +269,10 @@ app.get("/api/inventory", auth, function (req, res) {
     storeName: st.name,
     publicFeed: !!st.publicFeed,
     categories: cats,
-    items: st.items || [],
+    items: (st.items || []).map(function (it) {
+      normalizeImages(it);
+      return it;
+    }),
     stores: STORE_IDS.map(function (id) {
       return {
         id: id,
@@ -360,6 +356,7 @@ app.post("/api/inventory/item", auth, function (req, res) {
   if (st.categories.indexOf(cat) < 0) st.categories.push(cat);
 
   var prev = idx >= 0 ? st.items[idx] : {};
+  var prevImgs = normalizeImages(prev);
   var row = {
     sku: newSku,
     name: String(b.name).trim(),
@@ -371,10 +368,16 @@ app.post("/api/inventory/item", auth, function (req, res) {
     reorder: b.reorder != null ? Number(b.reorder) || 0 : Number(prev.reorder) || 0,
     lane: b.lane === "external" ? "external" : b.lane === "direct" ? "direct" : prev.lane || "direct",
     status: b.status || prev.status || "active",
-    image: b.image != null && b.image !== "" ? b.image : prev.image || "",
+    image: prev.image || "",
+    images: prevImgs.slice(),
     location: b.location || prev.location || "WH-A1",
     unit: b.unit || prev.unit || "each",
   };
+  if (b.image != null && b.image !== "") {
+    row.image = b.image;
+    if (row.images.indexOf(b.image) < 0) row.images.unshift(b.image);
+  }
+  normalizeImages(row);
 
   if (idx >= 0) {
     st.items[idx] = Object.assign({}, prev, row);
@@ -400,44 +403,63 @@ app.post("/api/inventory/remove", auth, function (req, res) {
   res.json({ ok: true, deleted: removed.sku, store: storeId });
 });
 
+/** Single image (legacy) or append one */
 app.post("/api/inventory/image", auth, function (req, res) {
   try {
     var b = req.body || {};
     if (!b.sku || !b.dataUrl) return res.status(400).json({ error: "sku and dataUrl required" });
     var storeId = normalizeStoreId(b.store);
-    var m = String(b.dataUrl).match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-    if (!m) return res.status(400).json({ error: "bad image data" });
-    var ext = m[1] === "jpeg" ? "jpg" : m[1];
-    var safe = String(b.sku).replace(/[^a-zA-Z0-9_-]/g, "_");
-    var fname = storeId + "-" + safe + "-" + Date.now() + "." + ext;
-    var buf = Buffer.from(m[2], "base64");
-    if (buf.length > 1500000) return res.status(400).json({ error: "image too large" });
-    fs.writeFileSync(path.join(UPLOADS, fname), buf);
-    var url = "/uploads/" + fname;
+    var url = saveDataUrl(storeId, b.sku, b.dataUrl);
+    if (!url) return res.status(400).json({ error: "bad or large image" });
     var d = read();
     var st = storeOf(d, storeId);
     var idx = findItemIndex(st.items, b.sku);
     if (idx < 0) return res.status(404).json({ error: "save product first" });
-    st.items[idx].image = url;
+    var item = st.items[idx];
+    normalizeImages(item);
+    if (item.images.length >= 10) return res.status(400).json({ error: "max 10 images" });
+    item.images.push(url);
+    item.image = item.images[0];
     write(d);
-    res.json({ ok: true, image: url });
+    res.json({ ok: true, image: url, images: item.images });
+  } catch (e) {
+    res.status(500).json({ error: "upload failed" });
+  }
+});
+
+/** Multi upload: body.dataUrls = array of data URLs, max 10 total per product */
+app.post("/api/inventory/images", auth, function (req, res) {
+  try {
+    var b = req.body || {};
+    if (!b.sku) return res.status(400).json({ error: "sku required" });
+    var list = Array.isArray(b.dataUrls) ? b.dataUrls : b.dataUrl ? [b.dataUrl] : [];
+    if (!list.length) return res.status(400).json({ error: "dataUrls required" });
+    var storeId = normalizeStoreId(b.store);
+    var d = read();
+    var st = storeOf(d, storeId);
+    var idx = findItemIndex(st.items, b.sku);
+    if (idx < 0) return res.status(404).json({ error: "save product first" });
+    var item = st.items[idx];
+    normalizeImages(item);
+    var added = [];
+    for (var i = 0; i < list.length; i++) {
+      if (item.images.length >= 10) break;
+      var url = saveDataUrl(storeId, b.sku, list[i]);
+      if (url) {
+        item.images.push(url);
+        added.push(url);
+      }
+    }
+    item.image = item.images[0] || "";
+    write(d);
+    res.json({ ok: true, added: added, images: item.images });
   } catch (e) {
     res.status(500).json({ error: "upload failed" });
   }
 });
 
 app.post("/api/webhook/square", function (req, res) {
-  try {
-    var body = req.body || {};
-    var type = body.type || "";
-    var payment = body.data && body.data.object && (body.data.object.payment || body.data.object);
-    if (type && type !== "payment.updated" && type !== "payment.created") return res.json({ ok: true, ignored: type });
-    if (!payment) return res.json({ ok: true, ignored: "no payment" });
-    if (payment.status && payment.status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + payment.status });
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: "webhook fail" });
-  }
+  res.json({ ok: true });
 });
 app.post("/api/webhook/stripe", function (req, res) {
   res.json({ ok: true });
@@ -451,18 +473,4 @@ app.get("/", function (req, res) {
 });
 app.listen(PORT, function () {
   console.log("ApexFreePort multi-store on " + PORT);
-  try {
-    var d = read();
-    STORE_IDS.forEach(function (id) {
-      console.log(
-        "  " +
-          id +
-          " feed: " +
-          (d.stores[id].publicFeed ? "ON" : "OFF") +
-          " (" +
-          d.stores[id].items.length +
-          " items)"
-      );
-    });
-  } catch (e) {}
 });
