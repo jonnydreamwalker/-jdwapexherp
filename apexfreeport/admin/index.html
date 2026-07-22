@@ -13,6 +13,7 @@
     <div>
       <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">JDW Apex</p>
       <h1 class="text-xl font-black text-emerald-400">ApexFreePort</h1>
+      <p class="text-zinc-500 text-xs">Multi-store inventory bridge</p>
     </div>
     <div class="flex items-center gap-3 text-sm">
       <span id="warehouse" class="text-zinc-500 text-xs"></span>
@@ -20,22 +21,25 @@
       <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg text-xs uppercase">Logout</button></form>
     </div>
   </div>
+  <div class="max-w-6xl mx-auto px-4 pb-0 flex gap-1 border-t border-zinc-900 pt-3" id="tabs">
+    <button type="button" data-store="herp" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-900 text-emerald-400">Herp</button>
+    <button type="button" data-store="k9" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">K9</button>
+    <button type="button" data-store="feline" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">Feline</button>
+  </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 py-8">
-
-  <!-- BIG RED DON'T TOUCH FEED SWITCH -->
   <div class="mb-8 border-4 border-red-700 bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
-    <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-2">Website inventory feed</p>
+    <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-1">Website inventory feed</p>
+    <p id="store-label" class="text-white font-bold text-lg mb-2">AApex Herp</p>
     <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
     <button type="button" id="btn-dont-touch"
-      class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-2xl md:text-3xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">
+      class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">
       DON'T TOUCH
     </button>
-    <p class="text-zinc-500 text-xs mt-4 max-w-xl mx-auto">OFF = shop pages show inventory offline. ON = live catalog pushes to the website. Admin inventory still works either way.</p>
+    <p class="text-zinc-500 text-xs mt-4 max-w-xl mx-auto">Each tab has its own feed. OFF = that website shows inventory offline. Other stores are unchanged.</p>
   </div>
 
-  <p class="text-zinc-400 text-sm mb-2">Click <span class="text-emerald-400 font-bold">Edit</span> to change price, description, photo, qty.</p>
-  <p class="text-zinc-600 text-xs mb-4">Password is set on the server when you start Node (not in this screen).</p>
+  <p class="text-zinc-400 text-sm mb-4">Managing: <span id="active-name" class="text-emerald-400 font-bold">Apex Herp</span></p>
   <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
     <table class="w-full text-sm text-left">
       <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
@@ -75,11 +79,7 @@
     <div class="grid grid-cols-2 gap-2">
       <div>
         <label class="block text-xs text-zinc-500">Category</label>
-        <select name="category" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-          <option>Hardscape</option><option>Lighting</option><option>Substrates</option>
-          <option>Nutrition</option><option>Apparel</option><option>Enclosures</option>
-          <option>Heating</option><option>Hardware</option><option>Deals</option>
-        </select>
+        <input name="category" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm" placeholder="Hardscape / Food / Litter…">
       </div>
       <div>
         <label class="block text-xs text-zinc-500">Lane</label>
@@ -105,53 +105,73 @@
       <label class="block text-xs text-zinc-500">Or upload photo</label>
       <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
     </div>
-    <p id="form-msg" class="text-xs text-emerald-400 hidden"></p>
     <div class="flex gap-2 pt-2">
-      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save changes</button>
+      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save</button>
       <button type="button" id="btn-cancel" class="px-4 border border-zinc-700 rounded-xl text-xs uppercase">Cancel</button>
     </div>
   </form>
 </div>
 
 <script>
+var STORE = "herp";
+
 function showModal(show) {
   var m = document.getElementById("modal");
   if (show) { m.classList.remove("hidden"); m.classList.add("flex"); }
   else { m.classList.add("hidden"); m.classList.remove("flex"); }
 }
 
-function paintFeed(on) {
+function paintTabs() {
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    var on = btn.getAttribute("data-store") === STORE;
+    btn.className = "tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 " +
+      (on ? "border-emerald-800 bg-zinc-900 text-emerald-400" : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");
+  });
+}
+
+function paintFeed(on, name) {
+  document.getElementById("store-label").textContent = name || STORE;
+  document.getElementById("active-name").textContent = name || STORE;
   var st = document.getElementById("feed-status");
   var btn = document.getElementById("btn-dont-touch");
   if (on) {
-    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span> — website can pull inventory';
+    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span> — this website can pull inventory';
     btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
-    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 active:bg-red-700 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
+    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
   } else {
-    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span> — website shows inventory offline';
+    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span> — this website shows inventory offline';
     btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
-    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
+    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
   }
 }
 
+document.querySelectorAll(".tab-btn").forEach(function (btn) {
+  btn.onclick = function () {
+    STORE = btn.getAttribute("data-store");
+    paintTabs();
+    load();
+  };
+});
+
 document.getElementById("btn-dont-touch").onclick = async function () {
-  if (!confirm("Flip the website inventory feed?")) return;
+  if (!confirm("Flip the website inventory feed for " + STORE STORE.toUpperCase() + " only?")) return;
   var r = await fetch("/api/admin/public-feed", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ store: STORE }),
   });
-  if (!r.ok) { alert("Failed — are you logged in?"); return; }
+  if (!r.ok) { alert("Failed — logged in?"); return; }
   var j = await r.json();
-  paintFeed(!!j.publicFeed);
+  paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
 };
 
 async function load() {
-  var r = await fetch("/api/inventory");
+  paintTabs();
+  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
   if (!r.ok) { location.href = "/login"; return; }
   var d = await r.json();
   document.getElementById("warehouse").textContent = d.warehouse || "";
-  paintFeed(!!d.publicFeed);
+  paintFeed(!!d.publicFeed, d.storeName || STORE);
   window.__ITEMS__ = d.items || [];
   document.getElementById("body").innerHTML = window.__ITEMS__.map(function (i) {
     return "<tr>" +
@@ -165,7 +185,7 @@ async function load() {
       "<button type=\"button\" data-plus=\"" + i.sku + "\" class=\"text-emerald-400 px-1\">+</button>" +
       "<button type=\"button\" data-minus=\"" + i.sku + "\" class=\"text-zinc-400 px-1\">−</button>" +
       "</td></tr>";
-  }).join("");
+  }).join("") || "<tr><td colspan=\"6\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this store yet. Click + Product.</td></tr>";
 
   document.querySelectorAll("[data-edit]").forEach(function (btn) {
     btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
@@ -182,7 +202,7 @@ async function adj(sku, delta) {
   await fetch("/api/inventory/adjust", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sku: sku, delta: delta }),
+    body: JSON.stringify({ store: STORE, sku: sku, delta: delta }),
   });
   load();
 }
@@ -199,7 +219,7 @@ function openEdit(sku) {
     f.description.value = i.description || "";
     f.price.value = i.price != null ? i.price : 0;
     f.qty.value = i.qty != null ? i.qty : 0;
-    f.category.value = i.category || "Hardscape";
+    f.category.value = i.category || "";
     f.lane.value = i.lane || "direct";
     f.status.value = i.status || "active";
     f.image.value = i.image || "";
@@ -219,6 +239,7 @@ document.getElementById("form").onsubmit = async function (e) {
   e.preventDefault();
   var f = e.target;
   var body = {
+    store: STORE,
     sku: f.sku.value.trim(),
     name: f.name.value.trim(),
     description: f.description.value,
@@ -234,10 +255,7 @@ document.getElementById("form").onsubmit = async function (e) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    alert("Save failed");
-    return;
-  }
+  if (!res.ok) { alert("Save failed"); return; }
   var file = document.getElementById("imgfile").files[0];
   if (file) {
     var dataUrl = await new Promise(function (resolve, reject) {
@@ -249,12 +267,9 @@ document.getElementById("form").onsubmit = async function (e) {
     await fetch("/api/inventory/image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sku: body.sku, dataUrl: dataUrl }),
+      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrl: dataUrl }),
     });
   }
-  var msg = document.getElementById("form-msg");
-  msg.textContent = "Saved.";
-  msg.classList.remove("hidden");
   showModal(false);
   load();
 };

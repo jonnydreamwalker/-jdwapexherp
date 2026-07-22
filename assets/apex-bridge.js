@@ -1,28 +1,28 @@
-/** ApexFreePort bridge — live catalog for all shop pages */
+/** ApexFreePort bridge — multi-store (default store=herp) */
 (function (global) {
   var APEX_API = "https://api.jdwapexherp.com";
 
   function base() {
     return (global.APEX_API_BASE || APEX_API).replace(/\/$/, "");
   }
-
+  function storeId() {
+    return (global.APEX_STORE || (global.APEX_SITE && global.APEX_SITE.store) || "herp");
+  }
   function imgUrl(path) {
     if (!path) return "";
     if (path.indexOf("http") === 0) return path;
     return base() + path;
   }
-
   async function fetchProducts(category) {
-    var q = category ? "?category=" + encodeURIComponent(category) : "";
+    var q = "?store=" + encodeURIComponent(storeId());
+    if (category) q += "&category=" + encodeURIComponent(category);
     var res = await fetch(base() + "/api/products" + q, { mode: "cors", cache: "no-store" });
     if (!res.ok) throw new Error("products " + res.status);
     return res.json();
   }
-
   function money(n) {
     return "$" + (Number(n) || 0).toFixed(2);
   }
-
   async function renderCatalog(selector, category) {
     var el = document.querySelector(selector || "#apex-catalog");
     if (!el) return;
@@ -32,7 +32,7 @@
       global.__APEX_PRODUCTS__ = data;
       var items = data.items || [];
       if (!items.length) {
-        el.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-12">No products in this category yet. Add them in ApexFreePort.</p>';
+        el.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-12">No products in this category yet.</p>';
         if (status) {
           status.textContent = "Live catalog · empty";
           status.className = "text-zinc-500 text-sm mt-3";
@@ -83,13 +83,13 @@
       }).join("");
       if (status) {
         status.textContent =
-          "Live catalog · " + (data.warehouse || "ApexFreePort") + " · " + items.length + " items";
+          "Live · " + (data.storeName || data.store || "") + " · " + (data.warehouse || "") + " · " + items.length + " items";
         status.className = "text-emerald-400 text-sm mt-3";
       }
     } catch (e) {
       console.warn("ApexBridge", e);
       el.innerHTML =
-        '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. Check ApexFreePort node.</p>';
+        '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. Check ApexFreePort feed for this store.</p>';
       if (status) {
         status.textContent = "Inventory offline";
         status.className = "text-amber-400 text-sm mt-3";
@@ -99,6 +99,7 @@
 
   global.ApexBridge = {
     base: base,
+    storeId: storeId,
     fetchProducts: fetchProducts,
     renderCatalog: renderCatalog,
     imgUrl: imgUrl,

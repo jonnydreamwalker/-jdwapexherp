@@ -8,8 +8,15 @@ const PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
 const DATA = path.join(__dirname, "data", "inventory.json");
 const REVIEWS = path.join(__dirname, "data", "reviews.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
+const STORE_IDS = ["herp", "k9", "feline"];
+const STORE_META = {
+  herp: { name: "Apex Herp" },
+  k9: { name: "Apex K9" },
+  feline: { name: "Apex Feline" },
+};
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 if (!fs.existsSync(REVIEWS)) fs.writeFileSync(REVIEWS, JSON.stringify({ updated: null, reviews: [] }, null, 2));
+
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -21,14 +28,50 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({ secret: process.env.SESSION_SECRET || "apex-secret", resave: false, saveUninitialized: false }));
 app.use("/uploads", express.static(UPLOADS));
+
+function normalizeStoreId(id) {
+  id = String(id || "herp").toLowerCase();
+  return STORE_IDS.indexOf(id) >= 0 ? id : "herp";
+}
+
+function migrate(d) {
+  if (!d || typeof d !== "object") d = {};
+  if (!d.stores) {
+    var oldItems = Array.isArray(d.items) ? d.items : [];
+    var oldFeed = typeof d.publicFeed === "boolean" ? d.publicFeed : false;
+    d.stores = {
+      herp: { id: "herp", name: "Apex Herp", publicFeed: oldFeed, items: oldItems },
+      k9: { id: "k9", name: "Apex K9", publicFeed: false, items: [] },
+      feline: { id: "feline", name: "Apex Feline", publicFeed: false, items: [] },
+    };
+    delete d.items;
+    delete d.publicFeed;
+  }
+  STORE_IDS.forEach(function (id) {
+    if (!d.stores[id]) {
+      d.stores[id] = { id: id, name: STORE_META[id].name, publicFeed: false, items: [] };
+    }
+    if (typeof d.stores[id].publicFeed !== "boolean") d.stores[id].publicFeed = false;
+    if (!Array.isArray(d.stores[id].items)) d.stores[id].items = [];
+    d.stores[id].id = id;
+    d.stores[id].name = d.stores[id].name || STORE_META[id].name;
+  });
+  if (!d.warehouse) d.warehouse = "DeFuniak Springs, FL";
+  if (!Array.isArray(d.movements)) d.movements = [];
+  return d;
+}
+
 function read() {
   var d = JSON.parse(fs.readFileSync(DATA, "utf8"));
-  if (typeof d.publicFeed !== "boolean") d.publicFeed = false;
-  return d;
+  return migrate(d);
 }
 function write(d) {
   d.updated = new Date().toISOString();
   fs.writeFileSync(DATA, JSON.stringify(d, null, 2));
+}
+function storeOf(d, id) {
+  id = normalizeStoreId(id);
+  return d.stores[id];
 }
 function readReviews() {
   try { return JSON.parse(fs.readFileSync(REVIEWS, "utf8")); }
@@ -51,89 +94,99 @@ function publicItem(i) {
     status: i.status || "active", image: i.image || "", location: i.location || ""
   };
 }
-function feedOff(res) {
+function feedOff(res, storeId) {
   return res.status(503).json({
     error: "public_feed_off",
-    message: "Website inventory feed is OFF. Flip the red switch in ApexFreePort to go live.",
+    message: "Website inventory feed is OFF for this store. Flip the red switch in ApexFreePort.",
+    store: storeId,
     publicFeed: false,
     items: []
   });
 }
-function decrementSku(sku, qty, reason) {
+function decrementSku(storeId, sku, qty, reason) {
   qty = Math.max(1, Number(qty) || 1);
   var d = read();
+  var st = storeOf(d, storeId);
   var item = null;
-  for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === sku) item = d.items[i];
+  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === sku) item = st.items[i];
+  if (!item) {
+    for (var s = 0; s < STORE_IDS.length && !item; s++) {
+      var sid = STORE_IDS[s];
+      for (var j = 0; j < d.stores[sid].items.length; j++) {
+        if (d.stores[sid].items[j].sku === sku) {
+          item = d.stores[sid].items[j];
+          storeId = sid;
+          st = d.stores[sid];
+          break;
+        }
+      }
+    }
+  }
   if (!item) return { ok: false, error: "sku not found", sku: sku };
   item.qty = Math.max(0, (item.qty || 0) - qty);
-  d.movements = d.movements || [];
-  d.movements.unshift({ ts: new Date().toISOString(), sku: sku, delta: -qty, reason: reason || "sale", qtyAfter: item.qty });
+  d.movements.unshift({ ts: new Date().toISOString(), store: storeId, sku: sku, delta: -qty, reason: reason || "sale", qtyAfter: item.qty });
   d.movements = d.movements.slice(0, 200);
   write(d);
-  return { ok: true, sku: sku, qty: item.qty };
+  return { ok: true, store: storeId, sku: sku, qty: item.qty };
 }
-function extractSkusFromSquarePayment(payment) {
-  var found = [];
-  if (!payment) return found;
-  var blob = String((payment.note || "") + " " + (payment.reference_id || "")).toUpperCase();
-  var d = read();
-  (d.items || []).forEach(function (it) {
-    if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) found.push({ sku: it.sku, quantity: 1 });
-  });
-  return found;
-}
-function extractSkusFromStripeEvent(event) {
-  var found = [];
-  var obj = event && event.data && event.data.object;
-  if (!obj) return found;
-  var meta = obj.metadata || {};
-  if (meta.sku) found.push({ sku: meta.sku, quantity: Number(meta.quantity) || 1 });
-  return found;
-}
-function extractSkusFromPaypalEvent(body) {
-  var found = [];
-  var res = body && body.resource;
-  if (!res) return found;
-  var custom = String(res.custom_id || res.invoice_id || "");
-  var d = read();
-  (d.items || []).forEach(function (it) {
-    if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) found.push({ sku: it.sku, quantity: 1 });
-  });
-  return found;
-}
+
 app.get("/health", function (req, res) {
   var d;
-  try { d = read(); } catch (e) { d = { publicFeed: false }; }
+  try { d = read(); } catch (e) { d = { stores: {} }; }
+  var feeds = {};
+  STORE_IDS.forEach(function (id) {
+    feeds[id] = !!(d.stores && d.stores[id] && d.stores[id].publicFeed);
+  });
   res.json({
     ok: true,
     service: "ApexFreePort",
-    publicFeed: !!d.publicFeed,
+    multiStore: true,
+    stores: feeds,
     square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
     stripe: process.env.STRIPE_SECRET_KEY ? "token-set" : "no-token",
     paypal: process.env.PAYPAL_CLIENT_ID ? "client-set" : "no-client",
-    etsy: process.env.ETSY_KEYSTRING ? "key-set" : "no-key",
-    etsyShop: process.env.ETSY_SHOP_NAME || null,
   });
 });
+
 app.get("/api/stock", function (req, res) {
   try {
+    var storeId = normalizeStoreId(req.query.store);
     var d = read();
-    if (!d.publicFeed) return feedOff(res);
-    res.json({ warehouse: d.warehouse, updated: d.updated, publicFeed: true, items: (d.items || []).map(publicItem) });
+    var st = storeOf(d, storeId);
+    if (!st.publicFeed) return feedOff(res, storeId);
+    res.json({
+      store: storeId,
+      storeName: st.name,
+      warehouse: d.warehouse,
+      updated: d.updated,
+      publicFeed: true,
+      items: (st.items || []).map(publicItem),
+    });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
+
 app.get("/api/products", function (req, res) {
   try {
+    var storeId = normalizeStoreId(req.query.store);
     var d = read();
-    if (!d.publicFeed) return feedOff(res);
-    var items = (d.items || []).map(publicItem);
+    var st = storeOf(d, storeId);
+    if (!st.publicFeed) return feedOff(res, storeId);
+    var items = (st.items || []).map(publicItem);
     if (req.query.category) {
       var cat = String(req.query.category).toLowerCase();
       items = items.filter(function (i) { return (i.category || "").toLowerCase() === cat; });
     }
-    res.json({ warehouse: d.warehouse, updated: d.updated, publicFeed: true, items: items });
+    res.json({
+      store: storeId,
+      storeName: st.name,
+      warehouse: d.warehouse,
+      updated: d.updated,
+      publicFeed: true,
+      items: items,
+    });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
+
 app.get("/api/reviews", function (req, res) {
   try {
     var d = readReviews();
@@ -175,18 +228,16 @@ app.get("/api/reviews/admin", auth, function (req, res) { res.json(readReviews()
 app.post("/api/reviews/moderate", auth, function (req, res) {
   var id = (req.body || {}).id;
   var status = (req.body || {}).status;
-  if (!id || (status !== "approved" && status !== "rejected" && status !== "pending")) {
+  if (!id || (status !== "approved" && status !== "rejected" && status !== "pending"))
     return res.status(400).json({ error: "id and status required" });
-  }
   var d = readReviews();
   var found = null;
-  (d.reviews || []).forEach(function (r) {
-    if (r.id === id) { r.status = status; found = r; }
-  });
+  (d.reviews || []).forEach(function (r) { if (r.id === id) { r.status = status; found = r; } });
   if (!found) return res.status(404).json({ error: "not found" });
   writeReviews(d);
   res.json({ ok: true, review: found });
 });
+
 app.get("/login", function (req, res) {
   if (req.session.ok) return res.redirect("/admin");
   res.sendFile(path.join(__dirname, "admin", "login.html"));
@@ -198,69 +249,102 @@ app.post("/login", function (req, res) {
 app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
 app.get("/admin", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "index.html")); });
 app.get("/admin/reviews", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "reviews.html")); });
-app.get("/api/inventory", auth, function (req, res) { res.json(read()); });
-/** Big red switch — flips website inventory feed on/off */
-app.post("/api/admin/public-feed", auth, function (req, res) {
+
+app.get("/api/inventory", auth, function (req, res) {
+  var storeId = normalizeStoreId(req.query.store);
   var d = read();
-  if (typeof req.body.enabled === "boolean") d.publicFeed = req.body.enabled;
-  else d.publicFeed = !d.publicFeed;
-  write(d);
-  res.json({ ok: true, publicFeed: d.publicFeed });
+  var st = storeOf(d, storeId);
+  res.json({
+    warehouse: d.warehouse,
+    updated: d.updated,
+    store: storeId,
+    storeName: st.name,
+    publicFeed: !!st.publicFeed,
+    items: st.items || [],
+    stores: STORE_IDS.map(function (id) {
+      return { id: id, name: d.stores[id].name, publicFeed: !!d.stores[id].publicFeed, count: (d.stores[id].items || []).length };
+    }),
+  });
 });
+
+app.post("/api/admin/public-feed", auth, function (req, res) {
+  var storeId = normalizeStoreId((req.body || {}).store || req.query.store);
+  var d = read();
+  var st = storeOf(d, storeId);
+  if (typeof (req.body || {}).enabled === "boolean") st.publicFeed = req.body.enabled;
+  else st.publicFeed = !st.publicFeed;
+  write(d);
+  res.json({ ok: true, store: storeId, publicFeed: st.publicFeed });
+});
+
 app.post("/api/inventory/adjust", auth, function (req, res) {
-  var d = read(); var item = null;
-  for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === req.body.sku) item = d.items[i];
+  var storeId = normalizeStoreId((req.body || {}).store);
+  var d = read();
+  var st = storeOf(d, storeId);
+  var item = null;
+  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === req.body.sku) item = st.items[i];
   if (!item) return res.status(404).json({ error: "not found" });
   item.qty = Math.max(0, (item.qty || 0) + Number(req.body.delta || 0));
-  d.movements = d.movements || [];
-  d.movements.unshift({ ts: new Date().toISOString(), sku: item.sku, delta: Number(req.body.delta), reason: "manual", qtyAfter: item.qty });
-  write(d); res.json({ ok: true, item: publicItem(item) });
+  d.movements.unshift({ ts: new Date().toISOString(), store: storeId, sku: item.sku, delta: Number(req.body.delta), reason: "manual", qtyAfter: item.qty });
+  write(d);
+  res.json({ ok: true, item: publicItem(item) });
 });
+
 app.post("/api/inventory/item", auth, function (req, res) {
   var b = req.body || {};
   if (!b.sku || !b.name) return res.status(400).json({ error: "sku and name required" });
-  var d = read(); var idx = -1;
-  for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === b.sku) idx = i;
+  var storeId = normalizeStoreId(b.store);
+  var d = read();
+  var st = storeOf(d, storeId);
+  var idx = -1;
+  for (var i = 0; i < st.items.length; i++) if (st.items[i].sku === b.sku) idx = i;
   var row = {
-    sku: String(b.sku).trim(), name: String(b.name).trim(), category: b.category || "Hardscape",
+    sku: String(b.sku).trim(), name: String(b.name).trim(), category: b.category || "General",
     description: b.description || "", price: Number(b.price) || 0, qty: Number(b.qty) || 0,
     reserved: Number(b.reserved) || 0, reorder: Number(b.reorder) || 0,
     lane: b.lane === "external" ? "external" : "direct", status: b.status || "active",
     image: b.image || "", location: b.location || "WH-A1", unit: b.unit || "each"
   };
-  if (idx >= 0) { d.items[idx] = Object.assign({}, d.items[idx], row); row = d.items[idx]; }
-  else d.items.push(row);
-  write(d); res.json({ ok: true, item: publicItem(row) });
+  if (idx >= 0) { st.items[idx] = Object.assign({}, st.items[idx], row); row = st.items[idx]; }
+  else st.items.push(row);
+  write(d);
+  res.json({ ok: true, store: storeId, item: publicItem(row) });
 });
+
 app.post("/api/inventory/image", auth, function (req, res) {
   try {
     var b = req.body || {};
     if (!b.sku || !b.dataUrl) return res.status(400).json({ error: "sku and dataUrl required" });
+    var storeId = normalizeStoreId(b.store);
     var m = String(b.dataUrl).match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
     if (!m) return res.status(400).json({ error: "bad image data" });
     var ext = m[1] === "jpeg" ? "jpg" : m[1];
     var safe = String(b.sku).replace(/[^a-zA-Z0-9_-]/g, "_");
-    var fname = safe + "-" + Date.now() + "." + ext;
+    var fname = storeId + "-" + safe + "-" + Date.now() + "." + ext;
     var buf = Buffer.from(m[2], "base64");
     if (buf.length > 1500000) return res.status(400).json({ error: "image too large" });
     fs.writeFileSync(path.join(UPLOADS, fname), buf);
     var url = "/uploads/" + fname;
-    var d = read(); var item = null;
-    for (var i = 0; i < d.items.length; i++) {
-      if (d.items[i].sku === b.sku) { d.items[i].image = url; item = d.items[i]; }
+    var d = read();
+    var st = storeOf(d, storeId);
+    var item = null;
+    for (var i = 0; i < st.items.length; i++) {
+      if (st.items[i].sku === b.sku) { st.items[i].image = url; item = st.items[i]; }
     }
     if (!item) return res.status(404).json({ error: "save product first" });
     write(d);
     res.json({ ok: true, image: url });
   } catch (e) { res.status(500).json({ error: "upload failed" }); }
 });
+
 app.post("/api/webhook/sale", function (req, res) {
   var secret = req.headers["x-apex-secret"];
   if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) return res.status(401).json({ error: "bad secret" });
   var sku = (req.body || {}).sku;
   var qty = Math.max(1, Number((req.body || {}).quantity) || 1);
+  var storeId = normalizeStoreId((req.body || {}).store);
   if (!sku) return res.status(400).json({ error: "sku required" });
-  var result = decrementSku(sku, qty, "sale");
+  var result = decrementSku(storeId, sku, qty, "sale");
   if (!result.ok) return res.status(404).json(result);
   res.json(result);
 });
@@ -272,10 +356,17 @@ app.post("/api/webhook/square", function (req, res) {
     if (type && type !== "payment.updated" && type !== "payment.created") return res.json({ ok: true, ignored: type });
     if (!payment) return res.json({ ok: true, ignored: "no payment" });
     if (payment.status && payment.status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + payment.status });
-    var lines = extractSkusFromSquarePayment(payment);
+    var storeId = normalizeStoreId(process.env.SQUARE_DEFAULT_STORE || "herp");
+    var d = read();
+    var st = storeOf(d, storeId);
+    var blob = String((payment.note || "") + " " + (payment.reference_id || "")).toUpperCase();
+    var lines = [];
+    (st.items || []).forEach(function (it) {
+      if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) lines.push({ sku: it.sku, quantity: 1 });
+    });
     if (!lines.length && process.env.SQUARE_DEFAULT_SKU) lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
-    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "square")); });
+    lines.forEach(function (line) { results.push(decrementSku(storeId, line.sku, line.quantity, "square")); });
     res.json({ ok: true, results: results });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
@@ -284,10 +375,14 @@ app.post("/api/webhook/stripe", function (req, res) {
     var event = req.body || {};
     var type = event.type || "";
     if (type !== "payment_intent.succeeded" && type !== "checkout.session.completed") return res.json({ ok: true, ignored: type });
-    var lines = extractSkusFromStripeEvent(event);
+    var obj = event.data && event.data.object;
+    var meta = (obj && obj.metadata) || {};
+    var storeId = normalizeStoreId(meta.store || process.env.STRIPE_DEFAULT_STORE || "herp");
+    var lines = [];
+    if (meta.sku) lines.push({ sku: meta.sku, quantity: Number(meta.quantity) || 1 });
     if (!lines.length && process.env.STRIPE_DEFAULT_SKU) lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
-    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "stripe")); });
+    lines.forEach(function (line) { results.push(decrementSku(storeId, line.sku, line.quantity, "stripe")); });
     res.json({ ok: true, results: results });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
@@ -296,36 +391,28 @@ app.post("/api/webhook/paypal", function (req, res) {
     var body = req.body || {};
     var et = String(body.event_type || "");
     if (et !== "PAYMENT.CAPTURE.COMPLETED" && et !== "CHECKOUT.ORDER.COMPLETED") return res.json({ ok: true, ignored: et });
-    var lines = extractSkusFromPaypalEvent(body);
+    var storeId = normalizeStoreId(process.env.PAYPAL_DEFAULT_STORE || "herp");
+    var resu = body.resource || {};
+    var custom = String(resu.custom_id || resu.invoice_id || "");
+    var d = read();
+    var st = storeOf(d, storeId);
+    var lines = [];
+    (st.items || []).forEach(function (it) {
+      if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) lines.push({ sku: it.sku, quantity: 1 });
+    });
     if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
-    var results = [];
-    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "paypal")); });
+    lines.forEach(function (line) { decrementSku(storeId, line.sku, line.quantity, "paypal"); });
     res.sendStatus(200);
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
-app.get("/api/etsy/status", auth, function (req, res) {
-  res.json({
-    keystring: process.env.ETSY_KEYSTRING ? "set" : "missing",
-    sharedSecret: process.env.ETSY_SHARED_SECRET ? "set" : "missing",
-    shop: process.env.ETSY_SHOP_NAME || null,
-    oauth: process.env.ETSY_ACCESS_TOKEN ? "authorized" : "needs-oauth",
-  });
-});
-app.post("/api/webhook/etsy", function (req, res) {
-  try {
-    var body = req.body || {};
-    var sku = body.sku || (body.data && body.data.sku);
-    var qty = Number(body.quantity) || 1;
-    if (sku) return res.json(decrementSku(sku, qty, "etsy"));
-    res.json({ ok: true, ignored: "no sku" });
-  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
-});
+
 app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
-  console.log("ApexFreePort on " + PORT);
-  console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
+  console.log("ApexFreePort multi-store on " + PORT);
   try {
     var d = read();
-    console.log("Public website feed: " + (d.publicFeed ? "ON" : "OFF (default)"));
+    STORE_IDS.forEach(function (id) {
+      console.log("  " + id + " feed: " + (d.stores[id].publicFeed ? "ON" : "OFF") + " (" + d.stores[id].items.length + " items)");
+    });
   } catch (e) {}
 });
