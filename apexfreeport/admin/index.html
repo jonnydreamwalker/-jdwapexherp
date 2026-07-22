@@ -7,42 +7,11 @@
 <meta name="robots" content="noindex">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  .glass-panel {
-    background: rgba(9, 12, 16, 0.72);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(16, 185, 129, 0.28);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
-  }
-  .glass-input {
-    background: rgba(0,0,0,0.45);
-    border: 1px solid rgba(63, 63, 70, 0.9);
-    border-radius: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    width: 100%;
-    color: #fff;
-    font-size: 0.875rem;
-  }
-  .glass-input:focus {
-    outline: none;
-    border-color: rgba(52, 211, 153, 0.7);
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-  }
-  .cat-chip {
-    border: 1px solid rgba(63,63,70,0.9);
-    border-radius: 999px;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #a1a1aa;
-    cursor: pointer;
-  }
-  .cat-chip.active {
-    background: rgba(16,185,129,0.15);
-    border-color: rgba(52,211,153,0.5);
-    color: #6ee7b7;
-  }
+  .glass-panel{background:rgba(9,12,16,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(16,185,129,.28);box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04)}
+  .glass-input{background:rgba(0,0,0,.45);border:1px solid rgba(63,63,70,.9);border-radius:.75rem;padding:.65rem .85rem;width:100%;color:#fff;font-size:.875rem}
+  .glass-input:focus{outline:none;border-color:rgba(52,211,153,.7);box-shadow:0 0 0 2px rgba(16,185,129,.2)}
+  .cat-chip{border:1px solid rgba(63,63,70,.9);border-radius:999px;padding:.35rem .85rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:#a1a1aa;cursor:pointer}
+  .cat-chip.active{background:rgba(16,185,129,.15);border-color:rgba(52,211,153,.5);color:#6ee7b7}
 </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
@@ -59,7 +28,7 @@
       <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg text-xs uppercase">Logout</button></form>
     </div>
   </div>
-  <div class="max-w-6xl mx-auto px-4 pb-0 flex gap-1 border-t border-zinc-900 pt-3" id="tabs">
+  <div class="max-w-6xl mx-auto px-4 pb-0 flex gap-1 border-t border-zinc-900 pt-3">
     <button type="button" data-store="herp" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-900 text-emerald-400">Herp</button>
     <button type="button" data-store="k9" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">K9</button>
     <button type="button" data-store="feline" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">Feline</button>
@@ -70,12 +39,8 @@
     <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-1">Website inventory feed</p>
     <p id="store-label" class="text-white font-bold text-lg mb-2">Apex Herp</p>
     <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
-    <button type="button" id="btn-dont-touch"
-      class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">
-      DON'T TOUCH
-    </button>
+    <button type="button" id="btn-dont-touch" class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">DON'T TOUCH</button>
   </div>
-
   <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <p class="text-zinc-400 text-sm">Managing: <span id="active-name" class="text-emerald-400 font-bold">Apex Herp</span></p>
     <div class="flex flex-wrap gap-2 items-center">
@@ -83,20 +48,11 @@
       <button type="button" id="btn-add-cat" class="cat-chip hover:text-emerald-300">+ Group</button>
     </div>
   </div>
-
   <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
     <table class="w-full text-sm text-left">
-      <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
-        <tr>
-          <th class="px-3 py-3">Order</th>
-          <th class="px-3 py-3">SKU</th>
-          <th class="px-3 py-3">Name</th>
-          <th class="px-3 py-3">Price</th>
-          <th class="px-3 py-3">Qty</th>
-          <th class="px-3 py-3">Group</th>
-          <th class="px-3 py-3">Actions</th>
-        </tr>
-      </thead>
+      <thead class="text-xs text-zinc-500 uppercase bg-zinc-950"><tr>
+        <th class="px-3 py-3">Order</th><th class="px-3 py-3">SKU</th><th class="px-3 py-3">Name</th><th class="px-3 py-3">Price</th><th class="px-3 py-3">Qty</th><th class="px-3 py-3">Group</th><th class="px-3 py-3">Actions</th>
+      </tr></thead>
       <tbody id="body" class="divide-y divide-zinc-800"></tbody>
     </table>
   </div>
@@ -109,56 +65,34 @@
       <h3 id="form-title" class="text-xl font-black text-emerald-400">New product</h3>
     </div>
     <input type="hidden" name="originalSku" id="originalSku" value="">
-
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">SKU <span id="sku-hint" class="normal-case text-zinc-600"></span></label>
-    <input name="sku" id="skuInput" required class="glass-input" placeholder="HS-UFO-FLAT-01">
-
+    <input name="sku" required class="glass-input" placeholder="HS-UFO-FLAT-01">
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Name</label>
     <input name="name" required class="glass-input" placeholder="Product name">
-
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Group (filing)</label>
     <select name="category" id="categorySelect" class="glass-input"></select>
-
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Description</label>
     <textarea name="description" rows="2" class="glass-input" placeholder="Optional details"></textarea>
-
     <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Price USD</label>
-        <input name="price" type="number" step="0.01" min="0" class="glass-input" placeholder="0.00">
-      </div>
-      <div>
-        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Qty</label>
-        <input name="qty" type="number" class="glass-input" placeholder="0">
-      </div>
+      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Price USD</label><input name="price" type="number" step="0.01" min="0" class="glass-input"></div>
+      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Qty</label><input name="qty" type="number" class="glass-input"></div>
     </div>
-
     <div class="grid grid-cols-2 gap-3">
-      <div>
-        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Lane</label>
-        <select name="lane" class="glass-input">
-          <option value="direct">Direct (FL WH)</option>
-          <option value="external">External</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Status</label>
-        <select name="status" class="glass-input">
-          <option value="active">Active</option>
-          <option value="coming_soon">Coming soon</option>
-          <option value="hold">Hold</option>
-        </select>
-      </div>
+      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Lane</label>
+        <select name="lane" class="glass-input"><option value="direct">Direct (FL WH)</option><option value="external">External</option></select></div>
+      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Status</label>
+        <select name="status" class="glass-input"><option value="active">Active</option><option value="coming_soon">Coming soon</option><option value="hold">Hold</option></select></div>
     </div>
-
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL (optional)</label>
     <input name="image" class="glass-input" placeholder="https://…">
-
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Photos (up to 10 — carousel on site)</label>
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Photos (up to 10)</label>
     <input type="file" id="imgfile" accept="image/*" multiple class="w-full text-xs text-zinc-400">
-    <p class="text-[10px] text-zinc-500">Select multiple files. Adds to existing photos (max 10 total).</p>
     <p id="photo-count" class="text-[10px] text-emerald-500/80"></p>
-
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Video URL (optional MP4)</label>
+    <input name="video" class="glass-input" placeholder="https://…/clip.mp4">
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">MP4 upload (up to 2 · keep under ~10MB each)</label>
+    <input type="file" id="vidfile" accept="video/mp4,video/webm" multiple class="w-full text-xs text-zinc-400">
+    <p id="video-count" class="text-[10px] text-emerald-500/80"></p>
     <div class="flex gap-2 pt-3">
       <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3.5 rounded-xl">Save</button>
       <button type="button" id="btn-cancel" class="px-5 border border-zinc-600 rounded-xl text-xs uppercase text-zinc-300">Cancel</button>
@@ -167,283 +101,35 @@
 </div>
 
 <script>
-var STORE = "herp";
-var FILTER = "";
-var CATEGORIES = [];
-var ALL_ITEMS = [];
-
-function showModal(show) {
-  var m = document.getElementById("modal");
-  if (show) { m.classList.remove("hidden"); m.classList.add("flex"); }
-  else { m.classList.add("hidden"); m.classList.remove("flex"); }
-}
-
-function paintTabs() {
-  document.querySelectorAll(".tab-btn").forEach(function (btn) {
-    var on = btn.getAttribute("data-store") === STORE;
-    btn.className = "tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 " +
-      (on ? "border-emerald-800 bg-zinc-900 text-emerald-400" : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");
-  });
-}
-
-function paintFeed(on, name) {
-  document.getElementById("store-label").textContent = name || STORE;
-  document.getElementById("active-name").textContent = name || STORE;
-  var st = document.getElementById("feed-status");
-  var btn = document.getElementById("btn-dont-touch");
-  if (on) {
-    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';
-    btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
-    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
-  } else {
-    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span>';
-    btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
-    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
-  }
-}
-
-function fillCategorySelect(selected) {
-  var sel = document.getElementById("categorySelect");
-  sel.innerHTML = CATEGORIES.map(function (c) {
-    var s = c === selected ? " selected" : "";
-    return "<option value=\"" + c.replace(/\"/g, """) + "\"" + s + ">" + c + "</option>";
-  }).join("");
-  if (!CATEGORIES.length) sel.innerHTML = "<option value=\"General\">General</option>";
-}
-
-function paintCatFilter() {
-  var box = document.getElementById("cat-filter");
-  var chips = [""].concat(CATEGORIES);
-  box.innerHTML = chips.map(function (c) {
-    var label = c || "All";
-    var active = FILTER === c ? " active" : "";
-    return "<button type=\"button\" class=\"cat-chip" + active + "\" data-cat=\"" + (c || "") + "\">" + label + "</button>";
-  }).join("");
-  box.querySelectorAll("[data-cat]").forEach(function (btn) {
-    btn.onclick = function () {
-      FILTER = btn.getAttribute("data-cat") || "";
-      paintCatFilter();
-      renderRows();
-    };
-  });
-}
-
-document.querySelectorAll(".tab-btn").forEach(function (btn) {
-  btn.onclick = function () {
-    STORE = btn.getAttribute("data-store");
-    FILTER = "";
-    paintTabs();
-    load();
-  };
-});
-
-document.getElementById("btn-dont-touch").onclick = async function () {
-  if (!confirm("Flip feed for " + STORE.toUpperCase() + "?")) return;
-  var r = await fetch("/api/admin/public-feed", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE }),
-  });
-  if (!r.ok) { alert("Failed"); return; }
-  var j = await r.json();
-  paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
-};
-
-document.getElementById("btn-add-cat").onclick = async function () {
-  var name = prompt("New group name (e.g. Lighting, Hardscape):");
-  if (!name || !name.trim()) return;
-  var r = await fetch("/api/inventory/category", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, name: name.trim() }),
-  });
-  if (!r.ok) { alert("Could not add group"); return; }
-  var j = await r.json();
-  CATEGORIES = j.categories || [];
-  paintCatFilter();
-  fillCategorySelect(name.trim());
-};
-
-function esc(s) {
-  return String(s == null ? "" : s).replace(/&/g,"&").replace(/</g,"<").replace(/"/g,""");
-}
-
-function renderRows() {
-  var items = ALL_ITEMS;
-  if (FILTER) {
-    items = items.filter(function (i) {
-      return String(i.category || "").toLowerCase() === FILTER.toLowerCase();
-    });
-  }
-  document.getElementById("body").innerHTML = items.map(function (i) {
-    var skuAttr = String(i.sku).replace(/"/g, """);
-    var nImg = (i.images && i.images.length) || (i.image ? 1 : 0);
-    return "<tr>" +
-      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button>" +
-      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button>" +
-      "</td>" +
-      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
-      "<td class=\"px-3 py-3\">" + esc(i.name) + (nImg ? " <span class=\"text-zinc-500 text-[10px]\">📷" + nImg + "</span>" : "") + "</td>" +
-      "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
-      "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
-      "<td class=\"px-3 py-3 text-xs\">" + esc(i.category || "") + "</td>" +
-      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-edit=\"" + skuAttr + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
-      "<button type=\"button\" data-del=\"" + skuAttr + "\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button>" +
-      "<button type=\"button\" data-plus=\"" + skuAttr + "\" class=\"text-emerald-400 px-1\">+</button>" +
-      "<button type=\"button\" data-minus=\"" + skuAttr + "\" class=\"text-zinc-400 px-1\">−</button>" +
-      "</td></tr>";
-  }).join("") || "<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
-
-  document.querySelectorAll("[data-edit]").forEach(function (btn) {
-    btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
-  });
-  document.querySelectorAll("[data-del]").forEach(function (btn) {
-    btn.onclick = function () { removeItem(btn.getAttribute("data-del")); };
-  });
-  document.querySelectorAll("[data-plus]").forEach(function (btn) {
-    btn.onclick = function () { adj(btn.getAttribute("data-plus"), 1); };
-  });
-  document.querySelectorAll("[data-minus]").forEach(function (btn) {
-    btn.onclick = function () { adj(btn.getAttribute("data-minus"), -1); };
-  });
-  document.querySelectorAll("[data-up]").forEach(function (btn) {
-    btn.onclick = function () { reorder(btn.getAttribute("data-up"), "up"); };
-  });
-  document.querySelectorAll("[data-down]").forEach(function (btn) {
-    btn.onclick = function () { reorder(btn.getAttribute("data-down"), "down"); };
-  });
-}
-
-async function load() {
-  paintTabs();
-  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
-  if (!r.ok) { location.href = "/login"; return; }
-  var d = await r.json();
-  document.getElementById("warehouse").textContent = d.warehouse || "";
-  paintFeed(!!d.publicFeed, d.storeName || STORE);
-  CATEGORIES = d.categories || [];
-  ALL_ITEMS = d.items || [];
-  paintCatFilter();
-  fillCategorySelect();
-  renderRows();
-}
-
-async function adj(sku, delta) {
-  await fetch("/api/inventory/adjust", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku, delta: delta }),
-  });
-  load();
-}
-
-async function reorder(sku, direction) {
-  await fetch("/api/inventory/reorder", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku, direction: direction }),
-  });
-  load();
-}
-
-async function removeItem(sku) {
-  if (!confirm("Delete " + sku + "?")) return;
-  var r = await fetch("/api/inventory/remove", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku }),
-  });
-  if (!r.ok) { alert("Delete failed"); return; }
-  load();
-}
-
-function openEdit(sku) {
-  var i = ALL_ITEMS.find(function (x) { return String(x.sku) === String(sku); });
-  var f = document.getElementById("form");
-  document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
-  document.getElementById("sku-hint").textContent = i ? "(editing)" : "(new)";
-  f.reset();
-  document.getElementById("imgfile").value = "";
-  document.getElementById("originalSku").value = i ? (i.sku || "") : "";
-  fillCategorySelect(i ? i.category : CATEGORIES[0]);
-  var n = i && i.images ? i.images.length : i && i.image ? 1 : 0;
-  document.getElementById("photo-count").textContent = n ? ("Currently " + n + " photo(s) on this product") : "";
-  if (i) {
-    f.sku.value = i.sku || "";
-    f.name.value = i.name || "";
-    f.description.value = i.description || "";
-    f.price.value = i.price != null ? i.price : 0;
-    f.qty.value = i.qty != null ? i.qty : 0;
-    f.lane.value = i.lane || "direct";
-    f.status.value = i.status || "active";
-    f.image.value = i.image || "";
-  }
-  showModal(true);
-}
-
-function readFileAsDataUrl(file) {
-  return new Promise(function (resolve, reject) {
-    var r = new FileReader();
-    r.onload = function () { resolve(r.result); };
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
-
-document.getElementById("btn-add").onclick = function () {
-  document.getElementById("form-title").textContent = "New product";
-  document.getElementById("sku-hint").textContent = "(new)";
-  document.getElementById("form").reset();
-  document.getElementById("originalSku").value = "";
-  document.getElementById("imgfile").value = "";
-  document.getElementById("photo-count").textContent = "";
-  fillCategorySelect(FILTER || CATEGORIES[0]);
-  showModal(true);
-};
-document.getElementById("btn-cancel").onclick = function () { showModal(false); };
-
-document.getElementById("form").onsubmit = async function (e) {
-  e.preventDefault();
-  var f = e.target;
-  var body = {
-    store: STORE,
-    sku: f.sku.value.trim(),
-    originalSku: document.getElementById("originalSku").value.trim() || undefined,
-    name: f.name.value.trim(),
-    description: f.description.value,
-    price: Number(f.price.value) || 0,
-    qty: Number(f.qty.value) || 0,
-    category: f.category.value,
-    lane: f.lane.value,
-    status: f.status.value,
-    image: f.image.value.trim(),
-  };
-  var res = await fetch("/api/inventory/item", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) { alert("Save failed"); return; }
-
-  var files = document.getElementById("imgfile").files;
-  if (files && files.length) {
-    var dataUrls = [];
-    var max = Math.min(files.length, 10);
-    for (var i = 0; i < max; i++) {
-      dataUrls.push(await readFileAsDataUrl(files[i]));
-    }
-    await fetch("/api/inventory/images", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: dataUrls }),
-    });
-  }
-  showModal(false);
-  load();
-};
-
+var STORE="herp",FILTER="",CATEGORIES=[],ALL_ITEMS=[];
+function showModal(show){var m=document.getElementById("modal");if(show){m.classList.remove("hidden");m.classList.add("flex");}else{m.classList.add("hidden");m.classList.remove("flex");}}
+function paintTabs(){document.querySelectorAll(".tab-btn").forEach(function(btn){var on=btn.getAttribute("data-store")===STORE;btn.className="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 "+(on?"border-emerald-800 bg-zinc-900 text-emerald-400":"border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");});}
+function paintFeed(on,name){document.getElementById("store-label").textContent=name||STORE;document.getElementById("active-name").textContent=name||STORE;var st=document.getElementById("feed-status");var btn=document.getElementById("btn-dont-touch");if(on){st.innerHTML='<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';btn.textContent="DON'T TOUCH (FEED ON — CLICK TO KILL)";btn.className="w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";}else{st.innerHTML='<span class="text-red-400 font-bold">FEED IS OFF</span>';btn.textContent="DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";btn.className="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";}}
+function fillCategorySelect(selected){var sel=document.getElementById("categorySelect");sel.innerHTML=(CATEGORIES.length?CATEGORIES:["General"]).map(function(c){return "<option value=\""+String(c).replace(/\"/g,""")+"\""+(c===selected?" selected":"")+">"+c+"</option>";}).join("");}
+function paintCatFilter(){var box=document.getElementById("cat-filter");var chips=[""].concat(CATEGORIES);box.innerHTML=chips.map(function(c){var label=c||"All";return "<button type=\"button\" class=\"cat-chip"+(FILTER===c?" active":"")+"\" data-cat=\""+(c||"")+"\">"+label+"</button>";}).join("");box.querySelectorAll("[data-cat]").forEach(function(btn){btn.onclick=function(){FILTER=btn.getAttribute("data-cat")||"";paintCatFilter();renderRows();};});}
+document.querySelectorAll(".tab-btn").forEach(function(btn){btn.onclick=function(){STORE=btn.getAttribute("data-store");FILTER="";paintTabs();load();};});
+document.getElementById("btn-dont-touch").onclick=async function(){if(!confirm("Flip feed for "+STORE.toUpperCase()+"?"))return;var r=await fetch("/api/admin/public-feed",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE})});if(!r.ok){alert("Failed");return;}var j=await r.json();paintFeed(!!j.publicFeed,document.getElementById("active-name").textContent);};
+document.getElementById("btn-add-cat").onclick=async function(){var name=prompt("New group name:");if(!name||!name.trim())return;var r=await fetch("/api/inventory/category",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,name:name.trim()})});if(!r.ok){alert("Could not add group");return;}var j=await r.json();CATEGORIES=j.categories||[];paintCatFilter();fillCategorySelect(name.trim());};
+function esc(s){return String(s==null?"":s).replace(/&/g,"&").replace(/</g,"<").replace(/"/g,""");}
+function renderRows(){var items=ALL_ITEMS;if(FILTER)items=items.filter(function(i){return String(i.category||"").toLowerCase()===FILTER.toLowerCase();});document.getElementById("body").innerHTML=items.map(function(i){var skuAttr=String(i.sku).replace(/"/g,""");var nImg=(i.images&&i.images.length)||(i.image?1:0);var nVid=(i.videos&&i.videos.length)||(i.video?1:0);var media=(nImg?" 📷"+nImg:"")+(nVid?" 🎬"+nVid:"");return "<tr><td class=\"px-3 py-3 whitespace-nowrap\"><button type=\"button\" data-up=\""+skuAttr+"\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button><button type=\"button\" data-down=\""+skuAttr+"\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button></td><td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">"+esc(i.sku)+"</td><td class=\"px-3 py-3\">"+esc(i.name)+(media?" <span class=\"text-zinc-500 text-[10px]\">"+media+"</span>":"")+"</td><td class=\"px-3 py-3 font-bold text-emerald-400\">$"+(Number(i.price)||0).toFixed(2)+"</td><td class=\"px-3 py-3 font-bold\">"+i.qty+"</td><td class=\"px-3 py-3 text-xs\">"+esc(i.category||"")+"</td><td class=\"px-3 py-3 whitespace-nowrap\"><button type=\"button\" data-edit=\""+skuAttr+"\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button><button type=\"button\" data-del=\""+skuAttr+"\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button><button type=\"button\" data-plus=\""+skuAttr+"\" class=\"text-emerald-400 px-1\">+</button><button type=\"button\" data-minus=\""+skuAttr+"\" class=\"text-zinc-400 px-1\">−</button></td></tr>";}).join("")||"<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
+document.querySelectorAll("[data-edit]").forEach(function(btn){btn.onclick=function(){openEdit(btn.getAttribute("data-edit"));};});
+document.querySelectorAll("[data-del]").forEach(function(btn){btn.onclick=function(){removeItem(btn.getAttribute("data-del"));};});
+document.querySelectorAll("[data-plus]").forEach(function(btn){btn.onclick=function(){adj(btn.getAttribute("data-plus"),1);};});
+document.querySelectorAll("[data-minus]").forEach(function(btn){btn.onclick=function(){adj(btn.getAttribute("data-minus"),-1);};});
+document.querySelectorAll("[data-up]").forEach(function(btn){btn.onclick=function(){reorder(btn.getAttribute("data-up"),"up");};});
+document.querySelectorAll("[data-down]").forEach(function(btn){btn.onclick=function(){reorder(btn.getAttribute("data-down"),"down");};});}
+async function load(){paintTabs();var r=await fetch("/api/inventory?store="+encodeURIComponent(STORE));if(!r.ok){location.href="/login";return;}var d=await r.json();document.getElementById("warehouse").textContent=d.warehouse||"";paintFeed(!!d.publicFeed,d.storeName||STORE);CATEGORIES=d.categories||[];ALL_ITEMS=d.items||[];paintCatFilter();fillCategorySelect();renderRows();}
+async function adj(sku,delta){await fetch("/api/inventory/adjust",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku,delta:delta})});load();}
+async function reorder(sku,direction){await fetch("/api/inventory/reorder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku,direction:direction})});load();}
+async function removeItem(sku){if(!confirm("Delete "+sku+"?"))return;var r=await fetch("/api/inventory/remove",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku})});if(!r.ok){alert("Delete failed");return;}load();}
+function openEdit(sku){var i=ALL_ITEMS.find(function(x){return String(x.sku)===String(sku);});var f=document.getElementById("form");document.getElementById("form-title").textContent=i?"Edit product":"New product";document.getElementById("sku-hint").textContent=i?"(editing)":"(new)";f.reset();document.getElementById("imgfile").value="";document.getElementById("vidfile").value="";document.getElementById("originalSku").value=i?(i.sku||""):"";fillCategorySelect(i?i.category:CATEGORIES[0]);var n=(i&&i.images)?i.images.length:(i&&i.image?1:0);var nv=(i&&i.videos)?i.videos.length:(i&&i.video?1:0);document.getElementById("photo-count").textContent=n?("Currently "+n+" photo(s)"):"";document.getElementById("video-count").textContent=nv?("Currently "+nv+" video(s)"):"";if(i){f.sku.value=i.sku||"";f.name.value=i.name||"";f.description.value=i.description||"";f.price.value=i.price!=null?i.price:0;f.qty.value=i.qty!=null?i.qty:0;f.lane.value=i.lane||"direct";f.status.value=i.status||"active";f.image.value=i.image||"";f.video.value=i.video||"";}showModal(true);}
+function readFileAsDataUrl(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(r.result);};r.onerror=reject;r.readAsDataURL(file);});}
+document.getElementById("btn-add").onclick=function(){document.getElementById("form-title").textContent="New product";document.getElementById("sku-hint").textContent="(new)";document.getElementById("form").reset();document.getElementById("originalSku").value="";document.getElementById("imgfile").value="";document.getElementById("vidfile").value="";document.getElementById("photo-count").textContent="";document.getElementById("video-count").textContent="";fillCategorySelect(FILTER||CATEGORIES[0]);showModal(true);};
+document.getElementById("btn-cancel").onclick=function(){showModal(false);};
+document.getElementById("form").onsubmit=async function(e){e.preventDefault();var f=e.target;var body={store:STORE,sku:f.sku.value.trim(),originalSku:document.getElementById("originalSku").value.trim()||undefined,name:f.name.value.trim(),description:f.description.value,price:Number(f.price.value)||0,qty:Number(f.qty.value)||0,category:f.category.value,lane:f.lane.value,status:f.status.value,image:f.image.value.trim(),video:f.video.value.trim()};var res=await fetch("/api/inventory/item",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});if(!res.ok){alert("Save failed");return;}
+var files=document.getElementById("imgfile").files;if(files&&files.length){var dataUrls=[];var max=Math.min(files.length,10);for(var i=0;i<max;i++)dataUrls.push(await readFileAsDataUrl(files[i]));await fetch("/api/inventory/images",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:body.sku,dataUrls:dataUrls})});}
+var vfiles=document.getElementById("vidfile").files;if(vfiles&&vfiles.length){var vUrls=[];var vmax=Math.min(vfiles.length,2);for(var j=0;j<vmax;j++)vUrls.push(await readFileAsDataUrl(vfiles[j]));await fetch("/api/inventory/videos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:body.sku,dataUrls:vUrls})});}
+showModal(false);load();};
 load();
 </script>
 </body>
