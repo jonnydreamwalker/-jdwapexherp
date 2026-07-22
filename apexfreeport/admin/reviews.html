@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reviews · ApexFreePort</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+<header class="border-b border-emerald-900 bg-black">
+  <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div>
+      <p class="text-emerald-500 text-[10px] font-bold tracking-widest uppercase">Moderation</p>
+      <h1 class="text-xl font-black text-emerald-400">Reviews</h1>
+    </div>
+    <div class="flex gap-3 text-xs">
+      <a href="/admin" class="border border-zinc-700 px-3 py-1.5 rounded-lg uppercase">Inventory</a>
+      <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg uppercase">Logout</button></form>
+    </div>
+  </div>
+</header>
+<main class="max-w-4xl mx-auto px-4 py-8">
+  <p class="text-zinc-500 text-sm mb-6">Only <span class="text-emerald-400">Approve</span> publishes to the website. Reject keeps it off the site. Data stays on your server.</p>
+  <div id="list" class="space-y-4"></div>
+</main>
+<script>
+function stars(n) {
+  n = Math.round(Number(n) || 0);
+  var s = "";
+  for (var i = 1; i <= 5; i++) s += i <= n ? "★" : "☆";
+  return s;
+}
+async function load() {
+  var r = await fetch("/api/reviews/admin");
+  if (!r.ok) { location.href = "/login"; return; }
+  var d = await r.json();
+  var items = d.reviews || [];
+  var el = document.getElementById("list");
+  if (!items.length) {
+    el.innerHTML = '<p class="text-zinc-500">No reviews yet.</p>';
+    return;
+  }
+  el.innerHTML = items
+    .slice()
+    .reverse()
+    .map(function (rev) {
+      var st = rev.status || "pending";
+      var badge =
+        st === "approved"
+          ? "text-emerald-400"
+          : st === "rejected"
+          ? "text-red-400"
+          : "text-amber-400";
+      return (
+        '<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">' +
+        '<div class="flex flex-wrap justify-between gap-2 mb-2">' +
+        '<span class="text-amber-400">' +
+        stars(rev.stars) +
+        "</span>" +
+        '<span class="text-xs uppercase ' +
+        badge +
+        '">' +
+        st +
+        "</span></div>" +
+        "<p class=\"text-sm text-zinc-200 mb-2\">" +
+        String(rev.text || "").replace(/</g, "&lt;") +
+        "</p>" +
+        '<p class="text-xs text-zinc-500 mb-3">' +
+        String(rev.name || "Anonymous").replace(/</g, "&lt;") +
+        " · " +
+        (rev.created || "") +
+        (rev.page ? " · " + rev.page : "") +
+        "</p>" +
+        '<div class="flex gap-2">' +
+        (st !== "approved"
+          ? '<button type="button" data-id="' +
+            rev.id +
+            '" data-act="approved" class="bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-3 py-1.5 rounded-lg">Approve</button>'
+          : "") +
+        (st !== "rejected"
+          ? '<button type="button" data-id="' +
+            rev.id +
+            '" data-act="rejected" class="border border-zinc-600 text-xs font-bold uppercase px-3 py-1.5 rounded-lg">Reject</button>'
+          : "") +
+        "</div></div>"
+      );
+    })
+    .join("");
+  el.querySelectorAll("button[data-id]").forEach(function (btn) {
+    btn.onclick = async function () {
+      await fetch("/api/reviews/moderate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: btn.getAttribute("data-id"), status: btn.getAttribute("data-act") }),
+      });
+      load();
+    };
+  });
+}
+load();
+</script>
+</body>
+</html>
