@@ -1,5 +1,31 @@
 /** Shared cart + nav helpers for service pages */
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
+
+/** Browser tab logo — same as index */
+(function ensureTabLogo() {
+  var href = "../assets/images/gallery/Logo.png";
+  function setLink(rel, type) {
+    var el = document.querySelector('link[rel="' + rel + '"]');
+    if (!el) {
+      el = document.createElement("link");
+      el.setAttribute("rel", rel);
+      if (type) el.setAttribute("type", type);
+      document.head.appendChild(el);
+    }
+    el.setAttribute("href", href);
+  }
+  setLink("icon", "image/png");
+  setLink("shortcut icon", "image/png");
+  setLink("apple-touch-icon", null);
+  var theme = document.querySelector('meta[name="theme-color"]');
+  if (!theme) {
+    theme = document.createElement("meta");
+    theme.setAttribute("name", "theme-color");
+    document.head.appendChild(theme);
+  }
+  theme.setAttribute("content", "#000000");
+})();
+
 function updateCartCount() {
   var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
   document.querySelectorAll(".cart-count").forEach(function (b) {
@@ -112,12 +138,9 @@ function populatePayPalFormFields() { return true; }
 function startSquarePayment() { alert("Square checkout — live keys in ApexFreePort."); }
 function startStripePayment() { alert("Stripe checkout — live keys in ApexFreePort."); }
 
-/** Ensure every service page footer has socials + live sister-site links */
 function polishServiceFooter() {
   var foot = document.querySelector("footer");
   if (!foot) return;
-  var connect = foot.querySelector("h4");
-  // Rebuild Connect column if social icons missing
   if (!foot.querySelector(".fa-instagram")) {
     var cols = foot.querySelectorAll(".grid > div");
     if (cols.length >= 4) {
