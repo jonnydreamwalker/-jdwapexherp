@@ -11,7 +11,7 @@ if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret,x-square-hmacsha256-signature,x-square-signature");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret,x-square-hmacsha256-signature,x-square-signature,stripe-signature");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -55,14 +55,39 @@ function extractSkusFromSquarePayment(payment) {
   var blob = (note + " " + ref).toUpperCase();
   var d = read();
   (d.items || []).forEach(function (it) {
-    if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) {
-      found.push({ sku: it.sku, quantity: 1 });
-    }
+    if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) found.push({ sku: it.sku, quantity: 1 });
   });
   return found;
 }
+function extractSkusFromStripeEvent(event) {
+  var found = [];
+  var obj = event && event.data && event.data.object;
+  if (!obj) return found;
+  var meta = obj.metadata || {};
+  if (meta.sku) found.push({ sku: meta.sku, quantity: Number(meta.quantity) || 1 });
+  if (obj.client_reference_id) {
+    var d = read();
+    (d.items || []).forEach(function (it) {
+      if (String(obj.client_reference_id).toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) {
+        found.push({ sku: it.sku, quantity: 1 });
+      }
+    });
+  }
+  if (obj.line_items && obj.line_items.data) {
+    obj.line_items.data.forEach(function (li) {
+      var m = (li.price && li.price.product_data && li.price.product_data.metadata) || li.metadata || {};
+      if (m.sku) found.push({ sku: m.sku, quantity: Number(li.quantity) || 1 });
+    });
+  }
+  return found;
+}
 app.get("/health", function (req, res) {
-  res.json({ ok: true, service: "ApexFreePort", square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token" });
+  res.json({
+    ok: true,
+    service: "ApexFreePort",
+    square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
+    stripe: process.env.STRIPE_SECRET_KEY ? "token-set" : "no-token",
+  });
 });
 app.get("/api/stock", function (req, res) {
   try {
@@ -154,18 +179,12 @@ app.post("/api/webhook/square", function (req, res) {
     var body = req.body || {};
     var type = body.type || "";
     var payment = body.data && body.data.object && (body.data.object.payment || body.data.object);
-    if (type && type !== "payment.updated" && type !== "payment.created") {
-      return res.json({ ok: true, ignored: type });
-    }
+    if (type && type !== "payment.updated" && type !== "payment.created") return res.json({ ok: true, ignored: type });
     if (!payment) return res.json({ ok: true, ignored: "no payment" });
     var status = payment.status || "";
-    if (status && status !== "COMPLETED") {
-      return res.json({ ok: true, ignored: "status " + status });
-    }
+    if (status && status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + status });
     var lines = extractSkusFromSquarePayment(payment);
-    if (!lines.length && process.env.SQUARE_DEFAULT_SKU) {
-      lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
-    }
+    if (!lines.length && process.env.SQUARE_DEFAULT_SKU) lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "square")); });
     console.log("Square webhook", status, JSON.stringify(results));
@@ -175,8 +194,29 @@ app.post("/api/webhook/square", function (req, res) {
     res.status(500).json({ error: "webhook fail" });
   }
 });
+app.post("/api/webhook/stripe", function (req, res) {
+  try {
+    var event = req.body || {};
+    var type = event.type || "";
+    if (type !== "payment_intent.succeeded" && type !== "checkout.session.completed") {
+      return res.json({ ok: true, ignored: type });
+    }
+    var lines = extractSkusFromStripeEvent(event);
+    if (!lines.length && process.env.STRIPE_DEFAULT_SKU) {
+      lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
+    }
+    var results = [];
+    lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "stripe")); });
+    console.log("Stripe webhook", type, JSON.stringify(results));
+    res.json({ ok: true, results: results });
+  } catch (e) {
+    console.error("Stripe webhook error", e);
+    res.status(500).json({ error: "webhook fail" });
+  }
+});
 app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
   console.log("Square token: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "not set"));
+  console.log("Stripe key: " + (process.env.STRIPE_SECRET_KEY ? "set" : "not set"));
 });
