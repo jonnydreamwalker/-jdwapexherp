@@ -152,7 +152,7 @@ app.post("/api/inventory/image", auth, function (req, res) {
     var buf = Buffer.from(m[2], "base64");
     if (buf.length > 1500000) return res.status(400).json({ error: "image too large" });
     fs.writeFileSync(path.join(UPLOADS, fname), buf);
-    var url = "/uploads/" + diff + fname;
+    var url = "/uploads/" + fname;
     var d = read(); var item = null;
     for (var i = 0; i < d.items.length; i++) {
       if (d.items[i].sku === b.sku) { d.items[i].image = url; item = d.items[i]; }
@@ -211,7 +211,6 @@ app.post("/api/webhook/paypal", function (req, res) {
     res.sendStatus(200);
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
-/** Etsy: credentials registered; full order sync needs OAuth token (next step) */
 app.get("/api/etsy/status", auth, function (req, res) {
   res.json({
     keystring: process.env.ETSY_KEYSTRING ? "set" : "missing",
