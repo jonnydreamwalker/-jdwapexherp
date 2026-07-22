@@ -1,4 +1,4 @@
-/** ApexFreePort bridge — multi-store + photo carousel (up to 10) */
+/** ApexFreePort bridge — photos (10) + mp4 (2) + carousel */
 (function (global) {
   var APEX_API = "https://api.jdwapexherp.com";
 
@@ -8,7 +8,7 @@
   function storeId() {
     return global.APEX_STORE || (global.APEX_SITE && global.APEX_SITE.store) || "herp";
   }
-  function imgUrl(path) {
+  function mediaUrl(path) {
     if (!path) return "";
     if (String(path).indexOf("http") === 0) return path;
     return base() + path;
@@ -21,13 +21,15 @@
   }
   function productImages(i) {
     var list = [];
-    if (Array.isArray(i.images)) {
-      i.images.forEach(function (p) {
-        if (p) list.push(imgUrl(p));
-      });
-    }
-    if (!list.length && i.image) list.push(imgUrl(i.image));
+    if (Array.isArray(i.images)) i.images.forEach(function (p) { if (p) list.push(mediaUrl(p)); });
+    if (!list.length && i.image) list.push(mediaUrl(i.image));
     return list.slice(0, 10);
+  }
+  function productVideos(i) {
+    var list = [];
+    if (Array.isArray(i.videos)) i.videos.forEach(function (p) { if (p) list.push(mediaUrl(p)); });
+    if (i.video) list.push(mediaUrl(i.video));
+    return list.slice(0, 2);
   }
   async function fetchProducts(category) {
     var q = "?store=" + encodeURIComponent(storeId());
@@ -40,57 +42,61 @@
     return "$" + (Number(n) || 0).toFixed(2);
   }
 
-  function mediaBlock(imgs, idx) {
-    if (!imgs.length) {
-      return "";
-    }
-    if (imgs.length === 1) {
+  function mediaBlock(imgs, vids, idx) {
+    var parts = [];
+    imgs.forEach(function (src) {
+      parts.push({ type: "img", src: src });
+    });
+    vids.forEach(function (src) {
+      parts.push({ type: "video", src: src });
+    });
+    if (!parts.length) return "";
+
+    if (parts.length === 1 && parts[0].type === "img") {
       return (
         '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950">' +
-        '<img src="' +
-        esc(imgs[0]) +
-        '" alt="" class="w-full h-full object-cover" loading="lazy">' +
+        '<img src="' + esc(parts[0].src) + '" alt="" class="w-full h-full object-cover" loading="lazy">' +
         "</div>"
       );
     }
-    var slides = imgs
-      .map(function (src, n) {
+
+    var slides = parts
+      .map(function (p, n) {
+        var inner =
+          p.type === "video"
+            ? '<video src="' + esc(p.src) + '" class="w-full h-full object-cover" muted playsinline loop controls></video>'
+            : '<img src="' + esc(p.src) + '" alt="" class="w-full h-full object-cover" loading="lazy">';
         return (
           '<div class="apex-slide absolute inset-0 transition-opacity duration-300 ' +
           (n === 0 ? "opacity-100" : "opacity-0 pointer-events-none") +
-          '" data-slide="' +
-          n +
-          '">' +
-          '<img src="' +
-          esc(src) +
-          '" alt="" class="w-full h-full object-cover" loading="lazy">' +
-          "</div>"
+          '" data-slide="' + n + '">' + inner + "</div>"
         );
       })
       .join("");
-    var dots = imgs
+
+    var dots = parts
       .map(function (_, n) {
         return (
           '<button type="button" class="apex-dot w-2 h-2 rounded-full ' +
           (n === 0 ? "bg-emerald-400" : "bg-zinc-600") +
-          '" data-go="' +
-          n +
-          '" aria-label="Photo ' +
-          (n + 1) +
-          '"></button>'
+          '" data-go="' + n + '" aria-label="Media ' + (n + 1) + '"></button>'
         );
       })
       .join("");
+
     return (
       '<div class="apex-carousel relative h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950" data-car="' +
       idx +
       '">' +
       slides +
-      '<button type="button" class="apex-prev absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Previous">‹</button>' +
-      '<button type="button" class="apex-next absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Next">›</button>' +
-      '<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">' +
-      dots +
-      "</div></div>"
+      (parts.length > 1
+        ? '<button type="button" class="apex-prev absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Previous">‹</button>' +
+          '<button type="button" class="apex-next absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Next">›</button>' +
+          '<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">' +
+          dots +
+          "</div>"
+        : "") +
+      "</div>"
     );
   }
 
@@ -103,17 +109,19 @@
         if (!slides.length) return;
         cur = (n + slides.length) % slides.length;
         slides.forEach(function (s, i) {
+          var v = s.querySelector("video");
           if (i === cur) {
             s.classList.remove("opacity-0", "pointer-events-none");
             s.classList.add("opacity-100");
+            if (v) { try { v.play(); } catch (e) {} }
           } else {
             s.classList.add("opacity-0", "pointer-events-none");
             s.classList.remove("opacity-100");
+            if (v) { try { v.pause(); } catch (e) {} }
           }
         });
         dots.forEach(function (d, i) {
-          d.className =
-            "apex-dot w-2 h-2 rounded-full " + (i === cur ? "bg-emerald-400" : "bg-zinc-600");
+          d.className = "apex-dot w-2 h-2 rounded-full " + (i === cur ? "bg-emerald-400" : "bg-zinc-600");
         });
       }
       var prev = car.querySelector(".apex-prev");
@@ -149,6 +157,7 @@
       el.innerHTML = items
         .map(function (i, idx) {
           var imgs = productImages(i);
+          var vids = productVideos(i);
           var disabled =
             i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
           var desc = i.description || "";
@@ -174,7 +183,7 @@
             : "";
           return (
             '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center">' +
-            mediaBlock(imgs, idx) +
+            mediaBlock(imgs, vids, idx) +
             '<h3 class="text-xl font-bold text-emerald-400 mb-2">' +
             esc(i.name) +
             "</h3>" +
@@ -227,7 +236,7 @@
     storeId: storeId,
     fetchProducts: fetchProducts,
     renderCatalog: renderCatalog,
-    imgUrl: imgUrl,
+    mediaUrl: mediaUrl,
   };
 
   document.addEventListener("DOMContentLoaded", function () {
