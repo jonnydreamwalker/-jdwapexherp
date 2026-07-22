@@ -64,7 +64,7 @@
       <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">Inventory</p>
       <h3 id="form-title" class="text-xl font-black text-emerald-400">New product</h3>
     </div>
-    <input type="hidden" name="originalSku" id="originalSku" value="">
+    <input type="hidden" id="originalSku" value="">
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">SKU <span id="sku-hint" class="normal-case text-zinc-600"></span></label>
     <input name="sku" required class="glass-input" placeholder="HS-UFO-FLAT-01">
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Name</label>
@@ -84,13 +84,13 @@
         <select name="status" class="glass-input"><option value="active">Active</option><option value="coming_soon">Coming soon</option><option value="hold">Hold</option></select></div>
     </div>
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL (optional)</label>
-    <input name="image" class="glass-input" placeholder="https://…">
+    <input name="image" class="glass-input" placeholder="https://">
     <label class="block text-xs text-zinc-500 uppercase tracking-wide">Photos (up to 10)</label>
     <input type="file" id="imgfile" accept="image/*" multiple class="w-full text-xs text-zinc-400">
     <p id="photo-count" class="text-[10px] text-emerald-500/80"></p>
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Video URL (optional MP4)</label>
-    <input name="video" class="glass-input" placeholder="https://…/clip.mp4">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">MP4 upload (up to 2 · keep under ~10MB each)</label>
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Video URL (optional)</label>
+    <input name="video" class="glass-input" placeholder="https://.../clip.mp4">
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">MP4 upload (up to 2)</label>
     <input type="file" id="vidfile" accept="video/mp4,video/webm" multiple class="w-full text-xs text-zinc-400">
     <p id="video-count" class="text-[10px] text-emerald-500/80"></p>
     <div class="flex gap-2 pt-3">
@@ -101,35 +101,306 @@
 </div>
 
 <script>
-var STORE="herp",FILTER="",CATEGORIES=[],ALL_ITEMS=[];
-function showModal(show){var m=document.getElementById("modal");if(show){m.classList.remove("hidden");m.classList.add("flex");}else{m.classList.add("hidden");m.classList.remove("flex");}}
-function paintTabs(){document.querySelectorAll(".tab-btn").forEach(function(btn){var on=btn.getAttribute("data-store")===STORE;btn.className="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 "+(on?"border-emerald-800 bg-zinc-900 text-emerald-400":"border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");});}
-function paintFeed(on,name){document.getElementById("store-label").textContent=name||STORE;document.getElementById("active-name").textContent=name||STORE;var st=document.getElementById("feed-status");var btn=document.getElementById("btn-dont-touch");if(on){st.innerHTML='<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';btn.textContent="DON'T TOUCH (FEED ON — CLICK TO KILL)";btn.className="w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";}else{st.innerHTML='<span class="text-red-400 font-bold">FEED IS OFF</span>';btn.textContent="DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";btn.className="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";}}
-function fillCategorySelect(selected){var sel=document.getElementById("categorySelect");sel.innerHTML=(CATEGORIES.length?CATEGORIES:["General"]).map(function(c){return "<option value=\""+String(c).replace(/\"/g,""")+"\""+(c===selected?" selected":"")+">"+c+"</option>";}).join("");}
-function paintCatFilter(){var box=document.getElementById("cat-filter");var chips=[""].concat(CATEGORIES);box.innerHTML=chips.map(function(c){var label=c||"All";return "<button type=\"button\" class=\"cat-chip"+(FILTER===c?" active":"")+"\" data-cat=\""+(c||"")+"\">"+label+"</button>";}).join("");box.querySelectorAll("[data-cat]").forEach(function(btn){btn.onclick=function(){FILTER=btn.getAttribute("data-cat")||"";paintCatFilter();renderRows();};});}
-document.querySelectorAll(".tab-btn").forEach(function(btn){btn.onclick=function(){STORE=btn.getAttribute("data-store");FILTER="";paintTabs();load();};});
-document.getElementById("btn-dont-touch").onclick=async function(){if(!confirm("Flip feed for "+STORE.toUpperCase()+"?"))return;var r=await fetch("/api/admin/public-feed",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE})});if(!r.ok){alert("Failed");return;}var j=await r.json();paintFeed(!!j.publicFeed,document.getElementById("active-name").textContent);};
-document.getElementById("btn-add-cat").onclick=async function(){var name=prompt("New group name:");if(!name||!name.trim())return;var r=await fetch("/api/inventory/category",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,name:name.trim()})});if(!r.ok){alert("Could not add group");return;}var j=await r.json();CATEGORIES=j.categories||[];paintCatFilter();fillCategorySelect(name.trim());};
-function esc(s){return String(s==null?"":s).replace(/&/g,"&").replace(/</g,"<").replace(/"/g,""");}
-function renderRows(){var items=ALL_ITEMS;if(FILTER)items=items.filter(function(i){return String(i.category||"").toLowerCase()===FILTER.toLowerCase();});document.getElementById("body").innerHTML=items.map(function(i){var skuAttr=String(i.sku).replace(/"/g,""");var nImg=(i.images&&i.images.length)||(i.image?1:0);var nVid=(i.videos&&i.videos.length)||(i.video?1:0);var media=(nImg?" 📷"+nImg:"")+(nVid?" 🎬"+nVid:"");return "<tr><td class=\"px-3 py-3 whitespace-nowrap\"><button type=\"button\" data-up=\""+skuAttr+"\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button><button type=\"button\" data-down=\""+skuAttr+"\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button></td><td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">"+esc(i.sku)+"</td><td class=\"px-3 py-3\">"+esc(i.name)+(media?" <span class=\"text-zinc-500 text-[10px]\">"+media+"</span>":"")+"</td><td class=\"px-3 py-3 font-bold text-emerald-400\">$"+(Number(i.price)||0).toFixed(2)+"</td><td class=\"px-3 py-3 font-bold\">"+i.qty+"</td><td class=\"px-3 py-3 text-xs\">"+esc(i.category||"")+"</td><td class=\"px-3 py-3 whitespace-nowrap\"><button type=\"button\" data-edit=\""+skuAttr+"\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button><button type=\"button\" data-del=\""+skuAttr+"\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button><button type=\"button\" data-plus=\""+skuAttr+"\" class=\"text-emerald-400 px-1\">+</button><button type=\"button\" data-minus=\""+skuAttr+"\" class=\"text-zinc-400 px-1\">−</button></td></tr>";}).join("")||"<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
-document.querySelectorAll("[data-edit]").forEach(function(btn){btn.onclick=function(){openEdit(btn.getAttribute("data-edit"));};});
-document.querySelectorAll("[data-del]").forEach(function(btn){btn.onclick=function(){removeItem(btn.getAttribute("data-del"));};});
-document.querySelectorAll("[data-plus]").forEach(function(btn){btn.onclick=function(){adj(btn.getAttribute("data-plus"),1);};});
-document.querySelectorAll("[data-minus]").forEach(function(btn){btn.onclick=function(){adj(btn.getAttribute("data-minus"),-1);};});
-document.querySelectorAll("[data-up]").forEach(function(btn){btn.onclick=function(){reorder(btn.getAttribute("data-up"),"up");};});
-document.querySelectorAll("[data-down]").forEach(function(btn){btn.onclick=function(){reorder(btn.getAttribute("data-down"),"down");};});}
-async function load(){paintTabs();var r=await fetch("/api/inventory?store="+encodeURIComponent(STORE));if(!r.ok){location.href="/login";return;}var d=await r.json();document.getElementById("warehouse").textContent=d.warehouse||"";paintFeed(!!d.publicFeed,d.storeName||STORE);CATEGORIES=d.categories||[];ALL_ITEMS=d.items||[];paintCatFilter();fillCategorySelect();renderRows();}
-async function adj(sku,delta){await fetch("/api/inventory/adjust",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku,delta:delta})});load();}
-async function reorder(sku,direction){await fetch("/api/inventory/reorder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku,direction:direction})});load();}
-async function removeItem(sku){if(!confirm("Delete "+sku+"?"))return;var r=await fetch("/api/inventory/remove",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:sku})});if(!r.ok){alert("Delete failed");return;}load();}
-function openEdit(sku){var i=ALL_ITEMS.find(function(x){return String(x.sku)===String(sku);});var f=document.getElementById("form");document.getElementById("form-title").textContent=i?"Edit product":"New product";document.getElementById("sku-hint").textContent=i?"(editing)":"(new)";f.reset();document.getElementById("imgfile").value="";document.getElementById("vidfile").value="";document.getElementById("originalSku").value=i?(i.sku||""):"";fillCategorySelect(i?i.category:CATEGORIES[0]);var n=(i&&i.images)?i.images.length:(i&&i.image?1:0);var nv=(i&&i.videos)?i.videos.length:(i&&i.video?1:0);document.getElementById("photo-count").textContent=n?("Currently "+n+" photo(s)"):"";document.getElementById("video-count").textContent=nv?("Currently "+nv+" video(s)"):"";if(i){f.sku.value=i.sku||"";f.name.value=i.name||"";f.description.value=i.description||"";f.price.value=i.price!=null?i.price:0;f.qty.value=i.qty!=null?i.qty:0;f.lane.value=i.lane||"direct";f.status.value=i.status||"active";f.image.value=i.image||"";f.video.value=i.video||"";}showModal(true);}
-function readFileAsDataUrl(file){return new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(r.result);};r.onerror=reject;r.readAsDataURL(file);});}
-document.getElementById("btn-add").onclick=function(){document.getElementById("form-title").textContent="New product";document.getElementById("sku-hint").textContent="(new)";document.getElementById("form").reset();document.getElementById("originalSku").value="";document.getElementById("imgfile").value="";document.getElementById("vidfile").value="";document.getElementById("photo-count").textContent="";document.getElementById("video-count").textContent="";fillCategorySelect(FILTER||CATEGORIES[0]);showModal(true);};
-document.getElementById("btn-cancel").onclick=function(){showModal(false);};
-document.getElementById("form").onsubmit=async function(e){e.preventDefault();var f=e.target;var body={store:STORE,sku:f.sku.value.trim(),originalSku:document.getElementById("originalSku").value.trim()||undefined,name:f.name.value.trim(),description:f.description.value,price:Number(f.price.value)||0,qty:Number(f.qty.value)||0,category:f.category.value,lane:f.lane.value,status:f.status.value,image:f.image.value.trim(),video:f.video.value.trim()};var res=await fetch("/api/inventory/item",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});if(!res.ok){alert("Save failed");return;}
-var files=document.getElementById("imgfile").files;if(files&&files.length){var dataUrls=[];var max=Math.min(files.length,10);for(var i=0;i<max;i++)dataUrls.push(await readFileAsDataUrl(files[i]));await fetch("/api/inventory/images",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:body.sku,dataUrls:dataUrls})});}
-var vfiles=document.getElementById("vidfile").files;if(vfiles&&vfiles.length){var vUrls=[];var vmax=Math.min(vfiles.length,2);for(var j=0;j<vmax;j++)vUrls.push(await readFileAsDataUrl(vfiles[j]));await fetch("/api/inventory/videos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({store:STORE,sku:body.sku,dataUrls:vUrls})});}
-showModal(false);load();};
+var STORE = "herp";
+var FILTER = "";
+var CATEGORIES = [];
+var ALL_ITEMS = [];
+
+function showModal(show) {
+  var m = document.getElementById("modal");
+  if (show) { m.classList.remove("hidden"); m.classList.add("flex"); }
+  else { m.classList.add("hidden"); m.classList.remove("flex"); }
+}
+
+function paintTabs() {
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    var on = btn.getAttribute("data-store") === STORE;
+    btn.className = "tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 " +
+      (on ? "border-emerald-800 bg-zinc-900 text-emerald-400" : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");
+  });
+}
+
+function paintFeed(on, name) {
+  document.getElementById("store-label").textContent = name || STORE;
+  document.getElementById("active-name").textContent = name || STORE;
+  var st = document.getElementById("feed-status");
+  var btn = document.getElementById("btn-dont-touch");
+  if (on) {
+    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';
+    btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
+    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
+  } else {
+    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span>';
+    btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
+    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
+  }
+}
+
+function fillCategorySelect(selected) {
+  var sel = document.getElementById("categorySelect");
+  var list = CATEGORIES.length ? CATEGORIES : ["General"];
+  sel.innerHTML = list.map(function (c) {
+    var s = c === selected ? " selected" : "";
+    return "<option value=\"" + String(c).replace(/\"/g, """) + "\"" + s + ">" + c + "</option>";
+  }).join("");
+}
+
+function paintCatFilter() {
+  var box = document.getElementById("cat-filter");
+  var chips = [""].concat(CATEGORIES);
+  box.innerHTML = chips.map(function (c) {
+    var label = c || "All";
+    var active = FILTER === c ? " active" : "";
+    return "<button type=\"button\" class=\"cat-chip" + active + "\" data-cat=\"" + (c || "") + "\">" + label + "</button>";
+  }).join("");
+  box.querySelectorAll("[data-cat]").forEach(function (btn) {
+    btn.onclick = function () {
+      FILTER = btn.getAttribute("data-cat") || "";
+      paintCatFilter();
+      renderRows();
+    };
+  });
+}
+
+document.querySelectorAll(".tab-btn").forEach(function (btn) {
+  btn.onclick = function () {
+    STORE = btn.getAttribute("data-store");
+    FILTER = "";
+    paintTabs();
+    load();
+  };
+});
+
+document.getElementById("btn-dont-touch").onclick = async function () {
+  if (!confirm("Flip feed for " + STORE.toUpperCase() + "?")) return;
+  var r = await fetch("/api/admin/public-feed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE }),
+  });
+  if (!r.ok) { alert("Failed"); return; }
+  var j = await r.json();
+  paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
+};
+
+document.getElementById("btn-add-cat").onclick = async function () {
+  var name = prompt("New group name:");
+  if (!name || !name.trim()) return;
+  var r = await fetch("/api/inventory/category", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, name: name.trim() }),
+  });
+  if (!r.ok) { alert("Could not add group"); return; }
+  var j = await r.json();
+  CATEGORIES = j.categories || [];
+  paintCatFilter();
+  fillCategorySelect(name.trim());
+};
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/"/g, """);
+}
+
+function renderRows() {
+  var items = ALL_ITEMS;
+  if (FILTER) {
+    items = items.filter(function (i) {
+      return String(i.category || "").toLowerCase() === FILTER.toLowerCase();
+    });
+  }
+  document.getElementById("body").innerHTML = items.map(function (i) {
+    var skuAttr = String(i.sku).replace(/"/g, """);
+    var nImg = (i.images && i.images.length) || (i.image ? 1 : 0);
+    var nVid = (i.videos && i.videos.length) || (i.video ? 1 : 0);
+    var media = (nImg ? " photo:" + nImg : "") + (nVid ? " vid:" + nVid : "");
+    return "<tr>" +
+      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
+      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button>" +
+      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button></td>" +
+      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
+      "<td class=\"px-3 py-3\">" + esc(i.name) + (media ? " <span class=\"text-zinc-500 text-[10px]\">" + media + "</span>" : "") + "</td>" +
+      "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
+      "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
+      "<td class=\"px-3 py-3 text-xs\">" + esc(i.category || "") + "</td>" +
+      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
+      "<button type=\"button\" data-edit=\"" + skuAttr + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
+      "<button type=\"button\" data-del=\"" + skuAttr + "\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button>" +
+      "<button type=\"button\" data-plus=\"" + skuAttr + "\" class=\"text-emerald-400 px-1\">+</button>" +
+      "<button type=\"button\" data-minus=\"" + skuAttr + "\" class=\"text-zinc-400 px-1\">-</button></td></tr>";
+  }).join("") || "<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
+
+  document.querySelectorAll("[data-edit]").forEach(function (btn) {
+    btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
+  });
+  document.querySelectorAll("[data-del]").forEach(function (btn) {
+    btn.onclick = function () { removeItem(btn.getAttribute("data-del")); };
+  });
+  document.querySelectorAll("[data-plus]").forEach(function (btn) {
+    btn.onclick = function () { adj(btn.getAttribute("data-plus"), 1); };
+  });
+  document.querySelectorAll("[data-minus]").forEach(function (btn) {
+    btn.onclick = function () { adj(btn.getAttribute("data-minus"), -1); };
+  });
+  document.querySelectorAll("[data-up]").forEach(function (btn) {
+    btn.onclick = function () { reorder(btn.getAttribute("data-up"), "up"); };
+  });
+  document.querySelectorAll("[data-down]").forEach(function (btn) {
+    btn.onclick = function () { reorder(btn.getAttribute("data-down"), "down"); };
+  });
+}
+
+async function load() {
+  paintTabs();
+  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
+  if (!r.ok) { location.href = "/login"; return; }
+  var d = await r.json();
+  document.getElementById("warehouse").textContent = d.warehouse || "";
+  paintFeed(!!d.publicFeed, d.storeName || STORE);
+  CATEGORIES = d.categories || [];
+  ALL_ITEMS = d.items || [];
+  paintCatFilter();
+  fillCategorySelect();
+  renderRows();
+}
+
+async function adj(sku, delta) {
+  await fetch("/api/inventory/adjust", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, sku: sku, delta: delta }),
+  });
+  load();
+}
+
+async function reorder(sku, direction) {
+  await fetch("/api/inventory/reorder", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, sku: sku, direction: direction }),
+  });
+  load();
+}
+
+async function removeItem(sku) {
+  if (!confirm("Delete " + sku + "?")) return;
+  var r = await fetch("/api/inventory/remove", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, sku: sku }),
+  });
+  if (!r.ok) { alert("Delete failed"); return; }
+  load();
+}
+
+function openEdit(sku) {
+  var i = ALL_ITEMS.find(function (x) { return String(x.sku) === String(sku); });
+  var f = document.getElementById("form");
+  document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
+  document.getElementById("sku-hint").textContent = i ? "(editing)" : "(new)";
+  f.reset();
+  document.getElementById("imgfile").value = "";
+  document.getElementById("vidfile").value = "";
+  document.getElementById("originalSku").value = i ? (i.sku || "") : "";
+  fillCategorySelect(i ? i.category : CATEGORIES[0]);
+  var n = i && i.images ? i.images.length : i && i.image ? 1 : 0;
+  var nv = i && i.videos ? i.videos.length : i && i.video ? 1 : 0;
+  document.getElementById("photo-count").textContent = n ? ("Currently " + n + " photo(s)") : "";
+  document.getElementById("video-count").textContent = nv ? ("Currently " + nv + " video(s)") : "";
+  if (i) {
+    f.sku.value = i.sku || "";
+    f.name.value = i.name || "";
+    f.description.value = i.description || "";
+    f.price.value = i.price != null ? i.price : 0;
+    f.qty.value = i.qty != null ? i.qty : 0;
+    f.lane.value = i.lane || "direct";
+    f.status.value = i.status || "active";
+    f.image.value = i.image || "";
+    f.video.value = i.video || "";
+  }
+  showModal(true);
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise(function (resolve, reject) {
+    var r = new FileReader();
+    r.onload = function () { resolve(r.result); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+document.getElementById("btn-add").onclick = function () {
+  document.getElementById("form-title").textContent = "New product";
+  document.getElementById("sku-hint").textContent = "(new)";
+  document.getElementById("form").reset();
+  document.getElementById("originalSku").value = "";
+  document.getElementById("imgfile").value = "";
+  document.getElementById("vidfile").value = "";
+  document.getElementById("photo-count").textContent = "";
+  document.getElementById("video-count").textContent = "";
+  fillCategorySelect(FILTER || CATEGORIES[0]);
+  showModal(true);
+};
+
+document.getElementById("btn-cancel").onclick = function () { showModal(false); };
+
+document.getElementById("form").onsubmit = async function (e) {
+  e.preventDefault();
+  var f = e.target;
+  var body = {
+    store: STORE,
+    sku: f.sku.value.trim(),
+    originalSku: document.getElementById("originalSku").value.trim() || undefined,
+    name: f.name.value.trim(),
+    description: f.description.value,
+    price: Number(f.price.value) || 0,
+    qty: Number(f.qty.value) || 0,
+    category: f.category.value,
+    lane: f.lane.value,
+    status: f.status.value,
+    image: f.image.value.trim(),
+    video: f.video.value.trim(),
+  };
+  var res = await fetch("/api/inventory/item", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    var err = await res.text();
+    alert("Save failed: " + err);
+    return;
+  }
+  var files = document.getElementById("imgfile").files;
+  if (files && files.length) {
+    var dataUrls = [];
+    var max = Math.min(files.length, 10);
+    for (var i = 0; i < max; i++) dataUrls.push(await readFileAsDataUrl(files[i]));
+    await fetch("/api/inventory/images", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: dataUrls }),
+    });
+  }
+  var vfiles = document.getElementById("vidfile").files;
+  if (vfiles && vfiles.length) {
+    var vUrls = [];
+    var vmax = Math.min(vfiles.length, 2);
+    for (var j = 0; j < vmax; j++) vUrls.push(await readFileAsDataUrl(vfiles[j]));
+    await fetch("/api/inventory/videos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: vUrls }),
+    });
+  }
+  showModal(false);
+  load();
+};
+
 load();
 </script>
 </body>
