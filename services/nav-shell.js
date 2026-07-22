@@ -1,11 +1,15 @@
+/** Shared cart + nav helpers for service pages */
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 function updateCartCount() {
-  var c = JSON.parse(localStorage.getItem("jdw_cart")) || [];
+  var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
   document.querySelectorAll(".cart-count").forEach(function (b) {
-    b.innerText = c.reduce(function (s, i) { return s + i.quantity; }, 0);
+    b.innerText = cart.reduce(function (s, i) { return s + i.quantity; }, 0);
   });
 }
-document.addEventListener("DOMContentLoaded", updateCartCount);
+document.addEventListener("DOMContentLoaded", function () {
+  updateCartCount();
+  polishServiceFooter();
+});
 function toggleMobileMenu() {
   var m = document.getElementById("mobile-menu");
   if (!m) return;
@@ -42,13 +46,9 @@ function toggleDropdown(e) {
   var d = document.getElementById("category-dropdown");
   var a = document.getElementById("dropdown-arrow");
   if (!d) return;
-  if (d.classList.contains("hidden")) {
-    d.classList.remove("hidden");
-    if (a) a.innerText = "▲";
-  } else {
-    d.classList.add("hidden");
-    if (a) a.innerText = "▼";
-  }
+  var isHidden = d.classList.contains("hidden");
+  if (isHidden) { d.classList.remove("hidden"); if (a) a.innerText = "▲"; }
+  else { d.classList.add("hidden"); if (a) a.innerText = "▼"; }
 }
 document.addEventListener("click", function (e) {
   var d = document.getElementById("category-dropdown");
@@ -59,25 +59,16 @@ document.addEventListener("click", function (e) {
     if (a) a.innerText = "▼";
   }
 });
-function addToCart(name, variant, price) {
-  var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
-  var ex = cart.find(function (i) { return i.name === name && i.variant === variant; });
-  if (ex) ex.quantity++;
-  else cart.push({ name: name, variant: variant, price: price, quantity: 1 });
-  localStorage.setItem("jdw_cart", JSON.stringify(cart));
-  updateCartCount();
-  alert(name + " added");
-}
 function openCartModal() {
   closeMobileMenu();
   var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
   var list = document.getElementById("cart-items-list");
   var totalEl = document.getElementById("cart-grand-total");
-  if (!list) return;
+  if (!list || !totalEl) return;
   list.innerHTML = "";
   if (!cart.length) {
     list.innerHTML = '<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';
-    if (totalEl) totalEl.innerText = "$0.00";
+    totalEl.innerText = "$0.00";
   } else {
     var total = 0;
     cart.forEach(function (item, i) {
@@ -89,35 +80,63 @@ function openCartModal() {
         item.price.toFixed(2) +
         " × " +
         item.quantity +
-        '</p></div><button type="button" onclick="removeSingleCartItem(' +
+        '</p></div><button onclick="removeSingleCartItem(' +
         i +
         ')" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>';
     });
-    if (totalEl) totalEl.innerText = "$" + total.toFixed(2);
+    totalEl.innerText = "$" + total.toFixed(2);
   }
-  var modal = document.getElementById("cart-modal");
-  if (modal) { modal.classList.remove("hidden"); modal.classList.add("flex"); }
+  document.getElementById("cart-modal").classList.remove("hidden");
+  document.getElementById("cart-modal").classList.add("flex");
 }
 function closeCartModal() {
-  var modal = document.getElementById("cart-modal");
-  if (modal) { modal.classList.add("hidden"); modal.classList.remove("flex"); }
+  document.getElementById("cart-modal").classList.add("hidden");
+  document.getElementById("cart-modal").classList.remove("flex");
 }
 function removeSingleCartItem(i) {
-  var c = JSON.parse(localStorage.getItem("jdw_cart")) || [];
-  c.splice(i, 1);
-  localStorage.setItem("jdw_cart", JSON.stringify(c));
+  var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
+  cart.splice(i, 1);
+  localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
   openCartModal();
 }
-function populatePayPalFormFields(form) {
-  return true;
+function addToCart(name, sku, price) {
+  var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
+  var found = cart.find(function (x) { return x.sku === sku; });
+  if (found) found.quantity += 1;
+  else cart.push({ name: name, sku: sku, price: Number(price) || 0, quantity: 1 });
+  localStorage.setItem("jdw_cart", JSON.stringify(cart));
+  updateCartCount();
 }
-function startSquarePayment() {
-  alert("Square checkout ready — connect live keys in ApexFreePort.");
-}
-function startStripePayment() {
-  alert("Stripe checkout ready — connect live keys in ApexFreePort.");
-}
-function checkoutStripe() {
-  startStripePayment();
+function populatePayPalFormFields() { return true; }
+function startSquarePayment() { alert("Square checkout — live keys in ApexFreePort."); }
+function startStripePayment() { alert("Stripe checkout — live keys in ApexFreePort."); }
+
+/** Ensure every service page footer has socials + live sister-site links */
+function polishServiceFooter() {
+  var foot = document.querySelector("footer");
+  if (!foot) return;
+  var connect = foot.querySelector("h4");
+  // Rebuild Connect column if social icons missing
+  if (!foot.querySelector(".fa-instagram")) {
+    var cols = foot.querySelectorAll(".grid > div");
+    if (cols.length >= 4) {
+      cols[2].innerHTML =
+        '<h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400">' +
+        '<li><a href="../about.html" class="hover:text-emerald-400">About</a></li>' +
+        '<li><a href="https://jonnydreamwalker.github.io/-jdwapexk9/" class="hover:text-emerald-400">Apex K9</a></li>' +
+        '<li><a href="https://jonnydreamwalker.github.io/-jdwapexfeline/" class="hover:text-emerald-400">Apex Feline</a></li>' +
+        '<li><a href="deals.html" class="hover:text-emerald-400">Deals</a></li></ul>';
+      cols[3].innerHTML =
+        '<h4 class="font-bold text-emerald-400 mb-3">Connect</h4>' +
+        '<div class="flex flex-wrap gap-4 text-xl">' +
+        '<a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Instagram"><i class="fab fa-instagram"></i></a>' +
+        '<a href="https://www.tiktok.com/@jdwapexherp" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>' +
+        '<a href="https://x.com/JonnyDreamWalk" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="X"><i class="fab fa-x-twitter"></i></a>' +
+        '<a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Facebook"><i class="fab fa-facebook"></i></a>' +
+        '<a href="https://www.youtube.com/@JDWAHS" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="YouTube"><i class="fab fa-youtube"></i></a>' +
+        '<a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Linktree"><i class="fas fa-link"></i></a>' +
+        '</div><p class="text-zinc-600 mt-4 text-xs">© 2026 JonnyDreamwalker Apex Herp Supply</p>';
+    }
+  }
 }
