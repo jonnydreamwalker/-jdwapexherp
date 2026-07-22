@@ -16,90 +16,129 @@
     </div>
     <div class="flex items-center gap-3 text-sm">
       <span id="warehouse" class="text-zinc-500 text-xs"></span>
-      <button type="button" onclick="openForm()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">+ Product</button>
+      <button type="button" id="btn-add" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">+ Product</button>
       <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg text-xs uppercase">Logout</button></form>
     </div>
   </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 py-8">
-  <p class="text-zinc-500 text-sm mb-4">Add products with price, description, and photo. Website reads category pages from this list.</p>
+  <p class="text-zinc-400 text-sm mb-2">Click <span class="text-emerald-400 font-bold">Edit</span> to change price, description, photo, qty.</p>
+  <p class="text-zinc-600 text-xs mb-4">Password is set on the server when you start Node (not in this screen). Ask your host session: export ADMIN_PASSWORD=...</p>
   <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
     <table class="w-full text-sm text-left">
       <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
         <tr>
-          <th class="px-3 py-3">Img</th>
           <th class="px-3 py-3">SKU</th>
-          <th class="px-3 py-3">Name / Price</th>
-          <th class="px-3 py-3">Cat</th>
+          <th class="px-3 py-3">Name</th>
+          <th class="px-3 py-3">Price</th>
           <th class="px-3 py-3">Qty</th>
-          <th class="px-3 py-3">Status</th>
-          <th class="px-3 py-3">Adj</th>
+          <th class="px-3 py-3">Category</th>
+          <th class="px-3 py-3">Actions</th>
         </tr>
       </thead>
       <tbody id="body" class="divide-y divide-zinc-800"></tbody>
     </table>
   </div>
 </main>
-<div id="modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+
+<div id="modal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-50 overflow-y-auto">
   <form id="form" class="bg-zinc-900 border border-emerald-900 rounded-2xl p-6 w-full max-w-lg space-y-3 my-8">
-    <h3 class="text-lg font-bold text-emerald-400">Product</h3>
-    <input name="sku" placeholder="SKU *" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    <input name="name" placeholder="Name *" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    <textarea name="description" placeholder="Description" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"></textarea>
+    <h3 id="form-title" class="text-lg font-bold text-emerald-400">Edit product</h3>
+    <label class="block text-xs text-zinc-500">SKU</label>
+    <input name="sku" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <label class="block text-xs text-zinc-500">Name</label>
+    <input name="name" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    <label class="block text-xs text-zinc-500">Description</label>
+    <textarea name="description" rows="2" class="w-full bg-zinc-950 border border-zinc-700-700 rounded-lg px-3 py-2 text-sm"></textarea>
     <div class="grid grid-cols-2 gap-2">
-      <input name="price" type="number" step="0.01" placeholder="Price" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-      <input name="qty" type="number" placeholder="Qty" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+      <div>
+        <label class="block text-xs text-zinc-500">Price (USD)</label>
+        <input name="price" type="number" step="0.01" min="0" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500">Qty</label>
+        <input name="qty" type="number" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+      </div>
     </div>
     <div class="grid grid-cols-2 gap-2">
-      <select name="category" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-        <option>Hardscape</option><option>Lighting</option><option>Substrates</option>
-        <option>Nutrition</option><option>Apparel</option><option>Enclosures</option>
-        <option>Heating</option><option>Hardware</option><option>Deals</option>
-      </select>
-      <select name="lane" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-        <option value="direct">Direct (FL WH)</option>
-        <option value="external">External</option>
+      <div>
+        <label class="block text-xs text-zinc-500">Category</label>
+        <select name="category" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+          <option>Hardscape</option><option>Lighting</option><option>Substrates</option>
+          <option>Nutrition</option><option>Apparel</option><option>Enclosures</option>
+          <option>Heating</option><option>Hardware</option><option>Deals</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500">Lane</label>
+        <select name="lane" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+          <option value="direct">Direct (FL WH)</option>
+          <option value="external">External</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="block text-xs text-zinc-500">Status</label>
+      <select name="status" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <option value="active">Active</option>
+        <option value="coming_soon">Coming soon</option>
+        <option value="hold">Hold</option>
       </select>
     </div>
-    <select name="status" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-      <option value="active">Active</option>
-      <option value="coming_soon">Coming soon</option>
-      <option value="hold">Hold</option>
-    </select>
-    <input name="image" placeholder="Image URL (optional if uploading)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    <label class="block text-xs text-zinc-500">Photo upload (max ~1.5MB)</label>
-    <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
+    <div>
+      <label class="block text-xs text-zinc-500">Image URL</label>
+      <input name="image" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+    </div>
+    <div>
+      <label class="block text-xs text-zinc-500">Or upload photo</label>
+      <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
+    </div>
+    <p id="form-msg" class="text-xs text-emerald-400 hidden"></p>
     <div class="flex gap-2 pt-2">
-      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save</button>
-      <button type="button" onclick="closeForm()" class="px-4 border border-zinc-700 rounded-xl text-xs uppercase">Cancel</button>
+      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save changes</button>
+      <button type="button" id="btn-cancel" class="px-4 border border-zinc-700 rounded-xl text-xs uppercase">Cancel</button>
     </div>
   </form>
 </div>
+
 <script>
+function showModal(show) {
+  var m = document.getElementById("modal");
+  if (show) { m.classList.remove("hidden"); m.classList.add("flex"); }
+  else { m.classList.add("hidden"); m.classList.remove("flex"); }
+}
+
 async function load() {
   var r = await fetch("/api/inventory");
   if (!r.ok) { location.href = "/login"; return; }
   var d = await r.json();
   document.getElementById("warehouse").textContent = d.warehouse || "";
-  document.getElementById("body").innerHTML = (d.items || []).map(function (i) {
-    var img = i.image ? (i.image.indexOf("http") === 0 ? i.image : i.image) : "";
-    var thumb = img
-      ? '<img src="' + img + '" class="h-10 w-10 object-cover rounded" onerror="this.style.display=\'none\'">'
-      : '<div class="h-10 w-10 bg-zinc-800 rounded"></div>';
-    return '<tr class="hover:bg-zinc-900/80">' +
-      '<td class="px-3 py-2">' + thumb + '</td>' +
-      '<td class="px-3 py-2 font-mono text-xs text-emerald-400 cursor-pointer" data-sku="' + i.sku + '">' + i.sku + '</td>' +
-      '<td class="px-3 py-2 cursor-pointer" onclick="editSku(\'' + i.sku + '\')">' + i.name +
-      '<div class="text-[10px] text-zinc-500">$' + (Number(i.price) || 0).toFixed(2) + '</div></td>' +
-      '<td class="px-3 py-2 text-xs">' + (i.category || '') + '</td>' +
-      '<td class="px-3 py-2 font-bold">' + i.qty + '</td>' +
-      '<td class="px-3 py-2 text-xs">' + (i.status || '') + '</td>' +
-      '<td class="px-3 py-2 whitespace-nowrap">' +
-      '<button type="button" class="text-emerald-400 px-1" onclick="adj(\'' + i.sku + '\',1)">+</button>' +
-      '<button type="button" class="text-zinc-400 px-1" onclick="adj(\'' + i.sku + '\',-1)">−</button></td></tr>';
-  }).join("");
   window.__ITEMS__ = d.items || [];
+  document.getElementById("body").innerHTML = window.__ITEMS__.map(function (i) {
+    return "<tr>" +
+      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + i.sku + "</td>" +
+      "<td class=\"px-3 py-3\">" + i.name + "</td>" +
+      "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
+      "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
+      "<td class=\"px-3 py-3 text-xs\">" + (i.category || "") + "</td>" +
+      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
+      "<button type=\"button\" data-edit=\"" + i.sku + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
+      "<button type=\"button\" data-plus=\"" + i.sku + "\" class=\"text-emerald-400 px-1\">+</button>" +
+      "<button type=\"button\" data-minus=\"" + i.sku + "\" class=\"text-zinc-400 px-1\">−</button>" +
+      "</td></tr>";
+  }).join("");
+
+  document.querySelectorAll("[data-edit]").forEach(function (btn) {
+    btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
+  });
+  document.querySelectorAll("[data-plus]").forEach(function (btn) {
+    btn.onclick = function () { adj(btn.getAttribute("data-plus"), 1); };
+  });
+  document.querySelectorAll("[data-minus]").forEach(function (btn) {
+    btn.onclick = function () { adj(btn.getAttribute("data-minus"), -1); };
+  });
 }
+
 async function adj(sku, delta) {
   await fetch("/api/inventory/adjust", {
     method: "POST",
@@ -108,31 +147,36 @@ async function adj(sku, delta) {
   });
   load();
 }
-function openForm() {
-  document.getElementById("form").reset();
-  document.getElementById("modal").classList.remove("hidden");
-  document.getElementById("modal").classList.add("flex");
-}
-function closeForm() {
-  document.getElementById("modal").classList.add("hidden");
-  document.getElementById("modal").classList.remove("flex");
-}
-function editSku(sku) {
+
+function openEdit(sku) {
   var i = (window.__ITEMS__ || []).find(function (x) { return x.sku === sku; });
-  if (!i) return;
-  openForm();
   var f = document.getElementById("form");
-  f.sku.value = i.sku || "";
-  f.name.value = i.name || "";
-  f.description.value = i.description || "";
-  f.price.value = i.price || 0;
-  f.qty.value = i.qty || 0;
-  f.category.value = i.category || "Hardscape";
-  f.lane.value = i.lane || "direct";
-  f.status.value = i.status || "active";
-  f.image.value = i.image || "";
+  document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
+  f.reset();
+  document.getElementById("imgfile").value = "";
+  if (i) {
+    f.sku.value = i.sku || "";
+    f.name.value = i.name || "";
+    f.description.value = i.description || "";
+    f.price.value = i.price != null ? i.price : 0;
+    f.qty.value = i.qty != null ? i.qty : 0;
+    f.category.value = i.category || "Hardscape";
+    f.lane.value = i.lane || "direct";
+    f.status.value = i.status || "active";
+    f.image.value = i.image || "";
+  }
+  showModal(true);
 }
-document.getElementById("form").addEventListener("submit", async function (e) {
+
+document.getElementById("btn-add").onclick = function () {
+  document.getElementById("form-title").textContent = "New product";
+  document.getElementById("form").reset();
+  document.getElementById("imgfile").value = "";
+  showModal(true);
+};
+document.getElementById("btn-cancel").onclick = function () { showModal(false); };
+
+document.getElementById("form").onsubmit = async function (e) {
   e.preventDefault();
   var f = e.target;
   var body = {
@@ -146,11 +190,15 @@ document.getElementById("form").addEventListener("submit", async function (e) {
     status: f.status.value,
     image: f.image.value.trim(),
   };
-  await fetch("/api/inventory/item", {
+  var res = await fetch("/api/inventory/item", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    alert("Save failed");
+    return;
+  }
   var file = document.getElementById("imgfile").files[0];
   if (file) {
     var dataUrl = await new Promise(function (resolve, reject) {
@@ -165,9 +213,13 @@ document.getElementById("form").addEventListener("submit", async function (e) {
       body: JSON.stringify({ sku: body.sku, dataUrl: dataUrl }),
     });
   }
-  closeForm();
+  var msg = document.getElementById("form-msg");
+  msg.textContent = "Saved.";
+  msg.classList.remove("hidden");
+  showModal(false);
   load();
-});
+};
+
 load();
 </script>
 </body>
