@@ -11,7 +11,7 @@ if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret,x-square-hmacsha256-signature,x-square-signature,stripe-signature");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret,stripe-signature");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -50,9 +50,7 @@ function decrementSku(sku, qty, reason) {
 function extractSkusFromSquarePayment(payment) {
   var found = [];
   if (!payment) return found;
-  var note = String(payment.note || "");
-  var ref = String(payment.reference_id || "");
-  var blob = (note + " " + ref).toUpperCase();
+  var blob = String((payment.note || "") + " " + (payment.reference_id || "")).toUpperCase();
   var d = read();
   (d.items || []).forEach(function (it) {
     if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) found.push({ sku: it.sku, quantity: 1 });
@@ -65,14 +63,6 @@ function extractSkusFromStripeEvent(event) {
   if (!obj) return found;
   var meta = obj.metadata || {};
   if (meta.sku) found.push({ sku: meta.sku, quantity: Number(meta.quantity) || 1 });
-  if (obj.client_reference_id) {
-    var d = read();
-    (d.items || []).forEach(function (it) {
-      if (String(obj.client_reference_id).toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) {
-        found.push({ sku: it.sku, quantity: 1 });
-      }
-    });
-  }
   return found;
 }
 function extractSkusFromPaypalEvent(body) {
@@ -82,13 +72,8 @@ function extractSkusFromPaypalEvent(body) {
   var custom = String(res.custom_id || res.invoice_id || "");
   var d = read();
   (d.items || []).forEach(function (it) {
-    if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) {
-      found.push({ sku: it.sku, quantity: 1 });
-    }
+    if (custom.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1) found.push({ sku: it.sku, quantity: 1 });
   });
-  if (res.supplementary_data && res.supplementary_data.related_ids) {
-    /* no-op */
-  }
   return found;
 }
 app.get("/health", function (req, res) {
@@ -122,7 +107,7 @@ app.get("/login", function (req, res) {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 app.post("/login", function (req, res) {
-  if (if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
+  if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
   res.redirect("/login?err=1");
 });
 app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
@@ -192,61 +177,45 @@ app.post("/api/webhook/square", function (req, res) {
     var payment = body.data && body.data.object && (body.data.object.payment || body.data.object);
     if (type && type !== "payment.updated" && type !== "payment.created") return res.json({ ok: true, ignored: type });
     if (!payment) return res.json({ ok: true, ignored: "no payment" });
-    var status = payment.status || "";
-    if (status && status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + status });
+    if (payment.status && payment.status !== "COMPLETED") return res.json({ ok: true, ignored: "status " + payment.status });
     var lines = extractSkusFromSquarePayment(payment);
     if (!lines.length && process.env.SQUARE_DEFAULT_SKU) lines = [{ sku: process.env.SQUARE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "square")); });
-    console.log("Square webhook", status, JSON.stringify(results));
+    console.log("Square webhook", JSON.stringify(results));
     res.json({ ok: true, results: results });
-  } catch (e) {
-    console.error("Square webhook error", e);
-    res.status(500).json({ error: "webhook fail" });
-  }
+  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
 app.post("/api/webhook/stripe", function (req, res) {
   try {
     var event = req.body || {};
     var type = event.type || "";
-    if (type !== "payment_intent.succeeded" && type !== "checkout.session.completed") {
-      return res.json({ ok: true, ignored: type });
-    }
+    if (type !== "payment_intent.succeeded" && type !== "checkout.session.completed") return res.json({ ok: true, ignored: type });
     var lines = extractSkusFromStripeEvent(event);
     if (!lines.length && process.env.STRIPE_DEFAULT_SKU) lines = [{ sku: process.env.STRIPE_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "stripe")); });
     console.log("Stripe webhook", type, JSON.stringify(results));
     res.json({ ok: true, results: results });
-  } catch (e) {
-    console.error("Stripe webhook error", e);
-    res.status(500).json({ error: "webhook fail" });
-  }
+  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
 app.post("/api/webhook/paypal", function (req, res) {
   try {
     var body = req.body || {};
     var et = String(body.event_type || "");
-    if (et !== "PAYMENT.CAPTURE.COMPLETED" && et !== "CHECKOUT.ORDER.COMPLETED") {
-      return res.json({ ok: true, ignored: et });
-    }
+    if (et !== "PAYMENT.CAPTURE.COMPLETED" && et !== "CHECKOUT.ORDER.COMPLETED") return res.json({ ok: true, ignored: et });
     var lines = extractSkusFromPaypalEvent(body);
-    if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) {
-      lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
-    }
+    if (!lines.length && process.env.PAYPAL_DEFAULT_SKU) lines = [{ sku: process.env.PAYPAL_DEFAULT_SKU, quantity: 1 }];
     var results = [];
     lines.forEach(function (line) { results.push(decrementSku(line.sku, line.quantity, "paypal")); });
     console.log("PayPal webhook", et, JSON.stringify(results));
     res.sendStatus(200);
-  } catch (e) {
-    console.error("PayPal webhook error", e);
-    res.status(500).json({ error: "webhook fail" });
-  }
+  } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
 app.get("/", function (req, res) { res.redirect("/admin"); });
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
-  console.log("Square token: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "not set"));
-  console.log("Stripe key: " + (process.env.STRIPE_SECRET_KEY ? "set" : "not set"));
-  console.log("PayPal client: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "not set"));
+  console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
+  console.log("Stripe: " + (process.env.STRIPE_SECRET_KEY ? "set" : "no"));
+  console.log("PayPal: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "no"));
 });
