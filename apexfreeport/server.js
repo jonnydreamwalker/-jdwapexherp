@@ -6,8 +6,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
 const DATA = path.join(__dirname, "data", "inventory.json");
+const REVIEWS = path.join(__dirname, "data", "reviews.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
+if (!fs.existsSync(REVIEWS)) fs.writeFileSync(REVIEWS, JSON.stringify({ updated: null, reviews: [] }, null, 2));
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -21,6 +23,14 @@ app.use(session({ secret: process.env.SESSION_SECRET || "apex-secret", resave: f
 app.use("/uploads", express.static(UPLOADS));
 function read() { return JSON.parse(fs.readFileSync(DATA, "utf8")); }
 function write(d) { d.updated = new Date().toISOString(); fs.writeFileSync(DATA, JSON.stringify(d, null, 2)); }
+function readReviews() {
+  try { return JSON.parse(fs.readFileSync(REVIEWS, "utf8")); }
+  catch (e) { return { updated: null, reviews: [] }; }
+}
+function writeReviews(d) {
+  d.updated = new Date().toISOString();
+  fs.writeFileSync(REVIEWS, JSON.stringify(d, null, 2));
+}
 function auth(req, res, next) {
   if (req.session && req.session.ok) return next();
   if (req.path.indexOf("/api/") === 0) return res.status(401).json({ error: "Unauthorized" });
@@ -104,6 +114,65 @@ app.get("/api/products", function (req, res) {
     res.json({ warehouse: d.warehouse, updated: d.updated, items: items });
   } catch (e) { res.status(500).json({ error: "fail" }); }
 });
+/** Public: approved reviews only + average rank */
+app.get("/api/reviews", function (req, res) {
+  try {
+    var d = readReviews();
+    var approved = (d.reviews || []).filter(function (r) { return r.status === "approved"; });
+    var sum = 0;
+    approved.forEach(function (r) { sum += Number(r.stars) || 0; });
+    var avg = approved.length ? sum / approved.length : 0;
+    res.json({
+      average: Math.round(avg * 10) / 10,
+      count: approved.length,
+      reviews: approved.map(function (r) {
+        return { id: r.id, stars: r.stars, name: r.name, text: r.text, created: r.created, page: r.page || "" };
+      }),
+    });
+  } catch (e) { res.status(500).json({ error: "fail" }); }
+});
+/** Public submit → pending only */
+app.post("/api/reviews", function (req, res) {
+  try {
+    var b = req.body || {};
+    var stars = Math.min(5, Math.max(1, Number(b.stars) || 0));
+    var text = String(b.text || "").trim().slice(0, 800);
+    if (!stars || !text) return res.status(400).json({ error: "stars and text required" });
+    var d = readReviews();
+    d.reviews = d.reviews || [];
+    d.reviews.push({
+      id: "R" + Date.now() + Math.floor(Math.random() * 1000),
+      stars: stars,
+      name: String(b.name || "").trim().slice(0, 40) || "Customer",
+      text: text,
+      page: String(b.page || "").slice(0, 120),
+      status: "pending",
+      created: new Date().toISOString(),
+    });
+    writeReviews(d);
+    res.json({ ok: true, status: "pending" });
+  } catch (e) { res.status(500).json({ error: "fail" }); }
+});
+/** Admin: all reviews */
+app.get("/api/reviews/admin", auth, function (req, res) {
+  res.json(readReviews());
+});
+/** Admin: moderate */
+app.post("/api/reviews/moderate", auth, function (req, res) {
+  var id = (req.body || {}).id;
+  var status = (req.body || {}).status;
+  if (!id || (status !== "approved" && status !== "rejected" && status !== "pending")) {
+    return res.status(400).json({ error: "id and status required" });
+  }
+  var d = readReviews();
+  var found = null;
+  (d.reviews || []).forEach(function (r) {
+    if (r.id === id) { r.status = status; found = r; }
+  });
+  if (!found) return res.status(404).json({ error: "not found" });
+  writeReviews(d);
+  res.json({ ok: true, review: found });
+});
 app.get("/login", function (req, res) {
   if (req.session.ok) return res.redirect("/admin");
   res.sendFile(path.join(__dirname, "admin", "login.html"));
@@ -114,6 +183,7 @@ app.post("/login", function (req, res) {
 });
 app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
 app.get("/admin", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "index.html")); });
+app.get("/admin/reviews", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "reviews.html")); });
 app.get("/api/inventory", auth, function (req, res) { res.json(read()); });
 app.post("/api/inventory/adjust", auth, function (req, res) {
   var d = read(); var item = null;
@@ -217,7 +287,6 @@ app.get("/api/etsy/status", auth, function (req, res) {
     sharedSecret: process.env.ETSY_SHARED_SECRET ? "set" : "missing",
     shop: process.env.ETSY_SHOP_NAME || null,
     oauth: process.env.ETSY_ACCESS_TOKEN ? "authorized" : "needs-oauth",
-    note: "Order sync requires OAuth shop authorization after app approval.",
   });
 });
 app.post("/api/webhook/etsy", function (req, res) {
@@ -225,11 +294,8 @@ app.post("/api/webhook/etsy", function (req, res) {
     var body = req.body || {};
     var sku = body.sku || (body.data && body.data.sku);
     var qty = Number(body.quantity) || 1;
-    if (sku) {
-      var result = decrementSku(sku, qty, "etsy");
-      return res.json(result);
-    }
-    res.json({ ok: true, ignored: "no sku — full Etsy order sync needs OAuth" });
+    if (sku) return res.json(decrementSku(sku, qty, "etsy"));
+    res.json({ ok: true, ignored: "no sku" });
   } catch (e) { res.status(500).json({ error: "webhook fail" }); }
 });
 app.get("/", function (req, res) { res.redirect("/admin"); });
@@ -238,5 +304,5 @@ app.listen(PORT, function () {
   console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
   console.log("Stripe: " + (process.env.STRIPE_SECRET_KEY ? "set" : "no"));
   console.log("PayPal: " + (process.env.PAYPAL_CLIENT_ID ? "set" : "no"));
-  console.log("Etsy: " + (process.env.ETSY_KEYSTRING ? "set" : "no") + " shop=" + (process.env.ETSY_SHOP_NAME || "?"));
+  console.log("Etsy: " + (process.env.ETSY_KEYSTRING ? "set" : "no"));
 });
