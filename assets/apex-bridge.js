@@ -1,93 +1,95 @@
-/**
- * ApexFreePort bridge — jdwapexherp.com ↔ EC2 inventory node
- * Update APEX_API if your node IP / domain changes.
- */
+/** ApexFreePort bridge — catalog + stock for jdwapexherp.com */
 (function (global) {
   var APEX_API = "http://3.14.14.127:3000";
 
-  function getApiBase() {
+  function base() {
     return (global.APEX_API_BASE || APEX_API).replace(/\/$/, "");
   }
 
+  function imgUrl(path) {
+    if (!path) return "";
+    if (path.indexOf("http") === 0) return path;
+    return base() + path;
+  }
+
+  async function fetchProducts(category) {
+    var q = category ? "?category=" + encodeURIComponent(category) : "";
+    var res = await fetch(base() + "/api/products" + q, { mode: "cors", cache: "no-store" });
+    if (!res.ok) throw new Error("products " + res.status);
+    return res.json();
+  }
+
   async function fetchStock() {
-    var res = await fetch(getApiBase() + "/api/stock", {
-      method: "GET",
-      mode: "cors",
-      cache: "no-store",
-    });
+    var res = await fetch(base() + "/api/stock", { mode: "cors", cache: "no-store" });
     if (!res.ok) throw new Error("stock " + res.status);
     return res.json();
   }
 
-  async function reportSale(sku, quantity) {
-    var res = await fetch(getApiBase() + "/api/webhook/sale", {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sku: sku, quantity: quantity || 1 }),
-    });
-    if (!res.ok) throw new Error("sale " + res.status);
-    return res.json();
+  function money(n) {
+    return "$" + (Number(n) || 0).toFixed(2);
   }
 
-  function findItem(stock, sku) {
-    if (!stock || !stock.items) return null;
-    for (var i = 0; i < stock.items.length; i++) {
-      if (stock.items[i].sku === sku) return stock.items[i];
-    }
-    return null;
-  }
-
-  /** Fill elements: data-apex-sku="HS-UFO-FLAT-01" data-apex-field="qty|status|lane" */
-  async function paintStock() {
+  /** Render product cards into #apex-catalog (or selector). category optional filter. */
+  async function renderCatalog(selector, category) {
+    var el = document.querySelector(selector || "#apex-catalog");
+    if (!el) return;
+    var status = document.getElementById("apex-bridge-status");
     try {
-      var stock = await fetchStock();
-      global.__APEX_STOCK__ = stock;
-      var nodes = document.querySelectorAll("[data-apex-sku]");
-      nodes.forEach(function (el) {
-        var sku = el.getAttribute("data-apex-sku");
-        var field = el.getAttribute("data-apex-field") || "qty";
-        var item = findItem(stock, sku);
-        if (!item) {
-          el.textContent = field === "status" ? "Unknown" : "—";
-          return;
-        }
-        if (field === "qty") el.textContent = String(item.qty);
-        else if (field === "available")
-          el.textContent = String(
-            Math.max(0, (item.qty || 0) - (item.reserved || 0))
-          );
-        else if (field === "status") el.textContent = item.status || "active";
-        else if (field === "lane") el.textContent = item.lane || "direct";
-        else el.textContent = String(item[field] != null ? item[field] : "—");
-      });
-      var badge = document.getElementById("apex-bridge-status");
-      if (badge) {
-        badge.textContent = "Live inventory · " + (stock.warehouse || "ApexFreePort");
-        badge.classList.remove("text-zinc-500");
-        badge.classList.add("text-emerald-400");
+      var data = await fetchProducts(category);
+      global.__APEX_PRODUCTS__ = data;
+      var items = data.items || [];
+      if (!items.length) {
+        el.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-12">No products in this category yet. Add them in ApexFreePort.</p>';
+        if (status) { status.textContent = "Live catalog · empty"; status.className = "text-zinc-500 text-sm mt-3"; }
+        return;
+      }
+      el.innerHTML = items.map(function (i) {
+        var img = imgUrl(i.image);
+        var imgBlock = img
+          ? '<div class="h-56 bg-cover bg-center border-b border-emerald-900/50" style="background-image:url(\'' + img + '\')"></div>'
+          : '<div class="h-56 bg-zinc-900 border-b border-emerald-900/50 flex items-center justify-center text-zinc-600 text-sm">No image</div>';
+        var badge = i.status === "coming_soon" ? '<span class="text-amber-400 text-xs font-bold uppercase">Coming soon</span>' : '<span class="text-zinc-500 text-xs">Qty ' + i.qty + '</span>';
+        var price = money(i.price);
+        var disabled = i.status === "coming_soon" || i.available <= 0;
+        var btn = disabled
+          ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-4 rounded-xl cursor-not-allowed">Unavailable</button>'
+          : '<button onclick="addToCart(\'' + String(i.name).replace(/'/g, "\\'") + '\',\'' + i.sku + '\',' + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-4 rounded-xl">Add to Cart</button>';
+        return '<div class="bg-zinc-800 border border-emerald-900 rounded-3xl overflow-hidden flex flex-col">' +
+          imgBlock +
+          '<div class="p-8 text-center flex-1">' +
+          '<h3 class="text-2xl font-bold mb-2 text-emerald-400">' + i.name + '</h3>' +
+          '<p class="text-zinc-400 mb-2 text-sm">' + (i.description || "") + '</p>' +
+          '<p class="text-xs text-zinc-500 mb-2">' + i.sku + ' · ' + badge + '</p>' +
+          '<div class="text-emerald-500 font-bold text-lg mb-4">' + price + '</div></div>' +
+          '<div class="p-8 pt-0">' + btn + '</div></div>';
+      }).join("");
+      if (status) {
+        status.textContent = "Live catalog · " + (data.warehouse || "ApexFreePort") + " · " + items.length + " items";
+        status.className = "text-emerald-400 text-sm mt-3";
       }
     } catch (e) {
-      console.warn("ApexFreePort bridge:", e);
-      var badge = document.getElementById("apex-bridge-status");
-      if (badge) {
-        badge.textContent = "Inventory offline";
-        badge.classList.add("text-amber-400");
+      console.warn("ApexBridge", e);
+      el.innerHTML = '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. Showing local fallback if any.</p>';
+      if (status) {
+        status.textContent = "Inventory offline";
+        status.className = "text-amber-400 text-sm mt-3";
       }
     }
   }
 
   global.ApexBridge = {
-    getApiBase: getApiBase,
+    base: base,
+    fetchProducts: fetchProducts,
     fetchStock: fetchStock,
-    reportSale: reportSale,
-    findItem: findItem,
-    paintStock: paintStock,
+    renderCatalog: renderCatalog,
+    imgUrl: imgUrl,
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", paintStock);
-  } else {
-    paintStock();
-  }
+  document.addEventListener("DOMContentLoaded", function () {
+    var el = document.getElementById("apex-catalog");
+    if (el) {
+      var cat = el.getAttribute("data-category") || "";
+      renderCatalog("#apex-catalog", cat || undefined);
+    }
+  });
 })(window);
