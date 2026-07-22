@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
 <title>Home | Premium Reptile Supply | JDW Apex Herp</title>
-<meta name="description" content="Veteran-owned premium reptile hardscape, UVB lighting, substrates & bioactive gear. DeFuniak Springs FL hub. FL-TX-CA distribution.. Direct hardscape source.">
+<meta name="description" content="Veteran-owned premium reptile hardscape, UVB lighting, substrates & bioactive gear. DeFuniak Springs FL hub. FL-TX-CA distribution. Direct hardscape source.">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://jdwapexherp.com/">
 <meta name="theme-color" content="#000000">
@@ -22,11 +22,13 @@ function closeMobileMenu(){const m=document.getElementById('mobile-menu');const 
 function toggleMobileCats(){const c=document.getElementById('mobile-cats');const a=document.getElementById('mobile-cat-arrow');if(!c)return;c.classList.toggle('hidden');if(a)a.innerText=c.classList.contains('hidden')?'▼':'▲';}
 function toggleDropdown(e){if(e)e.stopPropagation();const d=document.getElementById('category-dropdown');const a=document.getElementById('dropdown-arrow');if(!d)return;const isHidden=d.classList.contains('hidden');if(isHidden){d.classList.remove('hidden');if(a)a.innerText='▲';}else{d.classList.add('hidden');if(a)a.innerText='▼';}}
 document.addEventListener('click',function(e){const d=document.getElementById('category-dropdown');const a=document.getElementById('dropdown-arrow');if(!d)return;if(!d.contains(e.target)&&!e.target.closest('[data-dropdown-toggle]')){d.classList.add('hidden');if(a)a.innerText='▼';}});
-function openCartModal(){closeMobileMenu();let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];let list=document.getElementById('cart-items-list');let totalEl=document.getElementById('cart-grand-total');if(!list||!totalEl)return;list.innerHTML='';if(!cart.length){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold">${item.name}</h4><p class="text-xs text text-emerald-400">$${item.price.toFixed(2)} × ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);}document.getElementById('cart-modal').classList.remove('hidden');document.getElementById('cart-modal').classList.add('flex');}
+function openCartModal(){closeMobileMenu();let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];let list=document.getElementById('cart-items-list');let totalEl=document.getElementById('cart-grand-total');if(!list||!totalEl)return;list.innerHTML='';if(!cart.length){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold">${item.name}</h4><p class="text-xs text-emerald-400">$${item.price.toFixed(2)} × ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);}document.getElementById('cart-modal').classList.remove('hidden');document.getElementById('cart-modal').classList.add('flex');}
 function closeCartModal(){document.getElementById('cart-modal').classList.add('hidden');document.getElementById('cart-modal').classList.remove('flex');}
 function removeSingleCartItem(i){let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];cart.splice(i,1);localStorage.setItem('jdw_cart',JSON.stringify(cart));updateCartCount();openCartModal();}
 function populatePayPalFormFields(form){return true;}
-function checkoutStripe(){alert('Stripe ready');}
+function startSquarePayment(){alert('Square checkout ready — connect live keys in ApexFreePort.');}
+function startStripePayment(){alert('Stripe checkout ready — connect live keys in ApexFreePort.');}
+function checkoutStripe(){startStripePayment();}
 </script>
 </head>
 <body class="bg-zinc-950 text-white">
@@ -108,12 +110,17 @@ function checkoutStripe(){alert('Stripe ready');}
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Apparel</h3><p class="text-zinc-400 text-sm mb-4">Veteran-owned gear. Limited drops.</p><a href="services/apparel.html" class="text-emerald-400 font-semibold">Gear Up →</a></div></div>
 </div></section>
 <div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
-<div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6">
-<div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button onclick="closeCartModal()" class="text-2xl">&times;</button></div>
+<div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+<div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl text-zinc-400">&times;</button></div>
 <div id="cart-items-list" class="space-y-3 mb-6"></div>
-<div class="flex justify-between mb-6"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
-<button onclick="checkoutStripe()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);"><input type="hidden" name="cmd" value="_cart"><input type="hidden" name="upload" value="1"><input type="hidden" name="business" value="jonnydreamwalker@gmail.com"><input type="hidden" name="currency_code" value="USD"><button type="submit" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button></form>
+<div class="flex justify-between mb-6 border-t border-zinc-800 pt-4"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
+<button type="button" onclick="startSquarePayment()" class="w-full bg-black border border-emerald-700 text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Square</button>
+<button type="button" onclick="startStripePayment()" class="w-full bg-[#635bff] text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);">
+<input type="hidden" name="cmd" value="_cart"><input type="hidden" name="upload" value="1">
+<input type="hidden" name="business" value="jonnydreamwalker@gmail.com"><input type="hidden" name="currency_code" value="USD">
+<button type="submit" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
+</form>
 </div></div>
 <footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20">
 <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
