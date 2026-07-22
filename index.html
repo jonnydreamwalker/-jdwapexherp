@@ -19,7 +19,7 @@
 <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large">
 <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large">
 
-<!-- 🛡️ NETWORK RESOURCE PRIORITY LOCKS (FORCES CHROME/SAFARI BUFFERING) -->
+<!-- 🛡️ NETWORK RESOURCE PRIORITY LOCKS -->
 <link rel="subresource" href="https://jdwapexherp.com">
 <link rel="prefetch" href="https://jdwapexherp.com" as="video" type="video/mp4">
 <link rel="prefetch" href="https://jdwapexherp.com/assets/images/gallery/Action_Logo.mp4" as="video" type="video/mp4">
@@ -125,7 +125,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="assets/style.css">
 <script>
-if (!localStorage.getItem('jdw_cart')) localStorage recon.setItem('jdw_cart', JSON.stringify([]));
+if (!localStorage.getItem('jdw_cart')) localStorage.setItem('jdw_cart', JSON.stringify([]));
 function updateCartCount() {
   let cart = JSON.parse(localStorage.getItem('jdw_cart')) || [];
   let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -253,7 +253,7 @@ document.addEventListener('click', function(e){
       <a href="services/enclosures.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🏠 Shop Enclosures →</a>
       <a href="services/heating.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">🔥 Heating & Basking →</a>
       <a href="services/hardware.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">⚙️ Shop Hardware →</a>
-      <a href="services/deals.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenu()">🔥 Deals & Specials →</a>
+      <a href="services/deals.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenuMenu()">🔥 Deals & Specials →</a>
     </div>
     <a href="services/deals.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Deals</a>
     <a href="about.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">About</a>
@@ -291,7 +291,7 @@ document.addEventListener('click', function(e){
                 <div class="p-6">
                     <h3 class="text-2xl font-bold mb-3 text-emerald-400">🪵 Hardscape & Enclosures</h3>
                     <p class="text-zinc-400 text-sm mb-4">Natural cork, spider wood, UFO hardscape, and custom enclosure builds. Laboratory-grade bioactive ready.</p>
-                    <a href="services/hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape →</a>
+                    <a href="services/hardscape.html" class="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-semibold reg">Shop Hardscape →</a>
                 </div>
             </div>
             <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
@@ -339,7 +339,6 @@ document.addEventListener('click', function(e){
         </div>
     </section>
 
-    <!-- CART MODAL (kept from original) -->
     <div id="cart-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-6">
@@ -439,17 +438,9 @@ function removeSingleCartItem(i){
   updateCartCount();
   openCartModal();
 }
-function populatePayPalFormFields(form){
-  // basic cart population placeholder
-  return true;
-}
-function checkoutStripe(){
-  alert('Stripe checkout integration ready. Contact jonnydreamwalker@gmail.com for live keys.');
-}
-// ensure dropdown works on load
-document.addEventListener('DOMContentLoaded', function(){
-  updateCartCount();
-});
+function populatePayPalFormFields(form){ return true; }
+function checkoutStripe(){ alert('Stripe checkout integration ready.'); }
+document.addEventListener('DOMContentLoaded', function(){ updateCartCount(); });
 </script>
 </body>
 </html>
