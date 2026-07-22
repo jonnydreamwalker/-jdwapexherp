@@ -26,11 +26,13 @@ document.addEventListener('click',function(e){const d=document.getElementById('c
 function openCartModal(){closeMobileMenu();let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];let list=document.getElementById('cart-items-list');let totalEl=document.getElementById('cart-grand-total');if(!list||!totalEl)return;list.innerHTML='';if(!cart.length){list.innerHTML='<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';totalEl.innerText='$0.00';}else{let total=0;cart.forEach((item,i)=>{total+=item.price*item.quantity;list.innerHTML+=`<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold">${item.name}</h4><p class="text-xs text-emerald-400">$${item.price.toFixed(2)} × ${item.quantity}</p></div><button onclick="removeSingleCartItem(${i})" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>`;});totalEl.innerText='$'+total.toFixed(2);}document.getElementById('cart-modal').classList.remove('hidden');document.getElementById('cart-modal').classList.add('flex');}
 function closeCartModal(){document.getElementById('cart-modal').classList.add('hidden');document.getElementById('cart-modal').classList.remove('flex');}
 function removeSingleCartItem(i){let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];cart.splice(i,1);localStorage.setItem('jdw_cart',JSON.stringify(cart));updateCartCount();openCartModal();}
+function addToCart(name,sku,price){let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];let found=cart.find(x=>x.sku===sku);if(found)found.quantity+=1;else cart.push({name:name,sku:sku,price:Number(price)||0,quantity:1});localStorage.setItem('jdw_cart',JSON.stringify(cart));updateCartCount();}
 function populatePayPalFormFields(form){return true;}
 function startSquarePayment(){alert('Square checkout ready — connect live keys in ApexFreePort.');}
 function startStripePayment(){alert('Stripe checkout ready — connect live keys in ApexFreePort.');}
 function checkoutStripe(){startStripePayment();}
 </script>
+<script src="assets/apex-bridge.js"></script>
 </head>
 <body class="bg-zinc-950 text-white">
 <div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA. SHOP HARDSCAPE</div>
@@ -91,6 +93,17 @@ function checkoutStripe(){startStripePayment();}
 <h2 class="text-4xl md:text-6xl font-black tracking-tighter text-white mb-4">W E L C O M E.<br><span class="text-emerald-400">TO  THE  TOP  OF  THE  FOOD  CHAIN.</span></h2>
 <p class="text-zinc-300 text-lg md:text-xl mb-8 max-w-2xl mx-auto">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</p>
 </div></header>
+
+<!-- LIVE FREEPORT SHOWCASE -->
+<section class="py-16 px-4 border-y border-emerald-900/40 bg-zinc-950">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-black text-center mb-3 text-emerald-400 tracking-tight">LIVE FROM THE WAREHOUSE</h2>
+    <p class="text-zinc-500 text-center text-sm mb-2">Swipe the strip · each product can carry up to 15 photos or MP4s</p>
+    <p id="apex-home-status" class="text-zinc-500 text-sm text-center mb-8">Loading catalog…</p>
+    <div id="apex-home-showcase" class="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth px-1" style="-webkit-overflow-scrolling:touch"></div>
+  </div>
+</section>
+
 <section class="py-20 px-6 max-w-7xl mx-auto">
 <h2 class="text-3xl md:text-4xl font-black text-center mb-12 text-emerald-400 tracking-tight">SHOP THE FIVE PILLARS</h2>
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
