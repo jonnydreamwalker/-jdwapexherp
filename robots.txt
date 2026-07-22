@@ -1,14 +1,13 @@
 User-agent: *
 Allow: /
 
-# Explicit allow for all major engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent:Slurp
+User-agent: Slurp
 Allow: /
 
 Sitemap: https://jdwapexherp.com/sitemap.xml
