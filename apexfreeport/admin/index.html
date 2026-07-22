@@ -66,7 +66,7 @@
   </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 py-8">
-  <div class="mb-8 border-4 border-red-700 bg bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
+  <div class="mb-8 border-4 border-red-700 bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
     <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-1">Website inventory feed</p>
     <p id="store-label" class="text-white font-bold text-lg mb-2">Apex Herp</p>
     <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
@@ -102,7 +102,6 @@
   </div>
 </main>
 
-<!-- Glass add/edit modal -->
 <div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50 overflow-y-auto">
   <form id="form" class="glass-panel rounded-3xl p-7 w-full max-w-md space-y-3 my-8">
     <div class="text-center mb-2">
@@ -152,11 +151,13 @@
       </div>
     </div>
 
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL</label>
-    <input name="image" class="glass-input" placeholder="optional">
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL (optional)</label>
+    <input name="image" class="glass-input" placeholder="https://…">
 
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Or upload photo</label>
-    <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Photos (up to 10 — carousel on site)</label>
+    <input type="file" id="imgfile" accept="image/*" multiple class="w-full text-xs text-zinc-400">
+    <p class="text-[10px] text-zinc-500">Select multiple files. Adds to existing photos (max 10 total).</p>
+    <p id="photo-count" class="text-[10px] text-emerald-500/80"></p>
 
     <div class="flex gap-2 pt-3">
       <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3.5 rounded-xl">Save</button>
@@ -205,11 +206,9 @@ function fillCategorySelect(selected) {
   var sel = document.getElementById("categorySelect");
   sel.innerHTML = CATEGORIES.map(function (c) {
     var s = c === selected ? " selected" : "";
-    return "<option value=\"" + c.replace(/\"/g, "&quot;") + "\"" + s + ">" + c + "</option>";
+    return "<option value=\"" + c.replace(/\"/g, """) + "\"" + s + ">" + c + "</option>";
   }).join("");
-  if (!CATEGORIES.length) {
-    sel.innerHTML = "<option value=\"General\">General</option>";
-  }
+  if (!CATEGORIES.length) sel.innerHTML = "<option value=\"General\">General</option>";
 }
 
 function paintCatFilter() {
@@ -266,7 +265,7 @@ document.getElementById("btn-add-cat").onclick = async function () {
 };
 
 function esc(s) {
-  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+  return String(s == null ? "" : s).replace(/&/g,"&").replace(/</g,"<").replace(/"/g,""");
 }
 
 function renderRows() {
@@ -277,14 +276,15 @@ function renderRows() {
     });
   }
   document.getElementById("body").innerHTML = items.map(function (i) {
-    var skuAttr = String(i.sku).replace(/"/g, "&quot;");
+    var skuAttr = String(i.sku).replace(/"/g, """);
+    var nImg = (i.images && i.images.length) || (i.image ? 1 : 0);
     return "<tr>" +
       "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\" title=\"Move up\">▲</button>" +
-      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\" title=\"Move down\">▼</button>" +
+      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button>" +
+      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button>" +
       "</td>" +
       "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
-      "<td class=\"px-3 py-3\">" + esc(i.name) + "</td>" +
+      "<td class=\"px-3 py-3\">" + esc(i.name) + (nImg ? " <span class=\"text-zinc-500 text-[10px]\">📷" + nImg + "</span>" : "") + "</td>" +
       "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
       "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
       "<td class=\"px-3 py-3 text-xs\">" + esc(i.category || "") + "</td>" +
@@ -368,6 +368,8 @@ function openEdit(sku) {
   document.getElementById("imgfile").value = "";
   document.getElementById("originalSku").value = i ? (i.sku || "") : "";
   fillCategorySelect(i ? i.category : CATEGORIES[0]);
+  var n = i && i.images ? i.images.length : i && i.image ? 1 : 0;
+  document.getElementById("photo-count").textContent = n ? ("Currently " + n + " photo(s) on this product") : "";
   if (i) {
     f.sku.value = i.sku || "";
     f.name.value = i.name || "";
@@ -381,12 +383,22 @@ function openEdit(sku) {
   showModal(true);
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise(function (resolve, reject) {
+    var r = new FileReader();
+    r.onload = function () { resolve(r.result); };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
 document.getElementById("btn-add").onclick = function () {
   document.getElementById("form-title").textContent = "New product";
   document.getElementById("sku-hint").textContent = "(new)";
   document.getElementById("form").reset();
   document.getElementById("originalSku").value = "";
   document.getElementById("imgfile").value = "";
+  document.getElementById("photo-count").textContent = "";
   fillCategorySelect(FILTER || CATEGORIES[0]);
   showModal(true);
 };
@@ -414,18 +426,18 @@ document.getElementById("form").onsubmit = async function (e) {
     body: JSON.stringify(body),
   });
   if (!res.ok) { alert("Save failed"); return; }
-  var file = document.getElementById("imgfile").files[0];
-  if (file) {
-    var dataUrl = await new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onload = function () { resolve(r.result); };
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    });
-    await fetch("/api/inventory/image", {
+
+  var files = document.getElementById("imgfile").files;
+  if (files && files.length) {
+    var dataUrls = [];
+    var max = Math.min(files.length, 10);
+    for (var i = 0; i < max; i++) {
+      dataUrls.push(await readFileAsDataUrl(files[i]));
+    }
+    await fetch("/api/inventory/images", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrl: dataUrl }),
+      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: dataUrls }),
     });
   }
   showModal(false);
