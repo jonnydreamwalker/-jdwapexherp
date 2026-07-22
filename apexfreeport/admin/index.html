@@ -2,406 +2,579 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ApexFreePort Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<script src="https://cdn.tailwindcss.com"></script>
+<title>ApexFreePort</title>
 <style>
-  .glass-panel{background:rgba(9,12,16,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(16,185,129,.28);box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04)}
-  .glass-input{background:rgba(0,0,0,.45);border:1px solid rgba(63,63,70,.9);border-radius:.75rem;padding:.65rem .85rem;width:100%;color:#fff;font-size:.875rem}
-  .glass-input:focus{outline:none;border-color:rgba(52,211,153,.7);box-shadow:0 0 0 2px rgba(16,185,129,.2)}
-  .cat-chip{border:1px solid rgba(63,63,70,.9);border-radius:999px;padding:.35rem .85rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:#a1a1aa;cursor:pointer}
-  .cat-chip.active{background:rgba(16,185,129,.15);border-color:rgba(52,211,153,.5);color:#6ee7b7}
+  :root {
+    --bg: #09090b;
+    --panel: rgba(24, 24, 27, 0.72);
+    --panel-solid: #18181b;
+    --line: rgba(63, 63, 70, 0.85);
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --emerald: #34d399;
+    --emerald-dim: #059669;
+    --blue: #38bdf8;
+    --red: #ef4444;
+    --frost: blur(16px) saturate(1.2);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, #0c1a2e 0%, var(--bg) 45%), var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: var(--frost); -webkit-backdrop-filter: var(--frost);
+    background: rgba(9, 9, 11, 0.75);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { margin: 0; font-size: 1.15rem; color: var(--emerald); letter-spacing: 0.04em; text-transform: uppercase; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .tab {
+    border: 1px solid var(--line);
+    background: rgba(39, 39, 42, 0.55);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .tab.active {
+    color: #022c22;
+    background: linear-gradient(180deg, #6ee7b7, var(--emerald));
+    border-color: transparent;
+  }
+  .chip {
+    border: 1px solid var(--line);
+    background: rgba(24, 24, 27, 0.55);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .chip.active { color: var(--emerald); border-color: rgba(52, 211, 153, 0.5); }
+  button {
+    font: inherit; cursor: pointer; border: 0; border-radius: 10px;
+    padding: 8px 12px; font-weight: 700; color: #fff;
+    background: var(--emerald-dim);
+  }
+  button.secondary { background: #27272a; color: #e4e4e7; }
+  button.ghost {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    padding: 4px 8px; font-size: 12px;
+  }
+  button.danger {
+    background: linear-gradient(180deg, #f87171, #b91c1c);
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .feed-btn {
+    width: 100%;
+    max-width: 420px;
+    padding: 16px;
+    font-size: 15px;
+    margin: 8px 0 16px;
+  }
+  #err, #ok {
+    display: none;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    font-size: 13px;
+  }
+  #err { background: #450a0a; color: #fecaca; border: 1px solid #7f1d1d; }
+  #ok { background: #052e16; color: #bbf7d0; border: 1px solid #14532d; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--emerald); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { font-size: 13px; }
+  .sku { color: var(--blue); font-family: ui-monospace, monospace; font-size: 12px; }
+  .muted { color: var(--muted); }
+  .inline-edit {
+    display: none;
+    background: rgba(9, 9, 11, 0.55);
+  }
+  .inline-edit.open { display: table-row; }
+  .inline-box {
+    margin: 0 0 12px;
+    padding: 14px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 14px;
+    background: var(--panel);
+    backdrop-filter: var(--frost); -webkit-backdrop-filter: var(--frost);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  label { display: block; font-size: 11px; color: var(--muted); margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  input, select, textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.45);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 9px 10px;
+    font: inherit;
+  }
+  textarea { min-height: 72px; resize: vertical; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } th:nth-child(4), td:nth-child(4) { display: none; } }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .thumbs img, .thumbs video {
+    width: 56px; height: 56px; object-fit: cover;
+    border-radius: 8px; border: 1px solid var(--line); background: #000;
+  }
+  /* Glass modal — matches site dropdown frost */
+  .modal-back {
+    position: fixed; inset: 0; z-index: 80;
+    display: none;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(24, 24, 27, 0.82);
+    backdrop-filter: var(--frost); -webkit-backdrop-filter: var(--frost);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    padding: 18px;
+  }
+  .modal h2 { margin: 0 0 8px; font-size: 1rem; color: var(--emerald); text-transform: uppercase; letter-spacing: 0.05em; }
+  .links a { color: var(--blue); text-decoration: none; font-size: 12px; margin-right: 10px; }
+  .links a:hover { text-decoration: underline; }
 </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
-<header class="border-b border-emerald-900 bg-black sticky top-0 z-20">
-  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+<body>
+<header>
+  <div class="wrap row" style="justify-content:space-between">
     <div>
-      <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">JDW Apex</p>
-      <h1 class="text-xl font-black text-emerald-400">ApexFreePort</h1>
-      <p class="text-zinc-500 text-xs">Multi-store inventory bridge</p>
+      <h1>ApexFreePort</h1>
+      <div class="sub" id="meta">Loading…</div>
     </div>
-    <div class="flex items-center gap-3 text-sm">
-      <span id="warehouse" class="text-zinc-500 text-xs"></span>
-      <button type="button" id="btn-add" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs font-bold uppercase">+ Product</button>
-      <form method="POST" action="/logout"><button class="border border-zinc-700 px-3 py-1.5 rounded-lg text-xs uppercase">Logout</button></form>
+    <div class="row links">
+      <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
+      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
     </div>
-  </div>
-  <div class="max-w-6xl mx-auto px-4 pb-0 flex gap-1 border-t border-zinc-900 pt-3">
-    <button type="button" data-store="herp" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-900 text-emerald-400">Herp</button>
-    <button type="button" data-store="k9" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">K9</button>
-    <button type="button" data-store="feline" class="tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 border-zinc-800 bg-zinc-950 text-zinc-400">Feline</button>
   </div>
 </header>
-<main class="max-w-6xl mx-auto px-4 py-8">
-  <div class="mb-8 border-4 border-red-700 bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
-    <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-1">Website inventory feed</p>
-    <p id="store-label" class="text-white font-bold text-lg mb-2">Apex Herp</p>
-    <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
-    <button type="button" id="btn-dont-touch" class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">DON'T TOUCH</button>
-  </div>
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-    <p class="text-zinc-400 text-sm">Managing: <span id="active-name" class="text-emerald-400 font-bold">Apex Herp</span></p>
-    <div class="flex flex-wrap gap-2 items-center">
-      <div id="cat-filter" class="flex flex-wrap gap-2"></div>
-      <button type="button" id="btn-add-cat" class="cat-chip hover:text-emerald-300">+ Group</button>
-    </div>
-  </div>
-  <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
-    <table class="w-full text-sm text-left">
-      <thead class="text-xs text-zinc-500 uppercase bg-zinc-950"><tr>
-        <th class="px-3 py-3">Order</th><th class="px-3 py-3">SKU</th><th class="px-3 py-3">Name</th><th class="px-3 py-3">Price</th><th class="px-3 py-3">Qty</th><th class="px-3 py-3">Group</th><th class="px-3 py-3">Actions</th>
-      </tr></thead>
-      <tbody id="body" class="divide-y divide-zinc-800"></tbody>
-    </table>
-  </div>
-</main>
 
-<div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50 overflow-y-auto">
-  <form id="form" class="glass-panel rounded-3xl p-7 w-full max-w-md space-y-3 my-8">
-    <div class="text-center mb-2">
-      <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">Inventory</p>
-      <h3 id="form-title" class="text-xl font-black text-emerald-400">New product</h3>
+<div class="wrap">
+  <div class="tabs" id="storeTabs"></div>
+
+  <button type="button" class="danger feed-btn" id="btnFeed">DON'T TOUCH · Public feed</button>
+
+  <div class="row" style="margin-bottom:12px">
+    <button type="button" id="btnAdd">+ Product</button>
+    <button type="button" class="secondary" id="btnCat">+ Category</button>
+    <button type="button" class="secondary" id="btnReload">Reload</button>
+  </div>
+
+  <div class="row" id="catChips" style="margin-bottom:12px"></div>
+
+  <div id="err"></div>
+  <div id="ok"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:56px">Order</th>
+        <th>SKU / Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- Add product glass modal -->
+<div class="modal-back" id="addModal">
+  <div class="modal">
+    <h2>Add product</h2>
+    <p class="muted" style="margin:0 0 8px;font-size:12px">Frost panel · saves into current store only</p>
+    <div class="grid2">
+      <div><label>SKU</label><input id="a_sku" autocomplete="off"></div>
+      <div><label>Name</label><input id="a_name"></div>
+      <div><label>Category</label><select id="a_category"></select></div>
+      <div><label>Lane</label>
+        <select id="a_lane"><option value="direct">direct warehouse</option><option value="external">external fulfillment</option></select>
+      </div>
+      <div><label>Price</label><input id="a_price" type="number" step="0.01"></div>
+      <div><label>Qty</label><input id="a_qty" type="number" step="1" value="0"></div>
+      <div><label>Status</label>
+        <select id="a_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select>
+      </div>
+      <div><label>Location</label><input id="a_location" placeholder="WH-A1"></div>
     </div>
-    <input type="hidden" id="originalSku" value="">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">SKU <span id="sku-hint" class="normal-case text-zinc-600"></span></label>
-    <input name="sku" required class="glass-input" placeholder="HS-UFO-FLAT-01">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Name</label>
-    <input name="name" required class="glass-input" placeholder="Product name">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Group (filing)</label>
-    <select name="category" id="categorySelect" class="glass-input"></select>
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Description</label>
-    <textarea name="description" rows="2" class="glass-input" placeholder="Optional details"></textarea>
-    <div class="grid grid-cols-2 gap-3">
-      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Price USD</label><input name="price" type="number" step="0.01" min="0" class="glass-input"></div>
-      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Qty</label><input name="qty" type="number" class="glass-input"></div>
+    <label>Description</label>
+    <textarea id="a_description"></textarea>
+    <label>Photos (up to 10)</label>
+    <input id="a_photos" type="file" accept="image/*" multiple>
+    <label>MP4 / video (up to 2)</label>
+    <input id="a_videos" type="file" accept="video/mp4,video/webm,video/*" multiple>
+    <div class="row" style="margin-top:14px">
+      <button type="button" id="a_save">Save product</button>
+      <button type="button" class="secondary" id="a_cancel">Cancel</button>
     </div>
-    <div class="grid grid-cols-2 gap-3">
-      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Lane</label>
-        <select name="lane" class="glass-input"><option value="direct">Direct (FL WH)</option><option value="external">External</option></select></div>
-      <div><label class="block text-xs text-zinc-500 uppercase tracking-wide">Status</label>
-        <select name="status" class="glass-input"><option value="active">Active</option><option value="coming_soon">Coming soon</option><option value="hold">Hold</option></select></div>
-    </div>
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL (optional)</label>
-    <input name="image" class="glass-input" placeholder="https://">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Photos (up to 10)</label>
-    <input type="file" id="imgfile" accept="image/*" multiple class="w-full text-xs text-zinc-400">
-    <p id="photo-count" class="text-[10px] text-emerald-500/80"></p>
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Video URL (optional)</label>
-    <input name="video" class="glass-input" placeholder="https://.../clip.mp4">
-    <label class="block text-xs text-zinc-500 uppercase tracking-wide">MP4 upload (up to 2)</label>
-    <input type="file" id="vidfile" accept="video/mp4,video/webm" multiple class="w-full text-xs text-zinc-400">
-    <p id="video-count" class="text-[10px] text-emerald-500/80"></p>
-    <div class="flex gap-2 pt-3">
-      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3.5 rounded-xl">Save</button>
-      <button type="button" id="btn-cancel" class="px-5 border border-zinc-600 rounded-xl text-xs uppercase text-zinc-300">Cancel</button>
-    </div>
-  </form>
+  </div>
 </div>
 
 <script>
-var STORE = "herp";
-var FILTER = "";
-var CATEGORIES = [];
-var ALL_ITEMS = [];
+(function () {
+  var store = "herp";
+  var items = [];
+  var categories = [];
+  var filterCat = "";
+  var openSku = "";
 
-function showModal(show) {
-  var m = document.getElementById("modal");
-  if (show) { m.classList.remove("hidden"); m.classList.add("flex"); }
-  else { m.classList.add("hidden"); m.classList.remove("flex"); }
-}
-
-function paintTabs() {
-  document.querySelectorAll(".tab-btn").forEach(function (btn) {
-    var on = btn.getAttribute("data-store") === STORE;
-    btn.className = "tab-btn px-5 py-2.5 text-sm font-bold uppercase rounded-t-xl border border-b-0 " +
-      (on ? "border-emerald-800 bg-zinc-900 text-emerald-400" : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200");
-  });
-}
-
-function paintFeed(on, name) {
-  document.getElementById("store-label").textContent = name || STORE;
-  document.getElementById("active-name").textContent = name || STORE;
-  var st = document.getElementById("feed-status");
-  var btn = document.getElementById("btn-dont-touch");
-  if (on) {
-    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';
-    btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
-    btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
-  } else {
-    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span>';
-    btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
-    btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
+  function $(id) { return document.getElementById(id); }
+  function showErr(m) { var e = $("err"); e.style.display = "block"; e.textContent = String(m || "error"); }
+  function hideErr() { $("err").style.display = "none"; }
+  function showOk(m) {
+    var e = $("ok"); e.style.display = "block"; e.textContent = String(m || "ok");
+    setTimeout(function () { e.style.display = "none"; }, 2200);
   }
-}
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function api(url, opts) {
+    opts = opts || {};
+    opts.credentials = "same-origin";
+    opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body === "object") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(opts.body);
+    }
+    return fetch(url, opts).then(function (r) {
+      if (r.status === 401) { location.href = "/login"; throw new Error("Not logged in"); }
+      return r.json().then(function (j) {
+        if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status));
+        return j;
+      });
+    });
+  }
+  function fillCatSelect(sel, selected) {
+    sel.innerHTML = "";
+    var list = categories.length ? categories : ["Hardscape", "Lighting", "Substrates", "Nutrition", "Apparel"];
+    list.forEach(function (c) {
+      var o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      if (c === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  function mediaThumbs(it) {
+    var html = '<div class="thumbs">';
+    (it.images || []).forEach(function (u) { html += '<img src="' + esc(u) + '" alt="">'; });
+    (it.videos || []).forEach(function (u) { html += '<video src="' + esc(u) + '" muted></video>'; });
+    if (!(it.images || []).length && !(it.videos || []).length) html += '<span class="muted">No media</span>';
+    html += "</div>";
+    return html;
+  }
+  function readFilesAsDataUrls(fileList, max) {
+    var files = Array.prototype.slice.call(fileList || [], 0, max || 10);
+    return Promise.all(files.map(function (f) {
+      return new Promise(function (resolve, reject) {
+        var r = new FileReader();
+        r.onload = function () { resolve(r.result); };
+        r.onerror = function () { reject(new Error("file read failed")); };
+        r.readAsDataURL(f);
+      });
+    }));
+  }
+  function renderTabs(stores) {
+    var el = $("storeTabs");
+    el.innerHTML = "";
+    (stores || [
+      { id: "herp", name: "Apex Herp", count: 0 },
+      { id: "k9", name: "Apex K9", count: 0 },
+      { id: "feline", name: "Apex Feline", count: 0 }
+    ]).forEach(function (s) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab" + (s.id === store ? " active" : "");
+      b.textContent = s.name + " (" + (s.count || 0) + ")";
+      b.onclick = function () { store = s.id; openSku = ""; filterCat = ""; load(); };
+      el.appendChild(b);
+    });
+  }
+  function renderChips() {
+    var el = $("catChips");
+    el.innerHTML = "";
+    function addChip(label, val) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (filterCat === val ? " active" : "");
+      b.textContent = label;
+      b.onclick = function () { filterCat = val; renderTable(); renderChips(); };
+      el.appendChild(b);
+    }
+    addChip("All", "");
+    categories.forEach(function (c) { addChip(c, c); });
+  }
+  function renderTable() {
+    var tb = $("tbody");
+    var list = items.filter(function (it) {
+      return !filterCat || String(it.category || "") === filterCat;
+    });
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="6" class="muted">No products in this view.</td></tr>';
+      return;
+    }
+    var html = "";
+    list.forEach(function (it) {
+      var open = openSku && openSku === it.sku;
+      html += "<tr data-sku=\"" + esc(it.sku) + "\">" +
+        '<td><button type="button" class="ghost" data-act="up">▲</button> ' +
+        '<button type="button" class="ghost" data-act="down">▼</button></td>' +
+        '<td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' +
+        (it.status && it.status !== "active" ? ' <span class="muted">[' + esc(it.status) + ']</span>' : '') +
+        '</td>' +
+        "<td>" + esc(it.category || "") + "</td>" +
+        "<td>$" + (Number(it.price) || 0).toFixed(2) + "</td>" +
+        "<td><button type=\"button\" class=\"ghost\" data-act=\"minus\">−</button> " +
+        "<strong>" + (it.qty || 0) + "</strong> " +
+        "<button type=\"button\" class=\"ghost\" data-act=\"plus\">+</button></td>" +
+        '<td><button type="button" class="secondary" data-act="edit">' + (open ? "Close" : "Edit") + "</button> " +
+        '<button type="button" class="ghost" data-act="del">Del</button></td></tr>';
 
-function fillCategorySelect(selected) {
-  var sel = document.getElementById("categorySelect");
-  var list = CATEGORIES.length ? CATEGORIES : ["General"];
-  sel.innerHTML = list.map(function (c) {
-    var s = c === selected ? " selected" : "";
-    return "<option value=\"" + String(c).replace(/\"/g, """) + "\"" + s + ">" + c + "</option>";
-  }).join("");
-}
+      html += '<tr class="inline-edit' + (open ? " open" : "") + '" data-edit-for="' + esc(it.sku) + '">' +
+        '<td colspan="6"><div class="inline-box">' +
+        '<div class="grid2">' +
+        '<div><label>SKU</label><input data-f="sku" value="' + esc(it.sku) + '"></div>' +
+        '<div><label>Name</label><input data-f="name" value="' + esc(it.name) + '"></div>' +
+        '<div><label>Category</label><select data-f="category"></select></div>' +
+        '<div><label>Lane</label><select data-f="lane">' +
+          '<option value="direct"' + (it.lane === "direct" ? " selected" : "") + '>direct warehouse</option>' +
+          '<option value="external"' + (it.lane === "external" ? " selected" : "") + '>external fulfillment</option>' +
+        '</select></div>' +
+        '<div><label>Price</label><input data-f="price" type="number" step="0.01" value="' + (Number(it.price) || 0) + '"></div>' +
+        '<div><label>Qty</label><input data-f="qty" type="number" step="1" value="' + (it.qty || 0) + '"></div>' +
+        '<div><label>Status</label><select data-f="status">' +
+          '<option value="active"' + (it.status === "active" ? " selected" : "") + '>active</option>' +
+          '<option value="coming_soon"' + (it.status === "coming_soon" ? " selected" : "") + '>coming_soon</option>' +
+          '<option value="archived"' + (it.status === "archived" ? " selected" : "") + '>archived</option>' +
+        '</select></div>' +
+        '<div><label>Location</label><input data-f="location" value="' + esc(it.location || "") + '"></div>' +
+        '</div>' +
+        '<label>Description</label><textarea data-f="description">' + esc(it.description || "") + '</textarea>' +
+        '<label>Add photos</label><input data-f="photos" type="file" accept="image/*" multiple>' +
+        '<label>Add MP4 / video</label><input data-f="videos" type="file" accept="video/mp4,video/webm,video/*" multiple>' +
+        mediaThumbs(it) +
+        '<div class="row" style="margin-top:12px">' +
+        '<button type="button" data-act="save">Save changes</button>' +
+        '<button type="button" class="secondary" data-act="close">Close</button>' +
+        '</div></div></td></tr>';
+    });
+    tb.innerHTML = html;
 
-function paintCatFilter() {
-  var box = document.getElementById("cat-filter");
-  var chips = [""].concat(CATEGORIES);
-  box.innerHTML = chips.map(function (c) {
-    var label = c || "All";
-    var active = FILTER === c ? " active" : "";
-    return "<button type=\"button\" class=\"cat-chip" + active + "\" data-cat=\"" + (c || "") + "\">" + label + "</button>";
-  }).join("");
-  box.querySelectorAll("[data-cat]").forEach(function (btn) {
-    btn.onclick = function () {
-      FILTER = btn.getAttribute("data-cat") || "";
-      paintCatFilter();
-      renderRows();
+    // fill category selects in open editors
+    tb.querySelectorAll("tr.inline-edit.open select[data-f=category]").forEach(function (sel) {
+      var sku = sel.closest("tr").getAttribute("data-edit-for");
+      var it = items.find(function (x) { return x.sku === sku; }) || {};
+      fillCatSelect(sel, it.category || "");
+    });
+
+    tb.querySelectorAll("[data-act]").forEach(function (btn) {
+      btn.onclick = function () {
+        var act = btn.getAttribute("data-act");
+        var tr = btn.closest("tr");
+        var sku = tr.getAttribute("data-sku") || tr.getAttribute("data-edit-for");
+        if (act === "edit") {
+          openSku = openSku === sku ? "" : sku;
+          renderTable();
+          return;
+        }
+        if (act === "close") { openSku = ""; renderTable(); return; }
+        if (act === "up" || act === "down") {
+          api("/api/inventory/reorder", { method: "POST", body: { store: store, sku: sku, direction: act === "up" ? "up" : "down" } })
+            .then(function () { return load(); })
+            .catch(function (e) { showErr(e.message); });
+          return;
+        }
+        if (act === "plus" || act === "minus") {
+          api("/api/inventory/adjust", { method: "POST", body: { store: store, sku: sku, delta: act === "plus" ? 1 : -1 } })
+            .then(function () { return load(); })
+            .catch(function (e) { showErr(e.message); });
+          return;
+        }
+        if (act === "del") {
+          if (!confirm("Delete " + sku + " from " + store + "?")) return;
+          api("/api/inventory/remove", { method: "POST", body: { store: store, sku: sku } })
+            .then(function () { openSku = ""; showOk("Deleted " + sku); return load(); })
+            .catch(function (e) { showErr(e.message); });
+          return;
+        }
+        if (act === "save") {
+          saveInline(tr, sku);
+        }
+      };
+    });
+  }
+  function field(tr, name) {
+    return tr.querySelector('[data-f="' + name + '"]');
+  }
+  function saveInline(tr, sku) {
+    hideErr();
+    var body = {
+      store: store,
+      originalSku: sku,
+      sku: field(tr, "sku").value.trim(),
+      name: field(tr, "name").value.trim(),
+      category: field(tr, "category").value,
+      lane: field(tr, "lane").value,
+      price: Number(field(tr, "price").value) || 0,
+      qty: Number(field(tr, "qty").value) || 0,
+      status: field(tr, "status").value,
+      location: field(tr, "location").value.trim(),
+      description: field(tr, "description").value
     };
-  });
-}
+    if (!body.sku || !body.name) { showErr("SKU and Name required"); return; }
+    var photos = field(tr, "photos").files;
+    var videos = field(tr, "videos").files;
+    api("/api/inventory/item", { method: "POST", body: body })
+      .then(function () {
+        var chain = Promise.resolve();
+        if (photos && photos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(photos, 10).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/images", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        if (videos && videos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(videos, 2).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/videos", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        return chain;
+      })
+      .then(function () { showOk("Saved " + body.sku); openSku = body.sku; return load(); })
+      .catch(function (e) { showErr("Save failed: " + e.message); });
+  }
+  function load() {
+    hideErr();
+    $("meta").textContent = "Loading…";
+    return api("/api/inventory?store=" + encodeURIComponent(store)).then(function (d) {
+      items = d.items || [];
+      categories = d.categories || [];
+      renderTabs(d.stores);
+      renderChips();
+      renderTable();
+      var feed = d.publicFeed ? "ON" : "OFF";
+      $("btnFeed").textContent = "DON'T TOUCH · Public feed " + feed;
+      $("meta").textContent = (d.storeName || store) + " · " + items.length + " items · feed " + feed +
+        " · updated " + (d.updated || "") + " · inventory file not modified by UI pull";
+    }).catch(function (e) {
+      showErr("Load failed: " + e.message);
+      $("meta").textContent = "Load failed";
+    });
+  }
 
-document.querySelectorAll(".tab-btn").forEach(function (btn) {
-  btn.onclick = function () {
-    STORE = btn.getAttribute("data-store");
-    FILTER = "";
-    paintTabs();
-    load();
+  $("btnReload").onclick = function () { load(); };
+  $("btnFeed").onclick = function () {
+    if (!confirm("Toggle public website feed for this store?\n\nThis does not delete inventory.")) return;
+    api("/api/admin/public-feed", { method: "POST", body: { store: store } })
+      .then(function (j) { showOk("Public feed: " + (j.publicFeed ? "ON" : "OFF")); return load(); })
+      .catch(function (e) { showErr(e.message); });
   };
-});
-
-document.getElementById("btn-dont-touch").onclick = async function () {
-  if (!confirm("Flip feed for " + STORE.toUpperCase() + "?")) return;
-  var r = await fetch("/api/admin/public-feed", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE }),
-  });
-  if (!r.ok) { alert("Failed"); return; }
-  var j = await r.json();
-  paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
-};
-
-document.getElementById("btn-add-cat").onclick = async function () {
-  var name = prompt("New group name:");
-  if (!name || !name.trim()) return;
-  var r = await fetch("/api/inventory/category", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, name: name.trim() }),
-  });
-  if (!r.ok) { alert("Could not add group"); return; }
-  var j = await r.json();
-  CATEGORIES = j.categories || [];
-  paintCatFilter();
-  fillCategorySelect(name.trim());
-};
-
-function esc(s) {
-  return String(s == null ? "" : s)
-    .replace(/&/g, "&")
-    .replace(/</g, "<")
-    .replace(/"/g, """);
-}
-
-function renderRows() {
-  var items = ALL_ITEMS;
-  if (FILTER) {
-    items = items.filter(function (i) {
-      return String(i.category || "").toLowerCase() === FILTER.toLowerCase();
-    });
-  }
-  document.getElementById("body").innerHTML = items.map(function (i) {
-    var skuAttr = String(i.sku).replace(/"/g, """);
-    var nImg = (i.images && i.images.length) || (i.image ? 1 : 0);
-    var nVid = (i.videos && i.videos.length) || (i.video ? 1 : 0);
-    var media = (nImg ? " photo:" + nImg : "") + (nVid ? " vid:" + nVid : "");
-    return "<tr>" +
-      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▲</button>" +
-      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\">▼</button></td>" +
-      "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
-      "<td class=\"px-3 py-3\">" + esc(i.name) + (media ? " <span class=\"text-zinc-500 text-[10px]\">" + media + "</span>" : "") + "</td>" +
-      "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
-      "<td class=\"px-3 py-3 font-bold\">" + i.qty + "</td>" +
-      "<td class=\"px-3 py-3 text-xs\">" + esc(i.category || "") + "</td>" +
-      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
-      "<button type=\"button\" data-edit=\"" + skuAttr + "\" class=\"bg-emerald-700 hover:bg-emerald-600 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Edit</button>" +
-      "<button type=\"button\" data-del=\"" + skuAttr + "\" class=\"bg-red-900 hover:bg-red-700 text-xs font-bold uppercase px-2 py-1 rounded mr-1\">Del</button>" +
-      "<button type=\"button\" data-plus=\"" + skuAttr + "\" class=\"text-emerald-400 px-1\">+</button>" +
-      "<button type=\"button\" data-minus=\"" + skuAttr + "\" class=\"text-zinc-400 px-1\">-</button></td></tr>";
-  }).join("") || "<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
-
-  document.querySelectorAll("[data-edit]").forEach(function (btn) {
-    btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
-  });
-  document.querySelectorAll("[data-del]").forEach(function (btn) {
-    btn.onclick = function () { removeItem(btn.getAttribute("data-del")); };
-  });
-  document.querySelectorAll("[data-plus]").forEach(function (btn) {
-    btn.onclick = function () { adj(btn.getAttribute("data-plus"), 1); };
-  });
-  document.querySelectorAll("[data-minus]").forEach(function (btn) {
-    btn.onclick = function () { adj(btn.getAttribute("data-minus"), -1); };
-  });
-  document.querySelectorAll("[data-up]").forEach(function (btn) {
-    btn.onclick = function () { reorder(btn.getAttribute("data-up"), "up"); };
-  });
-  document.querySelectorAll("[data-down]").forEach(function (btn) {
-    btn.onclick = function () { reorder(btn.getAttribute("data-down"), "down"); };
-  });
-}
-
-async function load() {
-  paintTabs();
-  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
-  if (!r.ok) { location.href = "/login"; return; }
-  var d = await r.json();
-  document.getElementById("warehouse").textContent = d.warehouse || "";
-  paintFeed(!!d.publicFeed, d.storeName || STORE);
-  CATEGORIES = d.categories || [];
-  ALL_ITEMS = d.items || [];
-  paintCatFilter();
-  fillCategorySelect();
-  renderRows();
-}
-
-async function adj(sku, delta) {
-  await fetch("/api/inventory/adjust", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku, delta: delta }),
-  });
-  load();
-}
-
-async function reorder(sku, direction) {
-  await fetch("/api/inventory/reorder", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku, direction: direction }),
-  });
-  load();
-}
-
-async function removeItem(sku) {
-  if (!confirm("Delete " + sku + "?")) return;
-  var r = await fetch("/api/inventory/remove", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ store: STORE, sku: sku }),
-  });
-  if (!r.ok) { alert("Delete failed"); return; }
-  load();
-}
-
-function openEdit(sku) {
-  var i = ALL_ITEMS.find(function (x) { return String(x.sku) === String(sku); });
-  var f = document.getElementById("form");
-  document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
-  document.getElementById("sku-hint").textContent = i ? "(editing)" : "(new)";
-  f.reset();
-  document.getElementById("imgfile").value = "";
-  document.getElementById("vidfile").value = "";
-  document.getElementById("originalSku").value = i ? (i.sku || "") : "";
-  fillCategorySelect(i ? i.category : CATEGORIES[0]);
-  var n = i && i.images ? i.images.length : i && i.image ? 1 : 0;
-  var nv = i && i.videos ? i.videos.length : i && i.video ? 1 : 0;
-  document.getElementById("photo-count").textContent = n ? ("Currently " + n + " photo(s)") : "";
-  document.getElementById("video-count").textContent = nv ? ("Currently " + nv + " video(s)") : "";
-  if (i) {
-    f.sku.value = i.sku || "";
-    f.name.value = i.name || "";
-    f.description.value = i.description || "";
-    f.price.value = i.price != null ? i.price : 0;
-    f.qty.value = i.qty != null ? i.qty : 0;
-    f.lane.value = i.lane || "direct";
-    f.status.value = i.status || "active";
-    f.image.value = i.image || "";
-    f.video.value = i.video || "";
-  }
-  showModal(true);
-}
-
-function readFileAsDataUrl(file) {
-  return new Promise(function (resolve, reject) {
-    var r = new FileReader();
-    r.onload = function () { resolve(r.result); };
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
-
-document.getElementById("btn-add").onclick = function () {
-  document.getElementById("form-title").textContent = "New product";
-  document.getElementById("sku-hint").textContent = "(new)";
-  document.getElementById("form").reset();
-  document.getElementById("originalSku").value = "";
-  document.getElementById("imgfile").value = "";
-  document.getElementById("vidfile").value = "";
-  document.getElementById("photo-count").textContent = "";
-  document.getElementById("video-count").textContent = "";
-  fillCategorySelect(FILTER || CATEGORIES[0]);
-  showModal(true);
-};
-
-document.getElementById("btn-cancel").onclick = function () { showModal(false); };
-
-document.getElementById("form").onsubmit = async function (e) {
-  e.preventDefault();
-  var f = e.target;
-  var body = {
-    store: STORE,
-    sku: f.sku.value.trim(),
-    originalSku: document.getElementById("originalSku").value.trim() || undefined,
-    name: f.name.value.trim(),
-    description: f.description.value,
-    price: Number(f.price.value) || 0,
-    qty: Number(f.qty.value) || 0,
-    category: f.category.value,
-    lane: f.lane.value,
-    status: f.status.value,
-    image: f.image.value.trim(),
-    video: f.video.value.trim(),
+  $("btnCat").onclick = function () {
+    var name = prompt("New category name");
+    if (!name) return;
+    api("/api/inventory/category", { method: "POST", body: { store: store, name: name.trim() } })
+      .then(function () { showOk("Category added"); return load(); })
+      .catch(function (e) { showErr(e.message); });
   };
-  var res = await fetch("/api/inventory/item", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    var err = await res.text();
-    alert("Save failed: " + err);
-    return;
-  }
-  var files = document.getElementById("imgfile").files;
-  if (files && files.length) {
-    var dataUrls = [];
-    var max = Math.min(files.length, 10);
-    for (var i = 0; i < max; i++) dataUrls.push(await readFileAsDataUrl(files[i]));
-    await fetch("/api/inventory/images", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: dataUrls }),
-    });
-  }
-  var vfiles = document.getElementById("vidfile").files;
-  if (vfiles && vfiles.length) {
-    var vUrls = [];
-    var vmax = Math.min(vfiles.length, 2);
-    for (var j = 0; j < vmax; j++) vUrls.push(await readFileAsDataUrl(vfiles[j]));
-    await fetch("/api/inventory/videos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ store: STORE, sku: body.sku, dataUrls: vUrls }),
-    });
-  }
-  showModal(false);
-  load();
-};
+  $("btnAdd").onclick = function () {
+    fillCatSelect($("a_category"), categories[0] || "Hardscape");
+    $("a_sku").value = "";
+    $("a_name").value = "";
+    $("a_price").value = "";
+    $("a_qty").value = "0";
+    $("a_description").value = "";
+    $("a_location").value = "";
+    $("a_photos").value = "";
+    $("a_videos").value = "";
+    $("addModal").classList.add("open");
+  };
+  $("a_cancel").onclick = function () { $("addModal").classList.remove("open"); };
+  $("addModal").onclick = function (e) { if (e.target === $("addModal")) $("addModal").classList.remove("open"); };
+  $("a_save").onclick = function () {
+    hideErr();
+    var body = {
+      store: store,
+      sku: $("a_sku").value.trim(),
+      name: $("a_name").value.trim(),
+      category: $("a_category").value,
+      lane: $("a_lane").value,
+      price: Number($("a_price").value) || 0,
+      qty: Number($("a_qty").value) || 0,
+      status: $("a_status").value,
+      location: $("a_location").value.trim(),
+      description: $("a_description").value
+    };
+    if (!body.sku || !body.name) { showErr("SKU and Name required"); return; }
+    var photos = $("a_photos").files;
+    var videos = $("a_videos").files;
+    api("/api/inventory/item", { method: "POST", body: body })
+      .then(function () {
+        var chain = Promise.resolve();
+        if (photos && photos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(photos, 10).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/images", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        if (videos && videos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(videos, 2).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/videos", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        return chain;
+      })
+      .then(function () {
+        $("addModal").classList.remove("open");
+        showOk("Added " + body.sku);
+        return load();
+      })
+      .catch(function (e) { showErr("Save failed: " + e.message); });
+  };
 
-load();
+  load();
+})();
 </script>
 </body>
 </html>
