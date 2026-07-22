@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApexFreePort Login</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-4">
+<form method="POST" action="/login" autocomplete="on" class="bg-zinc-900 border border-emerald-900 rounded-2xl p-8 w-full max-w-sm space-y-4">
+  <div class="text-center">
+    <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">JDW Apex</p>
+    <h1 class="text-2xl font-black text-emerald-400">ApexFreePort</h1>
+    <p class="text-zinc-500 text-xs mt-1">Inventory control</p>
+  </div>
+
+  <!-- username field helps browser / keychain save the password -->
+  <label class="block text-xs text-zinc-500 uppercase tracking-wide">Username</label>
+  <input
+    type="text"
+    name="username"
+    id="username"
+    value="apex"
+    autocomplete="username"
+    class="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-sm"
+  >
+
+  <label class="block text-xs text-zinc-500 uppercase tracking-wide">Password</label>
+  <input
+    type="password"
+    name="password"
+    id="password"
+    required
+    autocomplete="current-password"
+    class="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-sm"
+    placeholder="Admin password"
+  >
+
+  <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
+    <input type="checkbox" name="remember" value="1" checked class="rounded border-zinc-600">
+    Stay signed in on this device (30 days)
+  </label>
+
+  <p id="err" class="text-red-400 text-xs text-center hidden">Wrong password. Try again.</p>
+
+  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-sm py-3 rounded-xl">
+    Enter
+  </button>
+</form>
+<script>
+if (location.search.indexOf("err=1") >= 0) {
+  document.getElementById("err").classList.remove("hidden");
+}
+</script>
+</body>
+</html>

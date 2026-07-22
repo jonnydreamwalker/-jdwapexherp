@@ -29,7 +29,21 @@ app.use(function (req, res, next) {
 });
 app.use(express.json({ limit: "40mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(session({ secret: process.env.SESSION_SECRET || "apex-secret", resave: false, saveUninitialized: false }));
+app.use(
+  session({
+    name: "apex.sid",
+    secret: process.env.SESSION_SECRET || "apex-secret-jdw-freeport",
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+    },
+  })
+);
 app.use("/uploads", express.static(UPLOADS));
 
 function normalizeStoreId(id) {
@@ -187,12 +201,29 @@ app.get("/login", function (req, res) {
   if (req.session.ok) return res.redirect("/admin");
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
+
 app.post("/login", function (req, res) {
-  if (req.body && req.body.password === PASS) { req.session.ok = true; return res.redirect("/admin"); }
+  if (req.body && req.body.password === PASS) {
+    req.session.ok = true;
+    req.session.user = (req.body.username || "apex").toString().slice(0, 64);
+    if (req.body.remember === "1" || req.body.remember === "on") {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+    } else {
+      req.session.cookie.expires = false;
+    }
+    return res.redirect("/admin");
+  }
   res.redirect("/login?err=1");
 });
-app.post("/logout", function (req, res) { req.session.destroy(function () { res.redirect("/login"); }); });
-app.get("/admin", auth, function (req, res) { res.sendFile(path.join(__dirname, "admin", "index.html")); });
+
+app.post("/logout", function (req, res) {
+  req.session.destroy(function () {
+    res.redirect("/login");
+  });
+});
+app.get("/admin", auth, function (req, res) {
+  res.sendFile(path.join(__dirname, "admin", "index.html"));
+});
 
 app.get("/api/inventory", auth, function (req, res) {
   var storeId = normalizeStoreId(req.query.store);
