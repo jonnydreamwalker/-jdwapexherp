@@ -6,6 +6,44 @@
 <title>ApexFreePort Control</title>
 <meta name="robots" content="noindex">
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .glass-panel {
+    background: rgba(9, 12, 16, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .glass-input {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(63, 63, 70, 0.9);
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    width: 100%;
+    color: #fff;
+    font-size: 0.875rem;
+  }
+  .glass-input:focus {
+    outline: none;
+    border-color: rgba(52, 211, 153, 0.7);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  .cat-chip {
+    border: 1px solid rgba(63,63,70,0.9);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #a1a1aa;
+    cursor: pointer;
+  }
+  .cat-chip.active {
+    background: rgba(16,185,129,0.15);
+    border-color: rgba(52,211,153,0.5);
+    color: #6ee7b7;
+  }
+</style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
 <header class="border-b border-emerald-900 bg-black sticky top-0 z-20">
@@ -28,7 +66,7 @@
   </div>
 </header>
 <main class="max-w-6xl mx-auto px-4 py-8">
-  <div class="mb-8 border-4 border-red-700 bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
+  <div class="mb-8 border-4 border-red-700 bg bg-red-950/40 rounded-3xl p-6 text-center shadow-[0_0_40px_rgba(220,38,38,0.35)]">
     <p class="text-red-400 text-xs font-black tracking-[0.35em] uppercase mb-1">Website inventory feed</p>
     <p id="store-label" class="text-white font-bold text-lg mb-2">Apex Herp</p>
     <p id="feed-status" class="text-zinc-300 text-sm mb-4">Checking…</p>
@@ -36,19 +74,26 @@
       class="w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition">
       DON'T TOUCH
     </button>
-    <p class="text-zinc-500 text-xs mt-4 max-w-xl mx-auto">Each tab has its own feed. OFF = that website shows inventory offline. Other stores are unchanged.</p>
   </div>
 
-  <p class="text-zinc-400 text-sm mb-4">Managing: <span id="active-name" class="text-emerald-400 font-bold">Apex Herp</span></p>
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <p class="text-zinc-400 text-sm">Managing: <span id="active-name" class="text-emerald-400 font-bold">Apex Herp</span></p>
+    <div class="flex flex-wrap gap-2 items-center">
+      <div id="cat-filter" class="flex flex-wrap gap-2"></div>
+      <button type="button" id="btn-add-cat" class="cat-chip hover:text-emerald-300">+ Group</button>
+    </div>
+  </div>
+
   <div class="overflow-x-auto bg-zinc-900 border border-emerald-900/40 rounded-2xl">
     <table class="w-full text-sm text-left">
       <thead class="text-xs text-zinc-500 uppercase bg-zinc-950">
         <tr>
+          <th class="px-3 py-3">Order</th>
           <th class="px-3 py-3">SKU</th>
           <th class="px-3 py-3">Name</th>
           <th class="px-3 py-3">Price</th>
           <th class="px-3 py-3">Qty</th>
-          <th class="px-3 py-3">Category</th>
+          <th class="px-3 py-3">Group</th>
           <th class="px-3 py-3">Actions</th>
         </tr>
       </thead>
@@ -57,65 +102,74 @@
   </div>
 </main>
 
-<div id="modal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-50 overflow-y-auto">
-  <form id="form" class="bg-zinc-900 border border-emerald-900 rounded-2xl p-6 w-full max-w-lg space-y-3 my-8">
-    <h3 id="form-title" class="text-lg font-bold text-emerald-400">Edit product</h3>
+<!-- Glass add/edit modal -->
+<div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+  <form id="form" class="glass-panel rounded-3xl p-7 w-full max-w-md space-y-3 my-8">
+    <div class="text-center mb-2">
+      <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">Inventory</p>
+      <h3 id="form-title" class="text-xl font-black text-emerald-400">New product</h3>
+    </div>
     <input type="hidden" name="originalSku" id="originalSku" value="">
-    <label class="block text-xs text-zinc-500">SKU <span id="sku-hint" class="text-zinc-600 font-normal"></span></label>
-    <input name="sku" id="skuInput" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    <label class="block text-xs text-zinc-500">Name</label>
-    <input name="name" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    <label class="block text-xs text-zinc-500">Description</label>
-    <textarea name="description" rows="2" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm"></textarea>
-    <div class="grid grid-cols-2 gap-2">
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">SKU <span id="sku-hint" class="normal-case text-zinc-600"></span></label>
+    <input name="sku" id="skuInput" required class="glass-input" placeholder="HS-UFO-FLAT-01">
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Name</label>
+    <input name="name" required class="glass-input" placeholder="Product name">
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Group (filing)</label>
+    <select name="category" id="categorySelect" class="glass-input"></select>
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Description</label>
+    <textarea name="description" rows="2" class="glass-input" placeholder="Optional details"></textarea>
+
+    <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-xs text-zinc-500">Price (USD)</label>
-        <input name="price" type="number" step="0.01" min="0" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Price USD</label>
+        <input name="price" type="number" step="0.01" min="0" class="glass-input" placeholder="0.00">
       </div>
       <div>
-        <label class="block text-xs text-zinc-500">Qty</label>
-        <input name="qty" type="number" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Qty</label>
+        <input name="qty" type="number" class="glass-input" placeholder="0">
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-2">
+
+    <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-xs text-zinc-500">Category</label>
-        <input name="category" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm" placeholder="Hardscape / Food / Litter…">
-      </div>
-      <div>
-        <label class="block text-xs text-zinc-500">Lane</label>
-        <select name="lane" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Lane</label>
+        <select name="lane" class="glass-input">
           <option value="direct">Direct (FL WH)</option>
           <option value="external">External</option>
         </select>
       </div>
+      <div>
+        <label class="block text-xs text-zinc-500 uppercase tracking-wide">Status</label>
+        <select name="status" class="glass-input">
+          <option value="active">Active</option>
+          <option value="coming_soon">Coming soon</option>
+          <option value="hold">Hold</option>
+        </select>
+      </div>
     </div>
-    <div>
-      <label class="block text-xs text-zinc-500">Status</label>
-      <select name="status" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-        <option value="active">Active</option>
-        <option value="coming_soon">Coming soon</option>
-        <option value="hold">Hold</option>
-      </select>
-    </div>
-    <div>
-      <label class="block text-xs text-zinc-500">Image URL</label>
-      <input name="image" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-    </div>
-    <div>
-      <label class="block text-xs text-zinc-500">Or upload photo</label>
-      <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
-    </div>
-    <div class="flex gap-2 pt-2">
-      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3 rounded-xl">Save</button>
-      <button type="button" id="btn-cancel" class="px-4 border border-zinc-700 rounded-xl text-xs uppercase">Cancel</button>
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Image URL</label>
+    <input name="image" class="glass-input" placeholder="optional">
+
+    <label class="block text-xs text-zinc-500 uppercase tracking-wide">Or upload photo</label>
+    <input type="file" id="imgfile" accept="image/*" class="w-full text-xs text-zinc-400">
+
+    <div class="flex gap-2 pt-3">
+      <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-xs py-3.5 rounded-xl">Save</button>
+      <button type="button" id="btn-cancel" class="px-5 border border-zinc-600 rounded-xl text-xs uppercase text-zinc-300">Cancel</button>
     </div>
   </form>
 </div>
 
 <script>
 var STORE = "herp";
-var EDITING = false;
+var FILTER = "";
+var CATEGORIES = [];
+var ALL_ITEMS = [];
 
 function showModal(show) {
   var m = document.getElementById("modal");
@@ -137,54 +191,98 @@ function paintFeed(on, name) {
   var st = document.getElementById("feed-status");
   var btn = document.getElementById("btn-dont-touch");
   if (on) {
-    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span> — this website can pull inventory';
+    st.innerHTML = '<span class="text-emerald-400 font-bold">FEED IS LIVE</span>';
     btn.textContent = "DON'T TOUCH (FEED ON — CLICK TO KILL)";
     btn.className = "w-full max-w-xl mx-auto block bg-emerald-700 hover:bg-red-600 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-emerald-400 shadow-lg transition";
   } else {
-    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span> — this website shows inventory offline';
+    st.innerHTML = '<span class="text-red-400 font-bold">FEED IS OFF</span>';
     btn.textContent = "DON'T TOUCH (FEED OFF — CLICK TO GO LIVE)";
     btn.className = "w-full max-w-xl mx-auto block bg-red-600 hover:bg-red-500 text-white font-black text-xl md:text-2xl tracking-widest uppercase py-8 px-6 rounded-2xl border-4 border-red-400 shadow-lg transition";
   }
 }
 
+function fillCategorySelect(selected) {
+  var sel = document.getElementById("categorySelect");
+  sel.innerHTML = CATEGORIES.map(function (c) {
+    var s = c === selected ? " selected" : "";
+    return "<option value=\"" + c.replace(/\"/g, "&quot;") + "\"" + s + ">" + c + "</option>";
+  }).join("");
+  if (!CATEGORIES.length) {
+    sel.innerHTML = "<option value=\"General\">General</option>";
+  }
+}
+
+function paintCatFilter() {
+  var box = document.getElementById("cat-filter");
+  var chips = [""].concat(CATEGORIES);
+  box.innerHTML = chips.map(function (c) {
+    var label = c || "All";
+    var active = FILTER === c ? " active" : "";
+    return "<button type=\"button\" class=\"cat-chip" + active + "\" data-cat=\"" + (c || "") + "\">" + label + "</button>";
+  }).join("");
+  box.querySelectorAll("[data-cat]").forEach(function (btn) {
+    btn.onclick = function () {
+      FILTER = btn.getAttribute("data-cat") || "";
+      paintCatFilter();
+      renderRows();
+    };
+  });
+}
+
 document.querySelectorAll(".tab-btn").forEach(function (btn) {
   btn.onclick = function () {
     STORE = btn.getAttribute("data-store");
+    FILTER = "";
     paintTabs();
     load();
   };
 });
 
 document.getElementById("btn-dont-touch").onclick = async function () {
-  if (!confirm("Flip the website inventory feed for " + STORE.toUpperCase() + " only?")) return;
+  if (!confirm("Flip feed for " + STORE.toUpperCase() + "?")) return;
   var r = await fetch("/api/admin/public-feed", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ store: STORE }),
   });
-  if (!r.ok) { alert("Failed — logged in?"); return; }
+  if (!r.ok) { alert("Failed"); return; }
   var j = await r.json();
   paintFeed(!!j.publicFeed, document.getElementById("active-name").textContent);
 };
 
+document.getElementById("btn-add-cat").onclick = async function () {
+  var name = prompt("New group name (e.g. Lighting, Hardscape):");
+  if (!name || !name.trim()) return;
+  var r = await fetch("/api/inventory/category", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, name: name.trim() }),
+  });
+  if (!r.ok) { alert("Could not add group"); return; }
+  var j = await r.json();
+  CATEGORIES = j.categories || [];
+  paintCatFilter();
+  fillCategorySelect(name.trim());
+};
+
 function esc(s) {
-  return String(s == null ? "" : s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/"/g, "&quot;");
+  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
 }
 
-async function load() {
-  paintTabs();
-  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
-  if (!r.ok) { location.href = "/login"; return; }
-  var d = await r.json();
-  document.getElementById("warehouse").textContent = d.warehouse || "";
-  paintFeed(!!d.publicFeed, d.storeName || STORE);
-  window.__ITEMS__ = d.items || [];
-  document.getElementById("body").innerHTML = window.__ITEMS__.map(function (i) {
+function renderRows() {
+  var items = ALL_ITEMS;
+  if (FILTER) {
+    items = items.filter(function (i) {
+      return String(i.category || "").toLowerCase() === FILTER.toLowerCase();
+    });
+  }
+  document.getElementById("body").innerHTML = items.map(function (i) {
     var skuAttr = String(i.sku).replace(/"/g, "&quot;");
     return "<tr>" +
+      "<td class=\"px-3 py-3 whitespace-nowrap\">" +
+      "<button type=\"button\" data-up=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\" title=\"Move up\">▲</button>" +
+      "<button type=\"button\" data-down=\"" + skuAttr + "\" class=\"text-zinc-400 hover:text-emerald-400 px-1\" title=\"Move down\">▼</button>" +
+      "</td>" +
       "<td class=\"px-3 py-3 font-mono text-xs text-emerald-400\">" + esc(i.sku) + "</td>" +
       "<td class=\"px-3 py-3\">" + esc(i.name) + "</td>" +
       "<td class=\"px-3 py-3 font-bold text-emerald-400\">$" + (Number(i.price) || 0).toFixed(2) + "</td>" +
@@ -196,7 +294,7 @@ async function load() {
       "<button type=\"button\" data-plus=\"" + skuAttr + "\" class=\"text-emerald-400 px-1\">+</button>" +
       "<button type=\"button\" data-minus=\"" + skuAttr + "\" class=\"text-zinc-400 px-1\">−</button>" +
       "</td></tr>";
-  }).join("") || "<tr><td colspan=\"6\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this store yet. Click + Product.</td></tr>";
+  }).join("") || "<tr><td colspan=\"7\" class=\"px-3 py-8 text-center text-zinc-500\">No products in this view.</td></tr>";
 
   document.querySelectorAll("[data-edit]").forEach(function (btn) {
     btn.onclick = function () { openEdit(btn.getAttribute("data-edit")); };
@@ -210,6 +308,26 @@ async function load() {
   document.querySelectorAll("[data-minus]").forEach(function (btn) {
     btn.onclick = function () { adj(btn.getAttribute("data-minus"), -1); };
   });
+  document.querySelectorAll("[data-up]").forEach(function (btn) {
+    btn.onclick = function () { reorder(btn.getAttribute("data-up"), "up"); };
+  });
+  document.querySelectorAll("[data-down]").forEach(function (btn) {
+    btn.onclick = function () { reorder(btn.getAttribute("data-down"), "down"); };
+  });
+}
+
+async function load() {
+  paintTabs();
+  var r = await fetch("/api/inventory?store=" + encodeURIComponent(STORE));
+  if (!r.ok) { location.href = "/login"; return; }
+  var d = await r.json();
+  document.getElementById("warehouse").textContent = d.warehouse || "";
+  paintFeed(!!d.publicFeed, d.storeName || STORE);
+  CATEGORIES = d.categories || [];
+  ALL_ITEMS = d.items || [];
+  paintCatFilter();
+  fillCategorySelect();
+  renderRows();
 }
 
 async function adj(sku, delta) {
@@ -221,53 +339,55 @@ async function adj(sku, delta) {
   load();
 }
 
+async function reorder(sku, direction) {
+  await fetch("/api/inventory/reorder", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ store: STORE, sku: sku, direction: direction }),
+  });
+  load();
+}
+
 async function removeItem(sku) {
-  if (!confirm("Delete " + sku + " from " + STORE.toUpperCase() + " permanently?")) return;
+  if (!confirm("Delete " + sku + "?")) return;
   var r = await fetch("/api/inventory/remove", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ store: STORE, sku: sku }),
   });
-  if (!r.ok) {
-    var t = await r.text();
-    alert("Delete failed: " + t);
-    return;
-  }
+  if (!r.ok) { alert("Delete failed"); return; }
   load();
 }
 
 function openEdit(sku) {
-  var i = (window.__ITEMS__ || []).find(function (x) { return String(x.sku) === String(sku); });
+  var i = ALL_ITEMS.find(function (x) { return String(x.sku) === String(sku); });
   var f = document.getElementById("form");
-  EDITING = !!i;
   document.getElementById("form-title").textContent = i ? "Edit product" : "New product";
-  document.getElementById("sku-hint").textContent = i ? "(editing — save updates this row)" : "(new)";
+  document.getElementById("sku-hint").textContent = i ? "(editing)" : "(new)";
   f.reset();
   document.getElementById("imgfile").value = "";
   document.getElementById("originalSku").value = i ? (i.sku || "") : "";
+  fillCategorySelect(i ? i.category : CATEGORIES[0]);
   if (i) {
     f.sku.value = i.sku || "";
     f.name.value = i.name || "";
     f.description.value = i.description || "";
     f.price.value = i.price != null ? i.price : 0;
     f.qty.value = i.qty != null ? i.qty : 0;
-    f.category.value = i.category || "";
     f.lane.value = i.lane || "direct";
     f.status.value = i.status || "active";
     f.image.value = i.image || "";
-  } else {
-    document.getElementById("originalSku").value = "";
   }
   showModal(true);
 }
 
 document.getElementById("btn-add").onclick = function () {
-  EDITING = false;
   document.getElementById("form-title").textContent = "New product";
   document.getElementById("sku-hint").textContent = "(new)";
   document.getElementById("form").reset();
   document.getElementById("originalSku").value = "";
   document.getElementById("imgfile").value = "";
+  fillCategorySelect(FILTER || CATEGORIES[0]);
   showModal(true);
 };
 document.getElementById("btn-cancel").onclick = function () { showModal(false); };
@@ -275,11 +395,10 @@ document.getElementById("btn-cancel").onclick = function () { showModal(false); 
 document.getElementById("form").onsubmit = async function (e) {
   e.preventDefault();
   var f = e.target;
-  var originalSku = document.getElementById("originalSku").value.trim();
   var body = {
     store: STORE,
     sku: f.sku.value.trim(),
-    originalSku: originalSku || undefined,
+    originalSku: document.getElementById("originalSku").value.trim() || undefined,
     name: f.name.value.trim(),
     description: f.description.value,
     price: Number(f.price.value) || 0,
@@ -294,10 +413,7 @@ document.getElementById("form").onsubmit = async function (e) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    alert("Save failed");
-    return;
-  }
+  if (!res.ok) { alert("Save failed"); return; }
   var file = document.getElementById("imgfile").files[0];
   if (file) {
     var dataUrl = await new Promise(function (resolve, reject) {
