@@ -1,6 +1,6 @@
 /** ApexFreePort bridge — live catalog for all shop pages */
 (function (global) {
-  var APEX_API = "http://3.14.14.127:3000";
+  var APEX_API = "https://api.jdwapexherp.com";
 
   function base() {
     return (global.APEX_API_BASE || APEX_API).replace(/\/$/, "");
