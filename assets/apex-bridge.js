@@ -1,6 +1,7 @@
-/** ApexFreePort bridge — photos (10) + mp4 (2) + carousel */
+/** ApexFreePort bridge — up to 15 media (photo/mp4) + home showcase */
 (function (global) {
   var APEX_API = "https://api.jdwapexherp.com";
+  var MAX_MEDIA = 15;
 
   function base() {
     return (global.APEX_API_BASE || APEX_API).replace(/\/$/, "");
@@ -19,17 +20,25 @@
       .replace(/</g, "&lt;")
       .replace(/"/g, "&quot;");
   }
-  function productImages(i) {
-    var list = [];
-    if (Array.isArray(i.images)) i.images.forEach(function (p) { if (p) list.push(mediaUrl(p)); });
-    if (!list.length && i.image) list.push(mediaUrl(i.image));
-    return list.slice(0, 10);
-  }
-  function productVideos(i) {
-    var list = [];
-    if (Array.isArray(i.videos)) i.videos.forEach(function (p) { if (p) list.push(mediaUrl(p)); });
-    if (i.video) list.push(mediaUrl(i.video));
-    return list.slice(0, 2);
+  function productMedia(i) {
+    var parts = [];
+    if (Array.isArray(i.images)) {
+      i.images.forEach(function (p) {
+        if (p && parts.length < MAX_MEDIA) parts.push({ type: "img", src: mediaUrl(p) });
+      });
+    }
+    if (i.image && parts.every(function (x) { return x.src !== mediaUrl(i.image); }) && parts.length < MAX_MEDIA) {
+      parts.unshift({ type: "img", src: mediaUrl(i.image) });
+    }
+    if (Array.isArray(i.videos)) {
+      i.videos.forEach(function (p) {
+        if (p && parts.length < MAX_MEDIA) parts.push({ type: "video", src: mediaUrl(p) });
+      });
+    }
+    if (i.video && parts.every(function (x) { return x.src !== mediaUrl(i.video); }) && parts.length < MAX_MEDIA) {
+      parts.push({ type: "video", src: mediaUrl(i.video) });
+    }
+    return parts.slice(0, MAX_MEDIA);
   }
   async function fetchProducts(category) {
     var q = "?store=" + encodeURIComponent(storeId());
@@ -42,16 +51,8 @@
     return "$" + (Number(n) || 0).toFixed(2);
   }
 
-  function mediaBlock(imgs, vids, idx) {
-    var parts = [];
-    imgs.forEach(function (src) {
-      parts.push({ type: "img", src: src });
-    });
-    vids.forEach(function (src) {
-      parts.push({ type: "video", src: src });
-    });
+  function mediaBlock(parts, idx) {
     if (!parts.length) return "";
-
     if (parts.length === 1 && parts[0].type === "img") {
       return (
         '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950">' +
@@ -59,7 +60,6 @@
         "</div>"
       );
     }
-
     var slides = parts
       .map(function (p, n) {
         var inner =
@@ -73,7 +73,6 @@
         );
       })
       .join("");
-
     var dots = parts
       .map(function (_, n) {
         return (
@@ -83,7 +82,6 @@
         );
       })
       .join("");
-
     return (
       '<div class="apex-carousel relative h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950" data-car="' +
       idx +
@@ -92,9 +90,7 @@
       (parts.length > 1
         ? '<button type="button" class="apex-prev absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Previous">‹</button>' +
           '<button type="button" class="apex-next absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full text-sm z-10" aria-label="Next">›</button>' +
-          '<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">' +
-          dots +
-          "</div>"
+          '<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">' + dots + "</div>"
         : "") +
       "</div>"
     );
@@ -137,6 +133,40 @@
     });
   }
 
+  function productCard(i, idx, compact) {
+    var parts = productMedia(i);
+    var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
+    var nameSafe = String(i.name).replace(/'/g, "\\'");
+    var btn = disabled
+      ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
+      : '<button type="button" onclick="addToCart(\'' +
+        nameSafe +
+        "','" +
+        i.sku +
+        "'," +
+        (Number(i.price) || 0) +
+        ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
+    var catLink = i.category
+      ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>"
+      : "";
+    return (
+      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center ' +
+      (compact ? "min-w-[260px] max-w-[280px] snap-start flex-shrink-0" : "") +
+      '">' +
+      mediaBlock(parts, idx) +
+      catLink +
+      '<h3 class="text-xl font-bold text-emerald-400 mb-2">' +
+      esc(i.name) +
+      "</h3>" +
+      '<div class="text-2xl font-black text-white mb-1">' +
+      money(i.price) +
+      "</div>" +
+      '<div class="mt-auto pt-4">' +
+      btn +
+      "</div></div>"
+    );
+  }
+
   async function renderCatalog(selector, category) {
     var el = document.querySelector(selector || "#apex-catalog");
     if (!el) return;
@@ -154,67 +184,8 @@
         }
         return;
       }
-      el.innerHTML = items
-        .map(function (i, idx) {
-          var imgs = productImages(i);
-          var vids = productVideos(i);
-          var disabled =
-            i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
-          var desc = i.description || "";
-          var nameSafe = String(i.name).replace(/'/g, "\\'");
-          var btn = disabled
-            ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
-            : '<button type="button" onclick="addToCart(\'' +
-              nameSafe +
-              "','" +
-              i.sku +
-              "'," +
-              (Number(i.price) || 0) +
-              ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
-          var descBlock = desc
-            ? '<button type="button" class="apex-desc-toggle text-zinc-500 hover:text-emerald-400 text-xs uppercase tracking-wide mt-2" data-desc="' +
-              idx +
-              '">Details ▾</button>' +
-              '<div id="apex-desc-' +
-              idx +
-              '" class="hidden text-zinc-400 text-sm mt-2 text-left leading-relaxed border-t border-zinc-800 pt-3">' +
-              esc(desc) +
-              "</div>"
-            : "";
-          return (
-            '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center">' +
-            mediaBlock(imgs, vids, idx) +
-            '<h3 class="text-xl font-bold text-emerald-400 mb-2">' +
-            esc(i.name) +
-            "</h3>" +
-            '<div class="text-2xl font-black text-white mb-1">' +
-            money(i.price) +
-            "</div>" +
-            descBlock +
-            '<div class="mt-auto pt-4">' +
-            btn +
-            "</div></div>"
-          );
-        })
-        .join("");
-
-      el.querySelectorAll(".apex-desc-toggle").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var id = btn.getAttribute("data-desc");
-          var panel = document.getElementById("apex-desc-" + id);
-          if (!panel) return;
-          var open = !panel.classList.contains("hidden");
-          if (open) {
-            panel.classList.add("hidden");
-            btn.textContent = "Details ▾";
-          } else {
-            panel.classList.remove("hidden");
-            btn.textContent = "Details ▴";
-          }
-        });
-      });
+      el.innerHTML = items.map(function (i, idx) { return productCard(i, idx, false); }).join("");
       wireCarousels(el);
-
       if (status) {
         status.textContent =
           "Live · " + (data.storeName || data.store || "") + " · " + items.length + " items";
@@ -231,12 +202,47 @@
     }
   }
 
+  /** Horizontal product showcase for homepage */
+  async function renderHomeShowcase(selector) {
+    var el = document.querySelector(selector || "#apex-home-showcase");
+    if (!el) return;
+    var status = document.getElementById("apex-home-status");
+    try {
+      var data = await fetchProducts();
+      var items = (data.items || []).filter(function (i) {
+        return i.status !== "hold";
+      });
+      if (!items.length) {
+        el.innerHTML =
+          '<p class="text-zinc-500 text-center w-full py-8">Catalog offline or empty — flip Herp feed live in FreePort.</p>';
+        if (status) status.textContent = "Showcase empty";
+        return;
+      }
+      el.innerHTML = items.map(function (i, idx) { return productCard(i, "h" + idx, true); }).join("");
+      wireCarousels(el);
+      if (status) {
+        status.textContent = items.length + " products live";
+        status.className = "text-emerald-400 text-sm text-center mt-4";
+      }
+    } catch (e) {
+      console.warn("ApexBridge home", e);
+      el.innerHTML =
+        '<p class="text-amber-400/90 text-center w-full py-8">Inventory bridge offline.</p>';
+      if (status) {
+        status.textContent = "Offline";
+        status.className = "text-amber-400 text-sm text-center mt-4";
+      }
+    }
+  }
+
   global.ApexBridge = {
     base: base,
     storeId: storeId,
     fetchProducts: fetchProducts,
     renderCatalog: renderCatalog,
+    renderHomeShowcase: renderHomeShowcase,
     mediaUrl: mediaUrl,
+    MAX_MEDIA: MAX_MEDIA,
   };
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -244,6 +250,9 @@
     if (el) {
       var cat = el.getAttribute("data-category") || "";
       renderCatalog("#apex-catalog", cat || undefined);
+    }
+    if (document.getElementById("apex-home-showcase")) {
+      renderHomeShowcase("#apex-home-showcase");
     }
   });
 })(window);
