@@ -70,10 +70,18 @@
 <h2 class="text-3xl font-black text-center mb-10 text-emerald-400">Live Catalog</h2>
 <div id="apex-catalog" data-category="Hardscape" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"></div>
 </div></section>
-<div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4"><div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6">
-<div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl">&times;</button></div>
+<div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
+<div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+<div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl text-zinc-400">&times;</button></div>
 <div id="cart-items-list" class="space-y-3 mb-6"></div>
-<div class="flex justify-between"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
+<div class="flex justify-between mb-6 border-t border-zinc-800 pt-4"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
+<button type="button" onclick="startSquarePayment()" class="w-full bg-black border border-emerald-700 text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Square</button>
+<button type="button" onclick="startStripePayment()" class="w-full bg-[#635bff] text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);">
+<input type="hidden" name="cmd" value="_cart"><input type="hidden" name="upload" value="1">
+<input type="hidden" name="business" value="jonnydreamwalker@gmail.com"><input type="hidden" name="currency_code" value="USD">
+<button type="submit" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
+</form>
 </div></div>
 <footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20"><div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
 <div><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 mb-4 opacity-80"><p class="text-zinc-500">Veteran Owned and Operated<br>DeFuniak Springs, Florida Warehouse</p></div>

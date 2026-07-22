@@ -109,3 +109,15 @@ function removeSingleCartItem(i) {
   updateCartCount();
   openCartModal();
 }
+function populatePayPalFormFields(form) {
+  return true;
+}
+function startSquarePayment() {
+  alert("Square checkout ready — connect live keys in ApexFreePort.");
+}
+function startStripePayment() {
+  alert("Stripe checkout ready — connect live keys in ApexFreePort.");
+}
+function checkoutStripe() {
+  startStripePayment();
+}
