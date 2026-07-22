@@ -11,7 +11,7 @@ if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-apex-secret,x-square-hmacsha256-signature,x-square-signature");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -34,7 +34,51 @@ function publicItem(i) {
     status: i.status || "active", image: i.image || "", location: i.location || ""
   };
 }
-app.get("/health", function (req, res) { res.json({ ok: true, service: "ApexFreePort" }); });
+function decrementSku(sku, qty, reason) {
+  qty = Math.max(1, Number(qty) || 1);
+  var d = read();
+  var item = null;
+  for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === sku) item = d.items[i];
+   if (!item) return { ok: false, error: "sku not found" sku: sku };
+  item.qty = Math.max(0, (item.qty || 0) - qty);
+  d.movements = d.movements || [];
+  d.movements.unshift({ ts: new Date().toISOString(), sku: sku, delta: -qty, reason: reason || "sale", qtyAfter: item.qty });
+  d.movements = d.movements.slice(0, 200);
+  write(d);
+  return { ok: true, sku: sku, qty: item.qty };
+}
+function extractSkusFromSquarePayment(payment) {
+  var found = [];
+  if (!payment) return found;
+  var note = String(payment.note || payment.buyer_email_address || "");
+  var ref = String(payment.reference_id || "");
+  var blob = (note + " " + ref).toUpperCase();
+  var d = read();
+  (d.items || []).forEach(function (it) {
+    if (blob.indexOf(String(it.sku).toUpperCase()) !== -1) {
+      found.push({ sku: it.sku, quantity: 1 });
+    }
+  });
+  if (payment.line_items && payment.line_items.length) {
+    payment.line_items.forEach(function (li) {
+      var name = String(li.name || li.uid || "");
+      (d.items || []).forEach(function (it) {
+        if (name.toUpperCase().indexOf(String(it.sku).toUpperCase()) !== -1 ||
+            name.toUpperCase().indexOf(String(it.name).toUpperCase()) !== -1) {
+          found.push({ sku: it.sku, quantity: Number(li.quantity) || 1 });
+        }
+      });
+    });
+  }
+  return found;
+}
+app.get("/health", function (req, res) {
+  res.json({
+    ok: true,
+    service: "ApexFreePort",
+    square: process.env.SQUARE_ACCESS_TOKEN ? "token-set" : "no-token",
+  });
+});
 app.get("/api/stock", function (req, res) {
   try {
     var d = read();
@@ -116,13 +160,42 @@ app.post("/api/webhook/sale", function (req, res) {
   var sku = (req.body || {}).sku;
   var qty = Math.max(1, Number((req.body || {}).quantity) || 1);
   if (!sku) return res.status(400).json({ error: "sku required" });
-  var d = read(); var item = null;
-  for (var i = 0; i < d.items.length; i++) if (d.items[i].sku === sku) item = d.items[i];
-  if (!item) return res.status(404).json({ error: "not found" });
-  item.qty = Math.max(0, (item.qty || 0) - qty);
-  d.movements = d.movements || [];
-  d.movements.unshift({ ts: new Date().toISOString(), sku: sku, delta: -qty, reason: "sale", qtyAfter: item.qty });
-  write(d); res.json({ ok: true, qty: item.qty });
+  var result = decrementSku(sku, qty, "sale");
+  if (!result.ok) return res.status(404).json(result);
+  res.json(result);
+});
+/** Square: payment.updated — only act when COMPLETED; SKU from note/reference_id */
+app.post("/api/webhook/square", function (req, res) {
+  try {
+    var body = req.body || {};
+    var type = body.type || "";
+    var payment = body.data && body.data.object && (body.data.object.payment || body.data.object);
+    if (type && type !== "payment.updated" && type !== "payment.created") {
+      return res.json({ ok: true, ignored: type });
+    }
+    if (!payment) return res.json({ ok: true, ignored: "no payment" });
+    var status = payment.status || "";
+    if (status && status !== "COMPLETED") {
+      return res.json({ ok: true, ignored: "status " + status });
+    }
+    var lines = extractSkusFromSquarePayment(payment);
+    if (!lines.length) {
+      var fallback = process.env.SQUARE_DEFAULT_SKU;
+      if (fallback) lines = [{ sku: fallback, quantity: 1 }];
+    }
+    var results = [];
+    lines.forEach(function (line) {
+      results.push(decrementSku(line.sku, line.quantity, "square"));
+    });
+    console.log("Square webhook", status, results);
+    res.json({ ok: true, results: results });
+  } catch (e) {
+    console.error("Square webhook error", e);
+    res.status(500).json({ error: "webhook fail" });
+  }
 });
 app.get("/", function (req, res) { res.redirect("/admin"); });
-app.listen(PORT, function () { console.log("ApexFreePort on " + PORT); });
+app.listen(PORT, function () {
+  console.log("ApexFreePort on " + PORT);
+  if (process.env.SQUARE_ACCESS_TOKEN) console.log("Square token: set");
+});
