@@ -1,0 +1,85 @@
+/* JDW Apex Herp - Master Stylesheet - Veteran Owned Scientific Laboratory Aesthetic */
+
+:root {
+  --brand-blue-color: #10b981; /* emerald-500 matching site accent */
+  --brand-white-color: #ffffff;
+  --brand-black: #000000;
+  --brand-zinc-950: #09090b;
+  --brand-emerald-950: #022c22;
+  --brand-emerald-400: #34d399;
+  --brand-emerald-900: #064e3b;
+}
+
+/* 🔬 ON-BRAND SELECTION HIGHLIGHT ADJUSTMENT */
+::selection {
+    background-color: var(--brand-blue-color);
+    color: var(--brand-white-color);
+}
+::-moz-selection {
+    background-color: var(--brand-blue-color);
+    color: var(--brand-white-color);
+}
+
+/* ⚡ ANTI-JITTER HARDWARE CONTENT-VISIBILITY OVERRIDE */
+.shop-product-card-container {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+}
+
+/* Core base */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--brand-zinc-950);
+  color: var(--brand-white-color);
+}
+
+/* Trust bar high-contrast */
+.trust-bar {
+  background-color: #022c22;
+  border-bottom: 1px solid #064e3b;
+  color: #6ee7b7;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .trust-bar {
+    font-size: 12px;
+  }
+}
+
+/* Dropdown menu polish */
+.dropdown-menu {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Logo transparency helpers */
+.logo-30 {
+  opacity: 0.3;
+}
+
+.logo-placeholder {
+  opacity: 0.3;
+  filter: grayscale(20%);
+}
+
+/* Product cards */
+.shop-product-card-container {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shop-product-card-container:hover {
+  transform: translateY(-2px);
+}
+
+/* Favicon / app feel */
+.apple-status-bar {
+  background-color: #000000;
+}
