@@ -15,33 +15,17 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="assets/style.css">
 <style>
-  .hero-carousel { position: relative; height: 100%; width: 100%; overflow: hidden; background: #000; }
-  .hero-carousel .slide {
-    position: absolute; inset: 0;
-    opacity: 0; transition: opacity 1s ease;
-    background-size: cover; background-position: center;
-  }
-  .hero-carousel .slide.active { opacity: 1; z-index: 1; }
-  .hero-carousel .slide video { width: 100%; height: 100%; object-fit: cover; }
-  .carousel-dots { position: absolute; bottom: 1.25rem; left: 0; right: 0; z-index: 5; display: flex; justify-content: center; gap: 0.5rem; }
-  .carousel-dots button {
-    width: 0.55rem; height: 0.55rem; border-radius: 999px; border: 0; padding: 0;
-    background: rgba(255,255,255,0.35); cursor: pointer;
-  }
-  .carousel-dots button.active { background: #34d399; width: 1.4rem; }
-  .carousel-nav {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
-    width: 2.5rem; height: 2.5rem; border-radius: 999px;
-    background: rgba(0,0,0,0.55); border: 1px solid rgba(52,211,153,0.35);
-    color: #fff; font-size: 1rem; cursor: pointer;
-  }
-  .carousel-nav.prev { left: 0.75rem; }
-  .carousel-nav.next { right: 0.75rem; }
+  .card-carousel { position: relative; height: 14rem; overflow: hidden; background: #09090b; }
+  .card-carousel .c-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.7s ease; }
+  .card-carousel .c-slide.active { opacity: 1; z-index: 1; }
+  .card-carousel .c-dots { position: absolute; bottom: 0.5rem; left: 0; right: 0; z-index: 3; display: flex; justify-content: center; gap: 0.35rem; pointer-events: none; }
+  .card-carousel .c-dots span { width: 0.4rem; height: 0.4rem; border-radius: 999px; background: rgba(255,255,255,0.35); }
+  .card-carousel .c-dots span.active { background: #34d399; }
 </style>
 <script>
 if(!localStorage.getItem('jdw_cart'))localStorage.setItem('jdw_cart',JSON.stringify([]));
 function updateCartCount(){let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];document.querySelectorAll('.cart-count').forEach(b=>b.innerText=cart.reduce((s,i)=>s+i.quantity,0));}
-document.addEventListener('DOMContentLoaded',updateCartCount);
+document.addEventListener('DOMContentLoaded',function(){updateCartCount();initCardCarousels();});
 function toggleMobileMenu(){const m=document.getElementById('mobile-menu');if(!m)return;const i=document.getElementById('hamburger-icon');const open=m.classList.contains('hidden');if(open){m.classList.remove('hidden');m.classList.add('flex');document.body.style.overflow='hidden';if(i)i.className='fas fa-times';}else{m.classList.add('hidden');m.classList.remove('flex');document.body.style.overflow='';if(i)i.className='fas fa-bars';}}
 function closeMobileMenu(){const m=document.getElementById('mobile-menu');const i=document.getElementById('hamburger-icon');if(m){m.classList.add('hidden');m.classList.remove('flex');}document.body.style.overflow='';if(i)i.className='fas fa-bars';}
 function toggleMobileCats(){const c=document.getElementById('mobile-cats');const a=document.getElementById('mobile-cat-arrow');if(!c)return;c.classList.toggle('hidden');if(a)a.innerText=c.classList.contains('hidden')?'▼':'▲';}
@@ -55,59 +39,48 @@ function populatePayPalFormFields(form){return true;}
 function startSquarePayment(){alert('Square checkout ready — connect live keys in ApexFreePort.');}
 function startStripePayment(){alert('Stripe checkout ready — connect live keys in ApexFreePort.');}
 function checkoutStripe(){startStripePayment();}
-
-var HERO_SLIDES = [
-  { type: 'video', src: 'assets/images/gallery/Action_Logo.mp4', poster: 'assets/images/gallery/Logo.png' },
-  { type: 'image', src: 'assets/images/gallery/UFO_Cork.JPG' },
-  { type: 'image', src: 'assets/images/gallery/Logo_Bannar.png' },
-  { type: 'image', src: 'assets/images/gallery/Apparel_Crick.png' },
-  { type: 'image', src: 'assets/images/gallery/Coming_Soon_Reptile_Nutrition.png' },
-  { type: 'image', src: 'assets/wholesale-arcadia-d3-12-uvb-t5-bulb-22.jpg' },
-  { type: 'image', src: 'assets/wholesale-lugarti-premium-coco-peat-block.jpg' }
-];
-var heroIndex = 0;
-var heroTimer = null;
-function buildHeroCarousel() {
-  var root = document.getElementById('hero-carousel');
-  if (!root || !HERO_SLIDES.length) return;
-  root.innerHTML = '';
-  HERO_SLIDES.forEach(function (s, i) {
-    var div = document.createElement('div');
-    div.className = 'slide' + (i === 0 ? ' active' : '');
-    if (s.type === 'video') {
-      div.innerHTML = '<video autoplay muted loop playsinline poster="' + (s.poster || '') + '"><source src="' + s.src + '" type="video/mp4"></video>';
-    } else {
-      div.style.backgroundImage = "url('" + s.src + "')";
-    }
-    root.appendChild(div);
-  });
-  var dots = document.getElementById('carousel-dots');
-  if (dots) {
-    dots.innerHTML = '';
-    HERO_SLIDES.forEach(function (_, i) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = i === 0 ? 'active' : '';
-      b.onclick = function () { goHero(i); };
-      dots.appendChild(b);
+var PILLAR_SLIDES = {
+  hardscape: ['assets/images/gallery/UFO_Cork.JPG','assets/images/gallery/Logo_Bannar.png','assets/images/gallery/Logo.png'],
+  lighting: ['assets/wholesale-arcadia-d3-12-uvb-t5-bulb-22.jpg','assets/images/gallery/Logo.png','assets/images/gallery/Logo_Bannar.png'],
+  substrates: ['assets/wholesale-lugarti-premium-coco-peat-block.jpg','assets/images/gallery/Logo.png','assets/images/gallery/Logo_Bannar.png'],
+  nutrition: ['assets/images/gallery/Coming_Soon_Reptile_Nutrition.png','assets/images/gallery/Logo.png'],
+  apparel: ['assets/images/gallery/Apparel_Crick.png','assets/images/gallery/Logo_Bannar.png','assets/images/gallery/Logo.png'],
+  enclosures: ['assets/images/gallery/Logo.png','assets/images/gallery/Logo_Bannar.png'],
+  heating: ['assets/images/gallery/Logo.png','assets/images/gallery/Logo_Bannar.png'],
+  hardware: ['assets/images/gallery/Logo.png','assets/images/gallery/Logo_Bannar.png'],
+  deals: ['assets/images/gallery/Logo_Bannar.png','assets/images/gallery/Logo.png','assets/images/gallery/UFO_Cork.JPG']
+};
+function initCardCarousels() {
+  document.querySelectorAll('[data-carousel]').forEach(function (el) {
+    var key = el.getAttribute('data-carousel');
+    var imgs = PILLAR_SLIDES[key] || [];
+    if (!imgs.length) return;
+    el.innerHTML = '';
+    imgs.forEach(function (src, i) {
+      var d = document.createElement('div');
+      d.className = 'c-slide' + (i === 0 ? ' active' : '');
+      d.style.backgroundImage = "url('" + src + "')";
+      el.appendChild(d);
     });
-  }
-  startHeroTimer();
+    var dots = document.createElement('div');
+    dots.className = 'c-dots';
+    imgs.forEach(function (_, i) {
+      var s = document.createElement('span');
+      if (i === 0) s.className = 'active';
+      dots.appendChild(s);
+    });
+    el.appendChild(dots);
+    var idx = 0;
+    setInterval(function () {
+      var slides = el.querySelectorAll('.c-slide');
+      var dotEls = el.querySelectorAll('.c-dots span');
+      if (slides.length < 2) return;
+      idx = (idx + 1) % slides.length;
+      slides.forEach(function (s, n) { s.classList.toggle('active', n === idx); });
+      dotEls.forEach(function (s, n) { s.classList.toggle('active', n === idx); });
+    }, 4200 + Math.floor(Math.random() * 800));
+  });
 }
-function goHero(i) {
-  var slides = document.querySelectorAll('#hero-carousel .slide');
-  var dots = document.querySelectorAll('#carousel-dots button');
-  if (!slides.length) return;
-  heroIndex = (i + slides.length) % slides.length;
-  slides.forEach(function (el, n) { el.classList.toggle('active', n === heroIndex); });
-  dots.forEach(function (el, n) { el.classList.toggle('active', n === heroIndex); });
-  startHeroTimer();
-}
-function startHeroTimer() {
-  if (heroTimer) clearInterval(heroTimer);
-  heroTimer = setInterval(function () { goHero(heroIndex + 1); }, 5500);
-}
-document.addEventListener('DOMContentLoaded', buildHeroCarousel);
 </script>
 <script src="assets/apex-bridge.js"></script>
 </head>
@@ -161,64 +134,57 @@ document.addEventListener('DOMContentLoaded', buildHeroCarousel);
 <a href="services/deals.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Deals</a>
 <a href="about.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">About</a>
 </div></div>
-
-<header class="h-screen flex items-center justify-center relative overflow-hidden">
-  <div class="absolute inset-0">
-    <div id="hero-carousel" class="hero-carousel"></div>
-    <div class="absolute inset-0 bg-black/55 z-[2] pointer-events-none"></div>
-    <button type="button" class="carousel-nav prev" onclick="goHero(heroIndex-1)" aria-label="Previous">‹</button>
-    <button type="button" class="carousel-nav next" onclick="goHero(heroIndex+1)" aria-label="Next">›</button>
-    <div id="carousel-dots" class="carousel-dots"></div>
-  </div>
-  <div class="relative z-10 text-center px-6 max-w-4xl">
-    <h2 class="text-4xl md:text-6xl font-black tracking-tighter text-white mb-4">W E L C O M E.<br><span class="text-emerald-400">TO  THE  TOP  OF  THE  FOOD  CHAIN.</span></h2>
-    <p class="text-zinc-300 text-lg md:text-xl mb-8 max-w-2xl mx-auto">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</p>
+<header class="h-[40vh] flex items-center justify-center relative overflow-hidden">
+  <video autoplay loop muted playsinline class="w-full h-full object-cover absolute opacity-40">
+    <source src="assets/images/gallery/Action_Logo.mp4" type="video/mp4">
+  </video>
+  <div class="relative z-10 text-center px-6">
+    <h2 class="text-4xl md:text-5xl font-black tracking-tighter text-white">W E L C O M E.<br><span class="text-emerald-400">TO THE TOP OF THE FOOD CHAIN.</span></h2>
+    <p class="text-zinc-400 text-sm md:text-base mt-3 max-w-2xl mx-auto">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</p>
   </div>
 </header>
-
 <section class="py-20 px-6 max-w-7xl mx-auto">
   <h2 class="text-3xl md:text-4xl font-black text-center mb-4 text-emerald-400 tracking-tight">SHOP THE PILLARS</h2>
   <p class="text-zinc-500 text-center text-sm mb-12">Tap a section to open that department</p>
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
     <a href="services/hardscape.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/UFO_Cork.JPG')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="hardscape"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Hardscape</h3><p class="text-zinc-400 text-sm mb-2">Natural cork, spider wood, UFO hardscape.</p><span class="text-emerald-400 font-semibold">Shop Hardscape →</span></div>
     </a>
     <a href="services/lighting.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/wholesale-arcadia-d3-12-uvb-t5-bulb-22.jpg')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="lighting"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Lighting</h3><p class="text-zinc-400 text-sm mb-2">Arcadia UVB, T5 HO fixtures, precision spectrum.</p><span class="text-emerald-400 font-semibold">Explore Lighting →</span></div>
     </a>
     <a href="services/substrates.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/wholesale-lugarti-premium-coco-peat-block.jpg')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="substrates"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Substrates</h3><p class="text-zinc-400 text-sm mb-2">Lugarti coco peat and bioactive mixes.</p><span class="text-emerald-400 font-semibold">Browse Substrates →</span></div>
     </a>
     <a href="services/nutrition.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Coming_Soon_Reptile_Nutrition.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="nutrition"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Nutrition</h3><p class="text-zinc-400 text-sm mb-2">Calcium, multivitamins, gut-load formulas.</p><span class="text-emerald-400 font-semibold">Fuel Your Herps →</span></div>
     </a>
     <a href="services/apparel.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Apparel_Crick.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="apparel"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Apparel</h3><p class="text-zinc-400 text-sm mb-2">Veteran-owned gear. Limited drops.</p><span class="text-emerald-400 font-semibold">Gear Up →</span></div>
     </a>
     <a href="services/enclosures.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Logo.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="enclosures"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Enclosures</h3><p class="text-zinc-400 text-sm mb-2">Build-outs and habitat shells.</p><span class="text-emerald-400 font-semibold">Shop Enclosures →</span></div>
     </a>
     <a href="services/heating.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Logo.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="heating"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Heating</h3><p class="text-zinc-400 text-sm mb-2">Basking and ambient heat solutions.</p><span class="text-emerald-400 font-semibold">Heating and Basking →</span></div>
     </a>
     <a href="services/hardware.html" class="shop-product-card-container block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Logo.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="hardware"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Hardware</h3><p class="text-zinc-400 text-sm mb-2">Clips, mounts, and lab-grade gear.</p><span class="text-emerald-400 font-semibold">Shop Hardware →</span></div>
     </a>
     <a href="services/deals.html" class="shop-product-card-container block bg-zinc-900 border border-amber-900/50 rounded-2xl overflow-hidden hover:border-amber-600 transition">
-      <div class="h-56 bg-[url('assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center"></div>
+      <div class="card-carousel" data-carousel="deals"></div>
       <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-amber-400">Deals</h3><p class="text-zinc-400 text-sm mb-2">Specials and limited runs.</p><span class="text-amber-400 font-semibold">Deals and Specials →</span></div>
     </a>
   </div>
 </section>
-
 <div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
 <div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
 <div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl text-zinc-400">&times;</button></div>
@@ -232,7 +198,6 @@ document.addEventListener('DOMContentLoaded', buildHeroCarousel);
 <button type="submit" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
 </form>
 </div></div>
-
 <footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20">
 <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
 <div><img src="assets/images/gallery/Logo.png" alt="Logo" class="h-10 mb-4 opacity-80"><p class="text-zinc-500">Veteran Owned & Operated<br>DeFuniak Springs, Florida Warehouse<br>Direct hardscape source</p></div>
