@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<title>Apex FreePort</title>
+<link rel="icon" type="image/png" href="/uploads/apexfreeport-logo.png">
+<link rel="apple-touch-icon" href="/uploads/apexfreeport-logo.png">
+<style>
+:root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--emerald-dim:#059669;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(1200px 600px at 10% -10%,#0c1a2e 0%,var(--bg) 45%),var(--bg);color:var(--text);min-height:100vh}
+header{position:sticky;top:0;z-index:40;background:rgba(9,9,11,.92);border-bottom:1px solid var(--line);padding:12px 16px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.brand-row{display:flex;align-items:center;gap:12px}
+.brand-row img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.15);background:#000}
+h1{margin:0;font-size:1.15rem;color:var(--emerald);letter-spacing:.04em;text-transform:uppercase}
+.sub{color:var(--muted);font-size:12px;margin-top:2px}
+.slogan{color:var(--amber);font-size:14px;font-weight:700;letter-spacing:.04em;margin:12px 0 8px}
+.slogan.live{color:var(--emerald)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{border:1px solid var(--line);background:#18181b;color:var(--muted);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;text-transform:uppercase;cursor:pointer}
+.tab.active{color:#022c22;background:linear-gradient(180deg,#6ee7b7,var(--emerald));border-color:transparent}
+.chip{border:1px solid var(--line);background:#18181b;color:var(--muted);border-radius:999px;padding:5px 10px;font-size:11px;cursor:pointer}
+.chip.active{color:var(--emerald);border-color:rgba(52,211,153,.5)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 12px;font-weight:700;color:#fff;background:var(--emerald-dim)}
+button.secondary{background:#27272a;color:#e4e4e7}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);padding:4px 8px;font-size:12px}
+button.danger,button.del{background:linear-gradient(180deg,#f87171,#b91c1c)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(239,68,68,.35)}
+.feed-btn{width:100%;max-width:420px;padding:16px;font-size:15px;margin:8px 0 16px;text-transform:uppercase;letter-spacing:.06em}
+#err,#ok{display:none;border-radius:12px;padding:10px 12px;margin:10px 0;white-space:pre-wrap;font-size:13px}
+#err{background:#450a0a;color:#fecaca;border:1px solid #7f1d1d}
+#ok{background:#052e16;color:#bbf7d0;border:1px solid #14532d}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--emerald);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+td{font-size:13px}
+.sku{color:var(--blue);font-family:ui-monospace,monospace;font-size:12px}
+.muted{color:var(--muted)}
+.inline-edit{display:none}
+.inline-edit.open{display:table-row}
+.inline-box{margin:0 0 12px;padding:14px;border:1px solid rgba(56,189,248,.25);border-radius:14px;background:#000}
+label{display:block;font-size:11px;color:var(--muted);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{width:100%;background:#000!important;color:#fafafa!important;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit}
+textarea{min-height:72px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}th:nth-child(4),td:nth-child(4){display:none}}
+.thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.thumbs img,.thumbs video{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#000}
+.modal-back{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:16px}
+.modal-back.open{display:flex}
+.modal{width:min(520px,100%);max-height:90vh;overflow:auto;border-radius:16px;border:1px solid #27272a;background:#000!important;color:#fafafa!important;box-shadow:0 24px 80px rgba(0,0,0,.8);padding:18px}
+.modal h2{margin:0 0 8px;font-size:1rem;color:var(--emerald);text-transform:uppercase;letter-spacing:.05em}
+.modal h2.warn{color:var(--amber)}
+.modal h2.danger{color:var(--red)}
+.modal p{color:#d4d4d8;font-size:14px;line-height:1.45;margin:0 0 14px}
+.modal .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.links a{color:var(--blue);text-decoration:none;font-size:12px;margin-right:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap row" style="justify-content:space-between">
+    <div class="brand-row">
+      <img src="/uploads/apexfreeport-logo.png" alt="Apex FreePort">
+      <div>
+        <h1>Apex FreePort</h1>
+        <div class="sub" id="meta">Loading…</div>
+      </div>
+    </div>
+    <div class="row links">
+      <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
+      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="slogan" id="slogan">Flip the switch.</div>
+  <div class="tabs" id="storeTabs"></div>
+  <button type="button" class="danger feed-btn" id="btnFeed">DON'T TOUCH · Public feed</button>
+  <div class="row" style="margin-bottom:12px">
+    <button type="button" id="btnAdd">+ Product</button>
+    <button type="button" class="secondary" id="btnCat">+ Category</button>
+    <button type="button" class="secondary" id="btnReload">Reload</button>
+  </div>
+  <div class="row" id="catChips" style="margin-bottom:12px"></div>
+  <div id="err"></div>
+  <div id="ok"></div>
+  <table>
+    <thead><tr>
+      <th style="width:56px">Order</th><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Actions</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="modal-back" id="addModal">
+  <div class="modal">
+    <h2>Add product</h2>
+    <p style="color:#71717a;font-size:12px;margin:0 0 8px">Saves into current store only</p>
+    <div class="grid2">
+      <div><label>SKU</label><input id="a_sku" autocomplete="off"></div>
+      <div><label>Name</label><input id="a_name"></div>
+      <div><label>Category</label><select id="a_category"></select></div>
+      <div><label>Lane</label><select id="a_lane"><option value="direct">direct warehouse</option><option value="external">external fulfillment</option></select></div>
+      <div><label>Price</label><input id="a_price" type="number" step="0.01"></div>
+      <div><label>Qty</label><input id="a_qty" type="number" step="1" value="0"></div>
+      <div><label>Status</label><select id="a_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
+      <div><label>Location</label><input id="a_location" placeholder="WH-A1"></div>
+    </div>
+    <label>Description</label><textarea id="a_description"></textarea>
+    <label>Photos (up to 10)</label><input id="a_photos" type="file" accept="image/*" multiple>
+    <label>MP4 / video (up to 2)</label><input id="a_videos" type="file" accept="video/mp4,video/webm,video/*" multiple>
+    <div class="actions">
+      <button type="button" id="a_save">Save product</button>
+      <button type="button" class="secondary" id="a_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="catModal">
+  <div class="modal">
+    <h2>New category</h2>
+    <p>Add a category to the current store.</p>
+    <label>Category name</label>
+    <input id="cat_name" placeholder="e.g. Cork Flats">
+    <div class="actions">
+      <button type="button" id="cat_save">Create category</button>
+      <button type="button" class="secondary" id="cat_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="confirmModal">
+  <div class="modal">
+    <h2 id="confirmTitle" class="warn">Confirm</h2>
+    <p id="confirmMsg"></p>
+    <div class="actions">
+      <button type="button" id="confirmYes">Yes</button>
+      <button type="button" class="secondary" id="confirmNo">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var store = "herp";
+  var items = [];
+  var categories = [];
+  var filterCat = "";
+  var openSku = "";
+  var publicFeed = false;
+  var pendingConfirm = null;
+
+  function $(id) { return document.getElementById(id); }
+  function showErr(m) { var e = $("err"); e.style.display = "block"; e.textContent = String(m || "error"); }
+  function hideErr() { $("err").style.display = "none"; }
+  function showOk(m) {
+    var e = $("ok"); e.style.display = "block"; e.textContent = String(m || "ok");
+    setTimeout(function () { e.style.display = "none"; }, 2200);
+  }
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function api(url, opts) {
+    opts = opts || {};
+    opts.credentials = "same-origin";
+    opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body === "object") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(opts.body);
+    }
+    return fetch(url, opts).then(function (r) {
+      if (r.status === 401) { location.href = "/login"; throw new Error("Not logged in"); }
+      return r.json().then(function (j) {
+        if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status));
+        return j;
+      });
+    });
+  }
+  function openConfirm(title, msg, yesLabel, danger, onYes) {
+    $("confirmTitle").textContent = title;
+    $("confirmTitle").className = danger ? "danger" : "warn";
+    $("confirmMsg").textContent = msg;
+    $("confirmYes").textContent = yesLabel || "Yes";
+    $("confirmYes").className = danger ? "danger" : "";
+    pendingConfirm = onYes;
+    $("confirmModal").classList.add("open");
+  }
+  function closeConfirm() {
+    $("confirmModal").classList.remove("open");
+    pendingConfirm = null;
+  }
+  function fillCatSelect(sel, selected) {
+    sel.innerHTML = "";
+    var list = categories.length ? categories : ["Hardscape", "Lighting", "Substrates", "Nutrition", "Apparel"];
+    list.forEach(function (c) {
+      var o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      if (c === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  function mediaThumbs(it) {
+    var html = '<div class="thumbs">';
+    (it.images || []).forEach(function (u) { html += '<img src="' + esc(u) + '" alt="">'; });
+    (it.videos || []).forEach(function (u) { html += '<video src="' + esc(u) + '" muted></video>'; });
+    if (!(it.images || []).length && !(it.videos || []).length) html += '<span class="muted">No media</span>';
+    html += "</div>";
+    return html;
+  }
+  function readFilesAsDataUrls(fileList, max) {
+    var files = Array.prototype.slice.call(fileList || [], 0, max || 10);
+    return Promise.all(files.map(function (f) {
+      return new Promise(function (resolve, reject) {
+        var r = new FileReader();
+        r.onload = function () { resolve(r.result); };
+        r.onerror = function () { reject(new Error("file read failed")); };
+        r.readAsDataURL(f);
+      });
+    }));
+  }
+  function updateSlogan() {
+    var el = $("slogan");
+    if (publicFeed) {
+      el.textContent = "jdwapexherp.com feed is LIVE for this store.";
+      el.className = "slogan live";
+    } else {
+      el.textContent = "Flip the switch.";
+      el.className = "slogan";
+    }
+  }
+  function renderTabs(stores) {
+    var el = $("storeTabs");
+    el.innerHTML = "";
+    (stores || [
+      { id: "herp", name: "Apex Herp", count: 0 },
+      { id: "k9", name: "Apex K9", count: 0 },
+      { id: "feline", name: "Apex Feline", count: 0 }
+    ]).forEach(function (s) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab" + (s.id === store ? " active" : "");
+      b.textContent = s.name + " (" + (s.count || 0) + ")";
+      b.onclick = function () { store = s.id; openSku = ""; filterCat = ""; load(); };
+      el.appendChild(b);
+    });
+  }
+  function renderChips() {
+    var el = $("catChips");
+    el.innerHTML = "";
+    function addChip(label, val) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (filterCat === val ? " active" : "");
+      b.textContent = label;
+      b.onclick = function () { filterCat = val; renderTable(); renderChips(); };
+      el.appendChild(b);
+    }
+    addChip("All", "");
+    categories.forEach(function (c) { addChip(c, c); });
+  }
+  function renderTable() {
+    var tb = $("tbody");
+    var list = items.filter(function (it) {
+      return !filterCat || String(it.category || "") === filterCat;
+    });
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="6" class="muted">No products in this view.</td></tr>';
+      return;
+    }
+    var html = "";
+    list.forEach(function (it) {
+      var open = openSku && openSku === it.sku;
+      html += '<tr data-sku="' + esc(it.sku) + '">' +
+        '<td><button type="button" class="ghost" data-act="up">▲</button> ' +
+        '<button type="button" class="ghost" data-act="down">▼</button></td>' +
+        '<td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' +
+        (it.status && it.status !== "active" ? ' <span class="muted">[' + esc(it.status) + ']</span>' : "") +
+        "</td>" +
+        "<td>" + esc(it.category || "") + "</td>" +
+        "<td>$" + (Number(it.price) || 0).toFixed(2) + "</td>" +
+        '<td><button type="button" class="ghost" data-act="minus">−</button> ' +
+        "<strong>" + (it.qty || 0) + "</strong> " +
+        '<button type="button" class="ghost" data-act="plus">+</button></td>' +
+        '<td><button type="button" class="secondary" data-act="edit">' + (open ? "Close" : "Edit") + '</button> ' +
+        '<button type="button" class="del" data-act="del">Delete</button></td></tr>';
+
+      html += '<tr class="inline-edit' + (open ? " open" : "") + '" data-edit-for="' + esc(it.sku) + '">' +
+        '<td colspan="6"><div class="inline-box"><div class="grid2">' +
+        '<div><label>SKU</label><input data-f="sku" value="' + esc(it.sku) + '"></div>' +
+        '<div><label>Name</label><input data-f="name" value="' + esc(it.name) + '"></div>' +
+        '<div><label>Category</label><select data-f="category"></select></div>' +
+        '<div><label>Lane</label><select data-f="lane">' +
+          '<option value="direct"' + (it.lane === "direct" ? " selected" : "") + ">direct warehouse</option>' +
+          '<option value="external"' + (it.lane === "external" ? " selected" : "") + ">external fulfillment</option>' +
+        "</select></div>" +
+        '<div><label>Price</label><input data-f="price" type="number" step="0.01" value="' + (Number(it.price) || 0) + '"></div>' +
+        '<div><label>Qty</label><input data-f="qty" type="number" step="1" value="' + (it.qty || 0) + '"></div>' +
+        '<div><label>Status</label><select data-f="status">' +
+          '<option value="active"' + (it.status === "active" ? " selected" : "") + ">active</option>' +
+          '<option value="coming_soon"' + (it.status === "coming_soon" ? " selected" : "") + ">coming_soon</option>' +
+          '<option value="archived"' + (it.status === "archived" ? " selected" : "") + ">archived</option>' +
+        "</select></div>" +
+        '<div><label>Location</label><input data-f="location" value="' + esc(it.location || "") + '"></div>' +
+        "</div>" +
+        '<label>Description</label><textarea data-f="description">' + esc(it.description || "") + "</textarea>" +
+        '<label>Add photos</label><input data-f="photos" type="file" accept="image/*" multiple>' +
+        '<label>Add MP4 / video</label><input data-f="videos" type="file" accept="video/mp4,video/webm,video/*" multiple>' +
+        mediaThumbs(it) +
+        '<div class="row" style="margin-top:12px">' +
+        '<button type="button" data-act="save">Save changes</button>' +
+        '<button type="button" class="secondary" data-act="close">Close</button>' +
+        "</div></div></td></tr>";
+    });
+    tb.innerHTML = html;
+    tb.querySelectorAll("tr.inline-edit.open select[data-f=category]").forEach(function (sel) {
+      var sku = sel.closest("tr").getAttribute("data-edit-for");
+      var it = null;
+      for (var i = 0; i < items.length; i++) if (items[i].sku === sku) { it = items[i]; break; }
+      fillCatSelect(sel, (it && it.category) || "");
+    });
+    tb.querySelectorAll("[data-act]").forEach(function (btn) {
+      btn.onclick = function () {
+        var act = btn.getAttribute("data-act");
+        var tr = btn.closest("tr");
+        var sku = tr.getAttribute("data-sku") || tr.getAttribute("data-edit-for");
+        if (act === "edit") { openSku = openSku === sku ? "" : sku; renderTable(); return; }
+        if (act === "close") { openSku = ""; renderTable(); return; }
+        if (act === "up" || act === "down") {
+          api("/api/inventory/reorder", { method: "POST", body: { store: store, sku: sku, direction: act === "up" ? "up" : "down" } })
+            .then(function () { return load(); }).catch(function (e) { showErr(e.message); });
+          return;
+        }
+        if (act === "plus" || act === "minus") {
+          api("/api/inventory/adjust", { method: "POST", body: { store: store, sku: sku, delta: act === "plus" ? 1 : -1 } })
+            .then(function () { return load(); }).catch(function (e) { showErr(e.message); });
+          return;
+        }
+        if (act === "del") {
+          openConfirm(
+            "Delete product?",
+            "Are you sure you want to delete " + sku + " from this store? This cannot be undone.",
+            "Delete",
+            true,
+            function () {
+              api("/api/inventory/remove", { method: "POST", body: { store: store, sku: sku } })
+                .then(function () { openSku = ""; showOk("Deleted " + sku); return load(); })
+                .catch(function (e) { showErr(e.message); });
+            }
+          );
+          return;
+        }
+        if (act === "save") saveInline(tr, sku);
+      };
+    });
+  }
+  function field(tr, name) { return tr.querySelector('[data-f="' + name + '"]'); }
+  function saveInline(tr, sku) {
+    hideErr();
+    var body = {
+      store: store, originalSku: sku,
+      sku: field(tr, "sku").value.trim(),
+      name: field(tr, "name").value.trim(),
+      category: field(tr, "category").value,
+      lane: field(tr, "lane").value,
+      price: Number(field(tr, "price").value) || 0,
+      qty: Number(field(tr, "qty").value) || 0,
+      status: field(tr, "status").value,
+      location: field(tr, "location").value.trim(),
+      description: field(tr, "description").value
+    };
+    if (!body.sku || !body.name) { showErr("SKU and Name required"); return; }
+    var photos = field(tr, "photos").files;
+    var videos = field(tr, "videos").files;
+    api("/api/inventory/item", { method: "POST", body: body })
+      .then(function () {
+        var chain = Promise.resolve();
+        if (photos && photos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(photos, 10).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/images", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        if (videos && videos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(videos, 2).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/videos", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        return chain;
+      })
+      .then(function () { showOk("Saved " + body.sku); openSku = body.sku; return load(); })
+      .catch(function (e) { showErr("Save failed: " + e.message); });
+  }
+  function load() {
+    hideErr();
+    $("meta").textContent = "Loading…";
+    return api("/api/inventory?store=" + encodeURIComponent(store)).then(function (d) {
+      items = d.items || [];
+      categories = d.categories || [];
+      publicFeed = !!d.publicFeed;
+      renderTabs(d.stores);
+      renderChips();
+      renderTable();
+      updateSlogan();
+      $("btnFeed").textContent = "DON'T TOUCH · Public feed " + (publicFeed ? "ON" : "OFF");
+      $("meta").textContent = (d.storeName || store) + " · " + items.length + " items · feed " + (publicFeed ? "ON" : "OFF") +
+        " · updated " + (d.updated || "");
+    }).catch(function (e) {
+      showErr("Load failed: " + e.message);
+      $("meta").textContent = "Load failed";
+    });
+  }
+
+  $("confirmNo").onclick = closeConfirm;
+  $("confirmModal").onclick = function (e) { if (e.target === $("confirmModal")) closeConfirm(); };
+  $("confirmYes").onclick = function () {
+    var fn = pendingConfirm;
+    closeConfirm();
+    if (typeof fn === "function") fn();
+  };
+  $("btnReload").onclick = function () { load(); };
+  $("btnFeed").onclick = function () {
+    if (publicFeed) {
+      openConfirm(
+        "Turn feed OFF?",
+        "Are you sure you want to shut the public inventory feed off? jdwapexherp.com will show offline / no live catalog for this store until you turn it back on.",
+        "Turn OFF",
+        true,
+        function () {
+          api("/api/admin/public-feed", { method: "POST", body: { store: store, enabled: false } })
+            .then(function () { showOk("Public feed OFF"); return load(); })
+            .catch(function (e) { showErr(e.message); });
+        }
+      );
+    } else {
+      openConfirm(
+        "Go LIVE?",
+        "jdwapexherp.com will go LIVE with this store's inventory feed. Visitors can see stock from Apex FreePort.",
+        "Go LIVE",
+        false,
+        function () {
+          api("/api/admin/public-feed", { method: "POST", body: { store: store, enabled: true } })
+            .then(function () { showOk("jdwapexherp.com feed is LIVE"); return load(); })
+            .catch(function (e) { showErr(e.message); });
+        }
+      );
+    }
+  };
+  $("btnCat").onclick = function () {
+    $("cat_name").value = "";
+    $("catModal").classList.add("open");
+    setTimeout(function () { $("cat_name").focus(); }, 50);
+  };
+  $("cat_cancel").onclick = function () { $("catModal").classList.remove("open"); };
+  $("catModal").onclick = function (e) { if (e.target === $("catModal")) $("catModal").classList.remove("open"); };
+  $("cat_save").onclick = function () {
+    var name = $("cat_name").value.trim();
+    if (!name) { showErr("Category name required"); return; }
+    api("/api/inventory/category", { method: "POST", body: { store: store, name: name } })
+      .then(function () { $("catModal").classList.remove("open"); showOk("Category added"); return load(); })
+      .catch(function (e) { showErr(e.message); });
+  };
+  $("btnAdd").onclick = function () {
+    fillCatSelect($("a_category"), categories[0] || "Hardscape");
+    $("a_sku").value = ""; $("a_name").value = ""; $("a_price").value = ""; $("a_qty").value = "0";
+    $("a_description").value = ""; $("a_location").value = ""; $("a_photos").value = ""; $("a_videos").value = "";
+    $("addModal").classList.add("open");
+  };
+  $("a_cancel").onclick = function () { $("addModal").classList.remove("open"); };
+  $("addModal").onclick = function (e) { if (e.target === $("addModal")) $("addModal").classList.remove("open"); };
+  $("a_save").onclick = function () {
+    hideErr();
+    var body = {
+      store: store,
+      sku: $("a_sku").value.trim(),
+      name: $("a_name").value.trim(),
+      category: $("a_category").value,
+      lane: $("a_lane").value,
+      price: Number($("a_price").value) || 0,
+      qty: Number($("a_qty").value) || 0,
+      status: $("a_status").value,
+      location: $("a_location").value.trim(),
+      description: $("a_description").value
+    };
+    if (!body.sku || !body.name) { showErr("SKU and Name required"); return; }
+    var photos = $("a_photos").files;
+    var videos = $("a_videos").files;
+    api("/api/inventory/item", { method: "POST", body: body })
+      .then(function () {
+        var chain = Promise.resolve();
+        if (photos && photos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(photos, 10).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/images", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        if (videos && videos.length) {
+          chain = chain.then(function () {
+            return readFilesAsDataUrls(videos, 2).then(function (urls) {
+              if (!urls.length) return;
+              return api("/api/inventory/videos", { method: "POST", body: { store: store, sku: body.sku, dataUrls: urls } });
+            });
+          });
+        }
+        return chain;
+      })
+      .then(function () { $("addModal").classList.remove("open"); showOk("Added " + body.sku); return load(); })
+      .catch(function (e) { showErr("Save failed: " + e.message); });
+  };
+  load();
+})();
+</script>
+</body>
+</html>
