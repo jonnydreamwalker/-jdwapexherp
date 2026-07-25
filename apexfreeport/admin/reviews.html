@@ -3,16 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reviews · ApexFreePort</title>
+<title>Reviews · Apex FreePort</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/uploads/favicon.png">
+<link rel="apple-touch-icon" href="/uploads/apple-touch-icon.png">
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col">
 <header class="border-b border-emerald-900 bg-black">
   <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-    <div>
-      <p class="text-emerald-500 text-[10px] font-bold tracking-widest uppercase">Moderation</p>
-      <h1 class="text-xl font-black text-emerald-400">Reviews</h1>
+    <div class="flex items-center gap-3">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" class="h-11 w-11 rounded-full border border-emerald-800 bg-black object-contain" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <div>
+        <p class="text-emerald-500 text-[10px] font-bold tracking-widest uppercase">Moderation</p>
+        <h1 class="text-xl font-black text-emerald-400">Reviews</h1>
+      </div>
     </div>
     <div class="flex gap-3 text-xs">
       <a href="/admin" class="border border-zinc-700 px-3 py-1.5 rounded-lg uppercase">Inventory</a>
@@ -20,10 +27,22 @@
     </div>
   </div>
 </header>
-<main class="max-w-4xl mx-auto px-4 py-8">
+<main class="max-w-4xl mx-auto px-4 py-8 flex-1 w-full">
   <p class="text-zinc-500 text-sm mb-6">Only <span class="text-emerald-400">Approve</span> publishes to the website. Reject keeps it off the site. Data stays on your server.</p>
   <div id="list" class="space-y-4"></div>
 </main>
+<footer class="border-t border-zinc-800 bg-black mt-auto">
+  <div class="max-w-4xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <img src="/uploads/apexfreeport-logo.svg" alt="" class="h-9 w-9 rounded-full border border-zinc-700 object-contain bg-black" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <div>
+        <div class="text-emerald-400 text-xs font-bold uppercase tracking-wide">Apex FreePort</div>
+        <div class="text-zinc-500 text-[11px]">Inventory bridge · DeFuniak Springs, FL</div>
+      </div>
+    </div>
+    <div class="text-zinc-600 text-[11px]">© 2026 JDW Apex · Veteran owned</div>
+  </div>
+</footer>
 <script>
 function stars(n) {
   n = Math.round(Number(n) || 0);
@@ -64,10 +83,10 @@ async function load() {
         st +
         "</span></div>" +
         "<p class=\"text-sm text-zinc-200 mb-2\">" +
-        String(rev.text || "").replace(/</g, "&lt;") +
+        String(rev.text || "").replace(/</g, "<") +
         "</p>" +
         '<p class="text-xs text-zinc-500 mb-3">' +
-        String(rev.name || "Anonymous").replace(/</g, "&lt;") +
+        String(rev.name || "Anonymous").replace(/</g, "<") +
         " · " +
         (rev.created || "") +
         (rev.page ? " · " + rev.page : "") +
