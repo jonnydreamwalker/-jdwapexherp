@@ -8,49 +8,196 @@
 <title>Apex FreePort</title>
 <link rel="icon" type="image/png" href="/uploads/apexfreeport-logo.png">
 <style>
-:root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--emerald-dim:#059669;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh}
-header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
-.wrap{max-width:1100px;margin:0 auto;padding:16px}
-.brand{display:flex;align-items:center;gap:12px}
-.brand img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #333;background:#111}
-h1{margin:0;font-size:1.1rem;color:#34d399;text-transform:uppercase;letter-spacing:.04em}
-.sub{color:#a1a1aa;font-size:12px}
-.slogan{color:#fbbf24;font-weight:700;font-size:14px;margin:12px 0}
-.slogan.live{color:#34d399}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.tabs,.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-.tab,.chip{border:1px solid #27272a;background:#18181b;color:#a1a1aa;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
-.tab.active,.chip.active{background:#34d399;color:#022c22;border-color:transparent}
-button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 12px;font-weight:700;color:#fff;background:#059669}
-button.secondary{background:#27272a;color:#e4e4e7}
-button.ghost{background:transparent;border:1px solid #27272a;color:#a1a1aa;padding:4px 8px;font-size:12 insx}
-button.del,button.danger{background:linear-gradient(180deg,#f87171,#b91c1c)!important;color:#fff!important}
-.feed-btn{width:100%;max-width:420px;padding:14px;font-size:14px;text-transform:uppercase;margin:8px 0 14px}
-#status{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:10px 12px;font-size:13px;color:#a1a1aa;margin:8px 0;white-space:pre-wrap}
-#status.err{border-color:#7f1d1d;color:#fecaca;background:#450a0a}
-#status.ok{border-color:#14532d;color:#bbf7d0;background:#052e16}
-table{width:100%;border-collapse:collapse;margin-top:8px}
-th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #27272a;vertical-align:top;font-size:13px}
-th{color:#34d399;font-size:11px;text-transform:uppercase}
-.sku{color:#38bdf8;font-family:ui-monospace,monospace;font-size:12px}
-.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:90;align-items:center;justify-content:center;padding:16px}
-.modal-back.open{display:flex}
-.modal{background:#000;border:1px solid #27272a;border-radius:16px;padding:18px;width:min(520px,100%);max-height:90vh;overflow:auto;color:#fafafa}
-.modal h2{margin:0 0 8px;color:#34d399;font-size:1rem;text-transform:uppercase}
-.modal h2.danger{color:#ef4444}
-.modal h2.warn{color:#fbbf24}
-.modal p{color:#d4d4d8;font-size:14px}
-label{display:block;font-size:11px;color:#a1a1aa;margin:8px 0 4px;text-transform:uppercase}
-input,select,textarea{width:100%;background:#000!important;color:#fafafa!important;border:1px solid #27272a;border-radius:10px;padding:9px 10px;font:inherit}
-textarea{min-height:70px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:700px){.grid2{grid-template-columns:1fr}}
-.inline-edit{display:none}
-.inline-edit.open{display:table-row}
-.inline-box{background:#000;border:1px solid #1e3a5f;border-radius:12px;padding:12px;margin-bottom:8px}
-a{color:#38bdf8}
+:root {
+  --bg: #09090b;
+  --line: #27272a;
+  --text: #fafafa;
+  --muted: #a1a1aa;
+  --emerald: #34d399;
+  --emerald-dim: #059669;
+  --emerald-border: rgba(16, 185, 129, 0.35);
+  --blue: #38bdf8;
+  --red: #ef4444;
+  --amber: #fbbf24;
+  --frost: rgba(9, 9, 11, 0.30);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #09090b;
+  color: #fafafa;
+  min-height: 100vh;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #000;
+  border-bottom: 1px solid #27272a;
+  padding: 12px 16px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand img {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; border: 1px solid #333; background: #111;
+}
+h1 {
+  margin: 0; font-size: 1.1rem; color: #34d399;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.sub { color: #a1a1aa; font-size: 12px; }
+.slogan { color: #fbbf24; font-weight: 700; font-size: 14px; margin: 12px 0; }
+.slogan.live { color: #34d399; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tabs, .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.tab, .chip {
+  border: 1px solid #27272a; background: #18181b; color: #a1a1aa;
+  border-radius: 999px; padding: 7px 14px; font-size: 12px;
+  font-weight: 700; cursor: pointer;
+}
+.tab.active, .chip.active {
+  background: #34d399; color: #022c22; border-color: transparent;
+}
+button {
+  font: inherit; cursor: pointer; border: 0; border-radius: 10px;
+  padding: 8px 12px; font-weight: 700; color: #fff; background: #059669;
+}
+button.secondary { background: #27272a; color: #e4e4e7; }
+button.ghost {
+  background: transparent; border: 1px solid #27272a;
+  color: #a1a1aa; padding: 4px 8px; font-size: 12px;
+}
+button.del, button.danger {
+  background: linear-gradient(180deg, #f87171, #b91c1c) !important;
+  color: #fff !important;
+}
+.feed-btn {
+  width: 100%; max-width: 420px; padding: 14px;
+  font-size: 14px; text-transform: uppercase; margin: 8px 0 14px;
+}
+#status {
+  background: #18181b; border: 1px solid #27272a; border-radius: 10px;
+  padding: 10px 12px; font-size: 13px; color: #a1a1aa;
+  margin: 8px 0; white-space: pre-wrap;
+}
+#status.err { border-color: #7f1d1d; color: #fecaca; background: #450a0a; }
+#status.ok { border-color: #14532d; color: #bbf7d0; background: #052e16; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+th, td {
+  text-align: left; padding: 10px 8px;
+  border-bottom: 1px solid #27272a; vertical-align: top; font-size: 13px;
+}
+th { color: #34d399; font-size: 11px; text-transform: uppercase; }
+.sku { color: #38bdf8; font-family: ui-monospace, monospace; font-size: 12px; }
+a { color: #38bdf8; }
+
+/* Frosted popup — matches Herp .dropdown-menu */
+.modal-back {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-back.open { display: flex; }
+
+.modal.frost {
+  background: rgba(9, 9, 11, 0.30) !important;
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow:
+    0 16px 40px -12px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  color: #fafafa;
+  animation: frostIn 0.18s ease forwards;
+}
+@keyframes frostIn {
+  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal.frost h2 {
+  margin: 0 0 6px;
+  color: #34d399;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.modal.frost h2.danger { color: #ef4444; }
+.modal.frost h2.warn { color: #fbbf24; }
+.modal.frost .hint {
+  color: #a1a1aa;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.modal.frost label {
+  display: block;
+  font-size: 11px;
+  color: #a1a1aa;
+  margin: 10px 0 4px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.modal.frost input,
+.modal.frost select,
+.modal.frost textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.55) !important;
+  color: #fafafa !important;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+.modal.frost input:focus,
+.modal.frost select:focus,
+.modal.frost textarea:focus {
+  border-color: rgba(52, 211, 153, 0.7);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+.modal.frost textarea { min-height: 90px; resize: vertical; }
+.modal.frost select option { background: #09090b; color: #fafafa; }
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .grid2 { grid-template-columns: 1fr; }
+}
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(16, 185, 129, 0.2);
+}
+.modal.frost button.save-btn {
+  background: #059669;
+}
+.modal.frost button.cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #a1a1aa;
+}
+.modal.frost button.cancel-btn:hover {
+  background: rgba(16, 185, 129, 0.18);
+  color: #e4e4e7;
+}
 </style>
 </head>
 <body>
@@ -65,10 +212,13 @@ a{color:#38bdf8}
     </div>
     <div class="row">
       <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
-      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
+      <form method="POST" action="/logout" style="display:inline">
+        <button type="submit" class="secondary">Logout</button>
+      </form>
     </div>
   </div>
 </header>
+
 <div class="wrap">
   <div class="slogan" id="slogan">Flip the switch.</div>
   <div class="tabs" id="storeTabs"></div>
@@ -81,28 +231,478 @@ a{color:#38bdf8}
   <div class="chips" id="catChips"></div>
   <div id="status">Loading inventory…</div>
   <table>
-    <thead><tr><th>Order</th><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead>
-    <tbody id="tbody"><tr><td colspan="6" class="sub">Waiting…</td></tr></tbody>
+    <thead>
+      <tr>
+        <th>SKU / Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="5" class="sub">Waiting…</td></tr>
+    </tbody>
   </table>
 </div>
+
+<!-- ADD / EDIT PRODUCT (frosted) -->
+<div class="modal-back" id="productModal">
+  <div class="modal frost">
+    <h2 id="productTitle">Add product</h2>
+    <p class="hint" id="productHint">Fill every field you need. Category and lane use dropdowns.</p>
+    <input type="hidden" id="p_originalSku">
+    <div class="grid2">
+      <div>
+        <label>SKU</label>
+        <input id="p_sku" placeholder="HS-UFO-FLAT-01" autocomplete="off">
+      </div>
+      <div>
+        <label>Name</label>
+        <input id="p_name" placeholder="UFO Cork Flats" autocomplete="off">
+      </div>
+      <div>
+        <label>Category</label>
+        <select id="p_category"></select>
+      </div>
+      <div>
+        <label>Lane</label>
+        <select id="p_lane">
+          <option value="direct">direct — FL warehouse</option>
+          <option value="external">external — fulfillment</option>
+        </select>
+      </div>
+      <div>
+        <label>Price (USD)</label>
+        <input id="p_price" type="number" step="0.01" min="0" placeholder="24.99">
+      </div>
+      <div>
+        <label>Qty on hand</label>
+        <input id="p_qty" type="number" step="1" min="0" value="0">
+      </div>
+      <div>
+        <label>Reserved</label>
+        <input id="p_reserved" type="number" step="1" min="0" value="0">
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="p_status">
+          <option value="active">active</option>
+          <option value="coming_soon">coming_soon</option>
+          <option value="archived">archived</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1">
+        <label>Location</label>
+        <input id="p_location" placeholder="WH-A1">
+      </div>
+    </div>
+    <label>Description</label>
+    <textarea id="p_description" placeholder="Premium hand-selected cork bark flats…"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="save-btn" id="p_save">Save product</button>
+      <button type="button" class="cancel-btn" id="p_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY -->
+<div class="modal-back" id="catModal">
+  <div class="modal frost">
+    <h2>New category</h2>
+    <p class="hint">Adds a category chip for this store.</p>
+    <label>Name</label>
+    <input id="cat_name" placeholder="Hardscape">
+    <div class="modal-actions">
+      <button type="button" class="save-btn" id="cat_save">Create</button>
+      <button type="button" class="cancel-btn" id="cat_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="modal-back" id="confirmModal">
+  <div class="modal frost">
+    <h2 id="confirmTitle" class="warn">Confirm</h2>
+    <p class="hint" id="confirmMsg" style="color:#d4d4d8;font-size:14px"></p>
+    <div class="modal-actions">
+      <button type="button" id="confirmYes">Yes</button>
+      <button type="button" class="cancel-btn" id="confirmNo">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
-(function(){
-var store="herp",items=[],categories=[],filterCat="",openSku="",publicFeed=false,pending=null;
-function $(id){return document.getElementById(id);}
-function setStatus(msg,kind){var el=$("status");el.textContent=msg;el.className=kind==="err"?"err":(kind==="ok"?"ok":"");el.id="status";}
-function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function api(url,opts){opts=opts||{};opts.credentials="same-origin";opts.headers=opts.headers||{};if(opts.body&&typeof opts.body==="object"){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(opts.body);}return fetch(url,opts).then(function(r){if(r.status===401){setStatus("Not logged in — redirecting…","err");location.href="/login";throw new Error("401");}return r.text().then(function(txt){var j=null;try{j=txt?JSON.parse(txt):{};}catch(e){throw new Error("Bad JSON from "+url+": "+txt.slice(0,120));}if(!r.ok)throw new Error((j&&j.error)||("HTTP "+r.status));return j;});});}
-function load(){setStatus("Loading inventory for store: "+store+" …");$("meta").textContent="Loading…";return api("/api/inventory?store="+encodeURIComponent(store)).then(function(d){items=Array.isArray(d.items)?d.items:[];categories=Array.isArray(d.categories)?d.categories:[];publicFeed=!!d.publicFeed;renderTabs(d.stores);renderChips();renderTable();updateSlogan();$("btnFeed").textContent="DON'T TOUCH · Public feed "+(publicFeed?"ON":"OFF");$("meta").textContent=(d.storeName||store)+" · "+items.length+" items · feed "+(publicFeed?"ON":"OFF");setStatus("Loaded "+items.length+" products · store "+store+" · feed "+(publicFeed?"ON":"OFF"),"ok");}).catch(function(e){setStatus("Load failed: "+e.message,"err");$("meta").textContent="Load failed";$("tbody").innerHTML='<tr><td colspan="6" style="color:#fecaca">Could not load inventory.</td></tr>';});}
-function updateSlogan(){var el=$("slogan");if(publicFeed){el.textContent="jdwapexherp.com feed is LIVE for this store.";el.className="slogan live";}else{el.textContent="Flip the switch.";el.className="slogan";}}
-function renderTabs(stores){var el=$("storeTabs");el.innerHTML="";(stores||[{id:"herp",name:"Apex Herp",count:items.length},{id:"k9",name:"Apex K9",count:0},{id:"feline",name:"Apex Feline",count:0}]).forEach(function(s){var b=document.createElement("button");b.type="button";b.className="tab"+(s.id===store?" active":"");b.textContent=(s.name||s.id)+" ("+(s.count!=null?s.count:0)+")";b.onclick=function(){store=s.id;openSku="";filterCat="";load();};el.appendChild(b);});}
-function renderChips(){var el=$("catChips");el.innerHTML="";function chip(label,val){var b=document.createElement("button");b.type="button";b.className="chip"+(filterCat===val?" active":"");b.textContent=label;b.onclick=function(){filterCat=val;renderTable();renderChips();};el.appendChild(b);}chip("All","");categories.forEach(function(c){chip(c,c);});}
-function renderTable(){var tb=$("tbody");var list=items.filter(function(it){return !filterCat||String(it.category||"")===filterCat;});if(!list.length){tb.innerHTML='<tr><td colspan="6" style="color:#a1a1aa">No products in this view.</td></tr>';return;}var html="";list.forEach(function(it){html+='<tr data-sku="'+esc(it.sku)+'"><td></td><td><div class="sku">'+esc(it.sku)+'</div><strong>'+esc(it.name)+'</strong></td><td>'+esc(it.category||"")+'</td><td>$'+(Number(it.price)||0).toFixed(2)+'</td><td><button type="button" class="ghost" data-act="minus">−</button> <strong>'+(it.qty||0)+'</strong> <button type="button" class="ghost" data-act="plus">+</button></td><td><button type="button" class="secondary" data-act="edit">Edit</button> <button type="button" class="del" data-act="del">Delete</button></td></tr>';});tb.innerHTML=html;tb.querySelectorAll("[data-act]").forEach(function(btn){btn.onclick=function(){var act=btn.getAttribute("data-act");var tr=btn.closest("tr");var sku=tr.getAttribute("data-sku");if(act==="plus"||act==="minus"){api("/api/inventory/adjust",{method:"POST",body:{store:store,sku:sku,delta:act==="plus"?1:-1}}).then(load).catch(function(e){setStatus(e.message,"err");});}if(act==="del"){if(!confirm("Delete "+sku+"?"))return;api("/api/inventory/remove",{method:"POST",body:{store:store,sku:sku}}).then(load).catch(function(e){setStatus(e.message,"err");});}if(act==="edit"){var name=prompt("Name",tr.querySelector("strong").textContent);if(name==null)return;var price=prompt("Price");var qty=prompt("Qty");api("/api/inventory/item",{method:"POST",body:{store:store,sku:sku,name:name,price:Number(price)||0,qty:Number(qty)||0}}).then(load).catch(function(e){setStatus(e.message,"err");});}};});}
-$("btnReload").onclick=function(){load();};
-$("btnFeed").onclick=function(){var next=!publicFeed;if(!confirm(next?"Go LIVE on website?":"Turn public feed OFF?"))return;api("/api/admin/public-feed",{method:"POST",body:{store:store,enabled:next}}).then(load).catch(function(e){setStatus(e.message,"err");});};
-$("btnAdd").onclick=function(){var sku=prompt("SKU");if(!sku)return;var name=prompt("Name");if(!name)return;var price=prompt("Price","0");var qty=prompt("Qty","0");api("/api/inventory/item",{method:"POST",body:{store:store,sku:sku.trim(),name:name.trim(),price:Number(price)||0,qty:Number(qty)||0,category:"Hardscape",lane:"direct",status:"active"}}).then(load).catch(function(e){setStatus(e.message,"err");});};
-$("btnCat").onclick=function(){var name=prompt("Category name");if(!name)return;api("/api/inventory/category",{method:"POST",body:{store:store,name:name.trim()}}).then(load).catch(function(e){setStatus(e.message,"err");});};
-setStatus("Booting…");
-load();
+(function () {
+  var store = "herp";
+  var items = [];
+  var categories = [];
+  var filterCat = "";
+  var publicFeed = false;
+  var pending = null;
+  var editMode = false;
+
+  function $(id) { return document.getElementById(id); }
+
+  function setStatus(msg, kind) {
+    var el = $("status");
+    el.textContent = msg;
+    el.className = kind === "err" ? "err" : (kind === "ok" ? "ok" : "");
+    el.id = "status";
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function api(url, opts) {
+    opts = opts || {};
+    opts.credentials = "same-origin";
+    opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body === "object") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(opts.body);
+    }
+    return fetch(url, opts).then(function (r) {
+      if (r.status === 401) {
+        setStatus("Not logged in — redirecting…", "err");
+        location.href = "/login";
+        throw new Error("401");
+      }
+      return r.text().then(function (txt) {
+        var j = null;
+        try { j = txt ? JSON.parse(txt) : {}; }
+        catch (e) { throw new Error("Bad JSON from " + url + ": " + txt.slice(0, 120)); }
+        if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status));
+        return j;
+      });
+    });
+  }
+
+  function openModal(id) { $(id).classList.add("open"); }
+  function closeModal(id) { $(id).classList.remove("open"); }
+
+  function openConfirm(title, msg, yesLabel, danger, fn) {
+    $("confirmTitle").textContent = title;
+    $("confirmTitle").className = danger ? "danger" : "warn";
+    $("confirmMsg").textContent = msg;
+    $("confirmYes").textContent = yesLabel || "Yes";
+    $("confirmYes").className = danger ? "danger" : "";
+    pending = fn;
+    openModal("confirmModal");
+  }
+
+  function fillCats(sel, selected) {
+    sel.innerHTML = "";
+    var list = categories.length
+      ? categories.slice()
+      : ["Hardscape", "Lighting", "Substrates", "Nutrition", "Apparel", "Enclosures", "Heating", "Hardware"];
+    if (selected && list.indexOf(selected) < 0) list.unshift(selected);
+    list.forEach(function (c) {
+      var o = document.createElement("option");
+      o.value = c;
+      o.textContent = c;
+      if (c === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  function updateSlogan() {
+    var el = $("slogan");
+    if (publicFeed) {
+      el.textContent = "jdwapexherp.com feed is LIVE for this store.";
+      el.className = "slogan live";
+    } else {
+      el.textContent = "Flip the switch.";
+      el.className = "slogan";
+    }
+  }
+
+  function renderTabs(stores) {
+    var el = $("storeTabs");
+    el.innerHTML = "";
+    var list = stores || [
+      { id: "herp", name: "Apex Herp", count: items.length },
+      { id: "k9", name: "Apex K9", count: 0 },
+      { id: "feline", name: "Apex Feline", count: 0 }
+    ];
+    list.forEach(function (s) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tab" + (s.id === store ? " active" : "");
+      b.textContent = (s.name || s.id) + " (" + (s.count != null ? s.count : 0) + ")";
+      b.onclick = function () {
+        store = s.id;
+        filterCat = "";
+        load();
+      };
+      el.appendChild(b);
+    });
+  }
+
+  function renderChips() {
+    var el = $("catChips");
+    el.innerHTML = "";
+    function chip(label, val) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (filterCat === val ? " active" : "");
+      b.textContent = label;
+      b.onclick = function () {
+        filterCat = val;
+        renderTable();
+        renderChips();
+      };
+      el.appendChild(b);
+    }
+    chip("All", "");
+    categories.forEach(function (c) { chip(c, c); });
+  }
+
+  function clearProductForm() {
+    $("p_originalSku").value = "";
+    $("p_sku").value = "";
+    $("p_name").value = "";
+    $("p_price").value = "";
+    $("p_qty").value = "0";
+    $("p_reserved").value = "0";
+    $("p_location").value = "";
+    $("p_description").value = "";
+    $("p_lane").value = "direct";
+    $("p_status").value = "active";
+    fillCats($("p_category"), categories[0] || "Hardscape");
+  }
+
+  function openAdd() {
+    editMode = false;
+    $("productTitle").textContent = "Add product";
+    $("productHint").textContent = "Create a full product record. All fields save to FreePort inventory.";
+    clearProductForm();
+    openModal("productModal");
+    setTimeout(function () { $("p_sku").focus(); }, 50);
+  }
+
+  function openEdit(sku) {
+    var it = items.filter(function (x) { return x.sku === sku; })[0];
+    if (!it) {
+      setStatus("Product not found: " + sku, "err");
+      return;
+    }
+    editMode = true;
+    $("productTitle").textContent = "Edit product";
+    $("productHint").textContent = "Update any field. SKU can be renamed; original is tracked.";
+    $("p_originalSku").value = it.sku;
+    $("p_sku").value = it.sku || "";
+    $("p_name").value = it.name || "";
+    fillCats($("p_category"), it.category || (categories[0] || "Hardscape"));
+    $("p_lane").value = it.lane === "external" ? "external" : "direct";
+    $("p_price").value = it.price != null ? Number(it.price) : 0;
+    $("p_qty").value = it.qty != null ? Number(it.qty) : 0;
+    $("p_reserved").value = it.reserved != null ? Number(it.reserved) : 0;
+    $("p_status").value = it.status || "active";
+    $("p_location").value = it.location || "";
+    $("p_description").value = it.description || "";
+    openModal("productModal");
+    setTimeout(function () { $("p_name").focus(); }, 50);
+  }
+
+  function saveProduct() {
+    var body = {
+      store: store,
+      originalSku: $("p_originalSku").value.trim() || undefined,
+      sku: $("p_sku").value.trim(),
+      name: $("p_name").value.trim(),
+      category: $("p_category").value,
+      lane: $("p_lane").value,
+      price: Number($("p_price").value) || 0,
+      qty: Number($("p_qty").value) || 0,
+      reserved: Number($("p_reserved").value) || 0,
+      status: $("p_status").value,
+      location: $("p_location").value.trim(),
+      description: $("p_description").value
+    };
+    if (!body.sku || !body.name) {
+      setStatus("SKU and Name are required.", "err");
+      return;
+    }
+    api("/api/inventory/item", { method: "POST", body: body })
+      .then(function () {
+        closeModal("productModal");
+        setStatus((editMode ? "Updated " : "Added ") + body.sku, "ok");
+        return load();
+      })
+      .catch(function (e) { setStatus(e.message, "err"); });
+  }
+
+  function renderTable() {
+    var tb = $("tbody");
+    var list = items.filter(function (it) {
+      return !filterCat || String(it.category || "") === filterCat;
+    });
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="5" style="color:#a1a1aa">No products in this view.</td></tr>';
+      return;
+    }
+    var html = "";
+    list.forEach(function (it) {
+      html +=
+        '<tr data-sku="' + esc(it.sku) + '">' +
+        '<td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong></td>' +
+        '<td>' + esc(it.category || "") + '</td>' +
+        '<td>$' + (Number(it.price) || 0).toFixed(2) + '</td>' +
+        '<td>' +
+          '<button type="button" class="ghost" data-act="minus">−</button> ' +
+          '<strong>' + (it.qty || 0) + '</strong> ' +
+          '<button type="button" class="ghost" data-act="plus">+</button>' +
+        '</td>' +
+        '<td>' +
+          '<button type="button" class="secondary" data-act="edit">Edit</button> ' +
+          '<button type="button" class="del" data-act="del">Delete</button>' +
+        '</td></tr>';
+    });
+    tb.innerHTML = html;
+
+    tb.querySelectorAll("[data-act]").forEach(function (btn) {
+      btn.onclick = function () {
+        var act = btn.getAttribute("data-act");
+        var tr = btn.closest("tr");
+        var sku = tr.getAttribute("data-sku");
+        if (act === "plus" || act === "minus") {
+          api("/api/inventory/adjust", {
+            method: "POST",
+            body: { store: store, sku: sku, delta: act === "plus" ? 1 : -1 }
+          }).then(load).catch(function (e) { setStatus(e.message, "err"); });
+          return;
+        }
+        if (act === "del") {
+          openConfirm(
+            "Delete product?",
+            "Delete " + sku + "? This cannot be undone.",
+            "Delete",
+            true,
+            function () {
+              api("/api/inventory/remove", {
+                method: "POST",
+                body: { store: store, sku: sku }
+              }).then(load).catch(function (e) { setStatus(e.message, "err"); });
+            }
+          );
+          return;
+        }
+        if (act === "edit") openEdit(sku);
+      };
+    });
+  }
+
+  function load() {
+    setStatus("Loading inventory for store: " + store + " …");
+    $("meta").textContent = "Loading…";
+    return api("/api/inventory?store=" + encodeURIComponent(store)).then(function (d) {
+      items = Array.isArray(d.items) ? d.items : [];
+      categories = Array.isArray(d.categories) ? d.categories : [];
+      publicFeed = !!d.publicFeed;
+      renderTabs(d.stores);
+      renderChips();
+      renderTable();
+      updateSlogan();
+      $("btnFeed").textContent = "DON'T TOUCH · Public feed " + (publicFeed ? "ON" : "OFF");
+      $("meta").textContent =
+        (d.storeName || store) + " · " + items.length + " items · feed " + (publicFeed ? "ON" : "OFF");
+      setStatus(
+        "Loaded " + items.length + " products · store " + store + " · feed " + (publicFeed ? "ON" : "OFF"),
+        "ok"
+      );
+    }).catch(function (e) {
+      setStatus("Load failed: " + e.message, "err");
+      $("meta").textContent = "Load failed";
+      $("tbody").innerHTML =
+        '<tr><td colspan="5" style="color:#fecaca">Could not load inventory.</td></tr>';
+    });
+  }
+
+  $("confirmNo").onclick = function () {
+    closeModal("confirmModal");
+    pending = null;
+  };
+  $("confirmYes").onclick = function () {
+    var fn = pending;
+    closeModal("confirmModal");
+    pending = null;
+    if (fn) fn();
+  };
+  $("confirmModal").onclick = function (e) {
+    if (e.target === $("confirmModal")) {
+      closeModal("confirmModal");
+      pending = null;
+    }
+  };
+
+  $("btnReload").onclick = function () { load(); };
+  $("btnFeed").onclick = function () {
+    var next = !publicFeed;
+    openConfirm(
+      next ? "Go LIVE?" : "Turn feed OFF?",
+      next
+        ? "jdwapexherp.com will go LIVE with this store's inventory."
+        : "Shut public feed for this store?",
+      next ? "Go LIVE" : "Turn OFF",
+      !next,
+      function () {
+        api("/api/admin/public-feed", {
+          method: "POST",
+          body: { store: store, enabled: next }
+        }).then(load).catch(function (e) { setStatus(e.message, "err"); });
+      }
+    );
+  };
+
+  $("btnCat").onclick = function () {
+    $("cat_name").value = "";
+    openModal("catModal");
+  };
+  $("cat_cancel").onclick = function () { closeModal("catModal"); };
+  $("cat_save").onclick = function () {
+    var name = $("cat_name").value.trim();
+    if (!name) {
+      setStatus("Category name required", "err");
+      return;
+    }
+    api("/api/inventory/category", {
+      method: "POST",
+      body: { store: store, name: name }
+    })
+      .then(function () {
+        closeModal("catModal");
+        return load();
+      })
+      .catch(function (e) { setStatus(e.message, "err"); });
+  };
+
+  $("btnAdd").onclick = openAdd;
+  $("p_cancel").onclick = function () { closeModal("productModal"); };
+  $("p_save").onclick = saveProduct;
+  $("productModal").onclick = function (e) {
+    if (e.target === $("productModal")) closeModal("productModal");
+  };
+  $("catModal").onclick = function (e) {
+    if (e.target === $("catModal")) closeModal("catModal");
+  };
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeModal("productModal");
+      closeModal("catModal");
+      closeModal("confirmModal");
+      pending = null;
+    }
+  });
+
+  setStatus("Booting…");
+  load();
 })();
 </script>
 </body>
