@@ -30,13 +30,38 @@ app.use(
 );
 
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
+
+function ensureBrandIcons() {
+  try {
+    var pairs = [
+      ["favicon.png", "favicon.b64"],
+      ["apple-touch-icon.png", "apple.b64"]
+    ];
+    pairs.forEach(function (pair) {
+      var out = path.join(UPLOADS, pair[0]);
+      var src = path.join(__dirname, "logos", pair[1]);
+      if (fs.existsSync(out) && fs.statSync(out).size > 100) return;
+      if (!fs.existsSync(src)) return;
+      var b64 = fs.readFileSync(src, "utf8").trim();
+      if (!b64 || b64.indexOf("PLACEHOLDER") === 0) return;
+      fs.writeFileSync(out, Buffer.from(b64, "base64"));
+      console.log("wrote " + pair[0] + " from logos/" + pair[1]);
+    });
+  } catch (e) {
+    console.log("icon ensure skip:", e.message);
+  }
+}
+ensureBrandIcons();
+
 app.use("/uploads", express.static(UPLOADS));
 
 app.get("/favicon.ico", function (req, res) {
+  var png = path.join(UPLOADS, "favicon.png");
+  if (fs.existsSync(png) && fs.statSync(png).size > 100) {
+    return res.type("image/png").sendFile(png);
+  }
   var svg = path.join(UPLOADS, "apexfreeport-logo.svg");
   if (fs.existsSync(svg)) return res.type("image/svg+xml").sendFile(svg);
-  var png = path.join(UPLOADS, "favicon.png");
-  if (fs.existsSync(png)) return res.type("image/png").sendFile(png);
   return res.status(404).end();
 });
 
