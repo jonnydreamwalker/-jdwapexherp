@@ -32,6 +32,14 @@ app.use(
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 app.use("/uploads", express.static(UPLOADS));
 
+app.get("/favicon.ico", function (req, res) {
+  var png = path.join(UPLOADS, "favicon.png");
+  if (fs.existsSync(png)) return res.type("image/png").sendFile(png);
+  var svg = path.join(UPLOADS, "apexfreeport-logo.svg");
+  if (fs.existsSync(svg)) return res.type("image/svg+xml").sendFile(svg);
+  return res.status(404).end();
+});
+
 function defaultData() {
   return {
     updated: new Date().toISOString(),
@@ -62,7 +70,21 @@ function defaultData() {
 
 function normalize(d) {
   if (!d || typeof d !== "object") return defaultData();
-  if (d.stores && d.stores.herp) return d;
+  if (d.stores && d.stores.herp) {
+    Object.keys(d.stores).forEach(function (k) {
+      var st = d.stores[k];
+      if (!Array.isArray(st.categories) || !st.categories.length) {
+        var seen = {};
+        var cats = [];
+        (st.items || []).forEach(function (it) {
+          var c = it.category || "";
+          if (c && !seen[c]) { seen[c] = 1; cats.push(c); }
+        });
+        st.categories = cats.length ? cats : ((defaultData().stores[k] && defaultData().stores[k].categories) || []);
+      }
+    });
+    return d;
+  }
   const items = Array.isArray(d.items) ? d.items : [];
   const out = defaultData();
   out.updated = d.updated || out.updated;
@@ -271,6 +293,10 @@ app.post("/api/inventory/item", auth, function (req, res) {
     if (b.lane != null) item.lane = b.lane;
     if (b.status != null) item.status = b.status;
     if (b.location != null) item.location = b.location;
+  }
+  if (item.category && (st.categories || []).indexOf(item.category) < 0) {
+    st.categories = st.categories || [];
+    st.categories.push(item.category);
   }
   write(d);
   res.json({ ok: true, item: item });
