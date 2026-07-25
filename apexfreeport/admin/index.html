@@ -6,237 +6,66 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>Apex FreePort</title>
-<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/uploads/favicon.png">
-<link rel="apple-touch-icon" href="/uploads/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/uploads/favicon.png">
+<link rel="shortcut icon" type="image/png" href="/uploads/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/uploads/apple-touch-icon.png">
 <style>
-:root {
-  --bg: #09090b;
-  --line: #27272a;
-  --text: #fafafa;
-  --muted: #a1a1aa;
-  --emerald: #34d399;
-  --emerald-dim: #059669;
-  --emerald-border: rgba(16, 185, 129, 0.35);
-  --blue: #38bdf8;
-  --red: #ef4444;
-  --amber: #fbbf24;
-  --frost: rgba(9, 9, 11, 0.30);
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #09090b;
-  color: #fafafa;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: #000;
-  border-bottom: 1px solid #27272a;
-  padding: 12px 16px;
-}
-footer {
-  margin-top: auto;
-  border-top: 1px solid #27272a;
-  background: #000;
-  padding: 20px 16px;
-}
-footer .foot-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-footer .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-footer .brand img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: contain;
-  border: 1px solid #333;
-  background: #111;
-}
-footer .copy { color: #71717a; font-size: 12px; }
-.wrap { max-width: 1100px; margin: 0 auto; padding: 16px; flex: 1; width: 100%; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand img {
-  width: 44px; height: 44px; border-radius: 50%;
-  object-fit: contain; border: 1px solid #333; background: #111;
-}
-h1 {
-  margin: 0; font-size: 1.1rem; color: #34d399;
-  text-transform: uppercase; letter-spacing: .04em;
-}
-.sub { color: #a1a1aa; font-size: 12px; }
-.slogan { color: #fbbf24; font-weight: 700; font-size: 14px; margin: 12px 0; }
-.slogan.live { color: #34d399; }
-.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.tabs, .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
-.tab, .chip {
-  border: 1px solid #27272a; background: #18181b; color: #a1a1aa;
-  border-radius: 999px; padding: 7px 14px; font-size: 12px;
-  font-weight: 700; cursor: pointer;
-}
-.tab.active, .chip.active {
-  background: #34d399; color: #022c22; border-color: transparent;
-}
-button {
-  font: inherit; cursor: pointer; border: 0; border-radius: 10px;
-  padding: 8px 12px; font-weight: 700; color: #fff; background: #059669;
-}
-button.secondary { background: #27272a; color: #e4e4e7; }
-button.ghost {
-  background: transparent; border: 1px solid #27272a;
-  color: #a1a1aa; padding: 4px 8px; font-size: 12px;
-}
-button.del, button.danger {
-  background: linear-gradient(180deg, #f87171, #b91c1c) !important;
-  color: #fff !important;
-}
-.feed-btn {
-  width: 100%; max-width: 420px; padding: 14px;
-  font-size: 14px; text-transform: uppercase; margin: 8px 0 14px;
-}
-#status {
-  background: #18181b; border: 1px solid #27272a; border-radius: 10px;
-  padding: 10px 12px; font-size: 13px; color: #a1a1aa;
-  margin: 8px 0; white-space: pre-wrap;
-}
-#status.err { border-color: #7f1d1d; color: #fecaca; background: #450a0a; }
-#status.ok { border-color: #14532d; color: #bbf7d0; background: #052e16; }
-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-th, td {
-  text-align: left; padding: 10px 8px;
-  border-bottom: 1px solid #27272a; vertical-align: top; font-size: 13px;
-}
-th { color: #34d399; font-size: 11px; text-transform: uppercase; }
-.sku { color: #38bdf8; font-family: ui-monospace, monospace; font-size: 12px; }
-a { color: #38bdf8; }
-
-.modal-back {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 90;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.modal-back.open { display: flex; }
-
-.modal.frost {
-  background: rgba(9, 9, 11, 0.30) !important;
-  backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  box-shadow:
-    0 16px 40px -12px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(16, 185, 129, 0.08);
-  border-radius: 16px;
-  padding: 20px;
-  width: min(560px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-  color: #fafafa;
-  animation: frostIn 0.18s ease forwards;
-}
-@keyframes frostIn {
-  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.modal.frost h2 {
-  margin: 0 0 6px;
-  color: #34d399;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-.modal.frost h2.danger { color: #ef4444; }
-.modal.frost h2.warn { color: #fbbf24; }
-.modal.frost .hint {
-  color: #a1a1aa;
-  font-size: 12px;
-  margin: 0 0 12px;
-}
-.modal.frost label {
-  display: block;
-  font-size: 11px;
-  color: #a1a1aa;
-  margin: 10px 0 4px;
-  text-transform: uppercase;
-  letter-spacing: .03em;
-}
-.modal.frost input,
-.modal.frost select,
-.modal.frost textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.55) !important;
-  color: #fafafa !important;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font: inherit;
-  outline: none;
-}
-.modal.frost input:focus,
-.modal.frost select:focus,
-.modal.frost textarea:focus {
-  border-color: rgba(52, 211, 153, 0.7);
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
-}
-.modal.frost textarea { min-height: 90px; resize: vertical; }
-.modal.frost select option { background: #09090b; color: #fafafa; }
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-@media (max-width: 640px) {
-  .grid2 { grid-template-columns: 1fr; }
-}
-.modal-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(16, 185, 129, 0.2);
-}
-.modal.frost button.save-btn {
-  background: #059669;
-}
-.modal.frost button.cancel-btn {
-  background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #a1a1aa;
-}
-.modal.frost button.cancel-btn:hover {
-  background: rgba(16, 185, 129, 0.18);
-  color: #e4e4e7;
-}
+:root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
+footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:20px 16px}
+footer .foot-inner{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+footer .brand,header .brand{display:flex;align-items:center;gap:12px}
+footer .brand img,header .brand img{width:44px;height:44px;border-radius:50%;object-fit:contain;border:1px solid #333;background:#111}
+footer .brand img{width:36px;height:36px}
+footer .copy{color:#71717a;font-size:12px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px;flex:1;width:100%}
+h1{margin:0;font-size:1.1rem;color:#34d399;text-transform:uppercase;letter-spacing:.04em}
+.sub{color:#a1a1aa;font-size:12px}
+.slogan{color:#fbbf24;font-weight:700;font-size:14px;margin:12px 0}
+.slogan.live{color:#34d399}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs,.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.tab,.chip{border:1px solid #27272a;background:#18181b;color:#a1a1aa;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.tab.active,.chip.active{background:#34d399;color:#022c22;border-color:transparent}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 12px;font-weight:700;color:#fff;background:#059669}
+button.secondary{background:#27272a;color:#e4e4e7}
+button.ghost{background:transparent;border:1px solid #27272a;color:#a1a1aa;padding:4px 8px;font-size:12px}
+button.del,button.danger{background:linear-gradient(180deg,#f87171,#b91c1c)!important;color:#fff!important}
+.feed-btn{width:100%;max-width:420px;padding:14px;font-size:14px;text-transform:uppercase;margin:8px 0 14px}
+#status{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:10px 12px;font-size:13px;color:#a1a1aa;margin:8px 0;white-space:pre-wrap}
+#status.err{border-color:#7f1d1d;color:#fecaca;background:#450a0a}
+#status.ok{border-color:#14532d;color:#bbf7d0;background:#052e16}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #27272a;vertical-align:top;font-size:13px}
+th{color:#34d399;font-size:11px;text-transform:uppercase}
+.sku{color:#38bdf8;font-family:ui-monospace,monospace;font-size:12px}
+a{color:#38bdf8}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:90;align-items:center;justify-content:center;padding:16px}
+.modal-back.open{display:flex}
+.modal.frost{background:rgba(9,9,11,.3)!important;backdrop-filter:blur(8px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 16px 40px -12px rgba(0,0,0,.55);border-radius:16px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto;color:#fafafa}
+.modal.frost h2{margin:0 0 6px;color:#34d399;font-size:1rem;text-transform:uppercase}
+.modal.frost h2.danger{color:#ef4444}
+.modal.frost h2.warn{color:#fbbf24}
+.modal.frost .hint{color:#a1a1aa;font-size:12px;margin:0 0 12px}
+.modal.frost label{display:block;font-size:11px;color:#a1a1aa;margin:10px 0 4px;text-transform:uppercase}
+.modal.frost input,.modal.frost select,.modal.frost textarea{width:100%;background:rgba(0,0,0,.55)!important;color:#fafafa!important;border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px 12px;font:inherit}
+.modal.frost textarea{min-height:90px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid rgba(16,185,129,.2)}
+.modal.frost button.save-btn{background:#059669}
+.modal.frost button.cancel-btn{background:transparent;border:1px solid rgba(16,185,129,.35);color:#a1a1aa}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row" style="justify-content:space-between;max-width:1100px;margin:0 auto;padding:0">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/favicon.png'">
       <div>
         <h1>Apex FreePort</h1>
         <div class="sub" id="meta">Starting…</div>
@@ -244,13 +73,10 @@ a { color: #38bdf8; }
     </div>
     <div class="row">
       <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
-      <form method="POST" action="/logout" style="display:inline">
-        <button type="submit" class="secondary">Logout</button>
-      </form>
+      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
     </div>
   </div>
 </header>
-
 <div class="wrap">
   <div class="slogan" id="slogan">Flip the switch.</div>
   <div class="tabs" id="storeTabs"></div>
@@ -263,25 +89,14 @@ a { color: #38bdf8; }
   <div class="chips" id="catChips"></div>
   <div id="status">Loading inventory…</div>
   <table>
-    <thead>
-      <tr>
-        <th>SKU / Name</th>
-        <th>Category</th>
-        <th>Price</th>
-        <th>Qty</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="tbody">
-      <tr><td colspan="5" class="sub">Waiting…</td></tr>
-    </tbody>
+    <thead><tr><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead>
+    <tbody id="tbody"><tr><td colspan="5" class="sub">Waiting…</td></tr></tbody>
   </table>
 </div>
-
 <footer>
   <div class="foot-inner">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/favicon.png'">
       <div>
         <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
         <div class="copy">Inventory bridge · DeFuniak Springs, FL</div>
@@ -291,59 +106,24 @@ a { color: #38bdf8; }
   </div>
 </footer>
 
-<!-- ADD / EDIT PRODUCT (frosted) -->
 <div class="modal-back" id="productModal">
   <div class="modal frost">
     <h2 id="productTitle">Add product</h2>
-    <p class="hint" id="productHint">Fill every field you need. Category and lane use dropdowns.</p>
+    <p class="hint" id="productHint">Fill fields. Category and lane use dropdowns.</p>
     <input type="hidden" id="p_originalSku">
     <div class="grid2">
-      <div>
-        <label>SKU</label>
-        <input id="p_sku" placeholder="HS-UFO-FLAT-01" autocomplete="off">
-      </div>
-      <div>
-        <label>Name</label>
-        <input id="p_name" placeholder="UFO Cork Flats" autocomplete="off">
-      </div>
-      <div>
-        <label>Category</label>
-        <select id="p_category"></select>
-      </div>
-      <div>
-        <label>Lane</label>
-        <select id="p_lane">
-          <option value="direct">direct — FL warehouse</option>
-          <option value="external">external — fulfillment</option>
-        </select>
-      </div>
-      <div>
-        <label>Price (USD)</label>
-        <input id="p_price" type="number" step="0.01" min="0" placeholder="24.99">
-      </div>
-      <div>
-        <label>Qty on hand</label>
-        <input id="p_qty" type="number" step="1" min="0" value="0">
-      </div>
-      <div>
-        <label>Reserved</label>
-        <input id="p_reserved" type="number" step="1" min="0" value="0">
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="p_status">
-          <option value="active">active</option>
-          <option value="coming_soon">coming_soon</option>
-          <option value="archived">archived</option>
-        </select>
-      </div>
-      <div style="grid-column:1/-1">
-        <label>Location</label>
-        <input id="p_location" placeholder="WH-A1">
-      </div>
+      <div><label>SKU</label><input id="p_sku" placeholder="HS-UFO-FLAT-01" autocomplete="off"></div>
+      <div><label>Name</label><input id="p_name" placeholder="UFO Cork Flats" autocomplete="off"></div>
+      <div><label>Category</label><select id="p_category"></select></div>
+      <div><label>Lane</label><select id="p_lane"><option value="direct">direct — FL warehouse</option><option value="external">external — fulfillment</option></select></div>
+      <div><label>Price (USD)</label><input id="p_price" type="number" step="0.01" min="0" placeholder="24.99"></div>
+      <div><label>Qty on hand</label><input id="p_qty" type="number" step="1" min="0" value="0"></div>
+      <div><label>Reserved</label><input id="p_reserved" type="number" step="1" min="0" value="0"></div>
+      <div><label>Status</label><select id="p_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
+      <div style="grid-column:1/-1"><label>Location</label><input id="p_location" placeholder="WH-A1"></div>
     </div>
     <label>Description</label>
-    <textarea id="p_description" placeholder="Premium hand-selected cork bark flats…"></textarea>
+    <textarea id="p_description" placeholder="Product description…"></textarea>
     <div class="modal-actions">
       <button type="button" class="save-btn" id="p_save">Save product</button>
       <button type="button" class="cancel-btn" id="p_cancel">Cancel</button>
@@ -351,13 +131,11 @@ a { color: #38bdf8; }
   </div>
 </div>
 
-<!-- CATEGORY -->
 <div class="modal-back" id="catModal">
   <div class="modal frost">
     <h2>New category</h2>
     <p class="hint">Adds a category chip for this store.</p>
-    <label>Name</label>
-    <input id="cat_name" placeholder="Hardscape">
+    <label>Name</label><input id="cat_name" placeholder="Hardscape">
     <div class="modal-actions">
       <button type="button" class="save-btn" id="cat_save">Create</button>
       <button type="button" class="cancel-btn" id="cat_cancel">Cancel</button>
@@ -365,7 +143,6 @@ a { color: #38bdf8; }
   </div>
 </div>
 
-<!-- CONFIRM -->
 <div class="modal-back" id="confirmModal">
   <div class="modal frost">
     <h2 id="confirmTitle" class="warn">Confirm</h2>
@@ -397,11 +174,9 @@ a { color: #38bdf8; }
   }
 
   function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+    var d = document.createElement("div");
+    d.appendChild(document.createTextNode(s == null ? "" : String(s)));
+    return d.innerHTML.replace(/"/g, "&#34;");
   }
 
   function api(url, opts) {
@@ -480,11 +255,7 @@ a { color: #38bdf8; }
       b.type = "button";
       b.className = "tab" + (s.id === store ? " active" : "");
       b.textContent = (s.name || s.id) + " (" + (s.count != null ? s.count : 0) + ")";
-      b.onclick = function () {
-        store = s.id;
-        filterCat = "";
-        load();
-      };
+      b.onclick = function () { store = s.id; filterCat = ""; load(); };
       el.appendChild(b);
     });
   }
@@ -497,11 +268,7 @@ a { color: #38bdf8; }
       b.type = "button";
       b.className = "chip" + (filterCat === val ? " active" : "");
       b.textContent = label;
-      b.onclick = function () {
-        filterCat = val;
-        renderTable();
-        renderChips();
-      };
+      b.onclick = function () { filterCat = val; renderTable(); renderChips(); };
       el.appendChild(b);
     }
     chip("All", "");
@@ -525,7 +292,7 @@ a { color: #38bdf8; }
   function openAdd() {
     editMode = false;
     $("productTitle").textContent = "Add product";
-    $("productHint").textContent = "Create a full product record. All fields save to FreePort inventory.";
+    $("productHint").textContent = "Create a full product record.";
     clearProductForm();
     openModal("productModal");
     setTimeout(function () { $("p_sku").focus(); }, 50);
@@ -533,13 +300,10 @@ a { color: #38bdf8; }
 
   function openEdit(sku) {
     var it = items.filter(function (x) { return x.sku === sku; })[0];
-    if (!it) {
-      setStatus("Product not found: " + sku, "err");
-      return;
-    }
+    if (!it) { setStatus("Product not found: " + sku, "err"); return; }
     editMode = true;
     $("productTitle").textContent = "Edit product";
-    $("productHint").textContent = "Update any field. SKU can be renamed; original is tracked.";
+    $("productHint").textContent = "Update any field.";
     $("p_originalSku").value = it.sku;
     $("p_sku").value = it.sku || "";
     $("p_name").value = it.name || "";
@@ -570,10 +334,7 @@ a { color: #38bdf8; }
       location: $("p_location").value.trim(),
       description: $("p_description").value
     };
-    if (!body.sku || !body.name) {
-      setStatus("SKU and Name are required.", "err");
-      return;
-    }
+    if (!body.sku || !body.name) { setStatus("SKU and Name are required.", "err"); return; }
     api("/api/inventory/item", { method: "POST", body: body })
       .then(function () {
         closeModal("productModal");
@@ -610,7 +371,6 @@ a { color: #38bdf8; }
         '</td></tr>';
     });
     tb.innerHTML = html;
-
     tb.querySelectorAll("[data-act]").forEach(function (btn) {
       btn.onclick = function () {
         var act = btn.getAttribute("data-act");
@@ -624,18 +384,10 @@ a { color: #38bdf8; }
           return;
         }
         if (act === "del") {
-          openConfirm(
-            "Delete product?",
-            "Delete " + sku + "? This cannot be undone.",
-            "Delete",
-            true,
-            function () {
-              api("/api/inventory/remove", {
-                method: "POST",
-                body: { store: store, sku: sku }
-              }).then(load).catch(function (e) { setStatus(e.message, "err"); });
-            }
-          );
+          openConfirm("Delete product?", "Delete " + sku + "? This cannot be undone.", "Delete", true, function () {
+            api("/api/inventory/remove", { method: "POST", body: { store: store, sku: sku } })
+              .then(load).catch(function (e) { setStatus(e.message, "err"); });
+          });
           return;
         }
         if (act === "edit") openEdit(sku);
@@ -649,100 +401,66 @@ a { color: #38bdf8; }
     return api("/api/inventory?store=" + encodeURIComponent(store)).then(function (d) {
       items = Array.isArray(d.items) ? d.items : [];
       categories = Array.isArray(d.categories) ? d.categories : [];
+      if (!categories.length && items.length) {
+        var seen = {};
+        items.forEach(function (it) {
+          var c = it.category || "";
+          if (c && !seen[c]) { seen[c] = 1; categories.push(c); }
+        });
+      }
       publicFeed = !!d.publicFeed;
       renderTabs(d.stores);
       renderChips();
       renderTable();
       updateSlogan();
       $("btnFeed").textContent = "DON'T TOUCH · Public feed " + (publicFeed ? "ON" : "OFF");
-      $("meta").textContent =
-        (d.storeName || store) + " · " + items.length + " items · feed " + (publicFeed ? "ON" : "OFF");
-      setStatus(
-        "Loaded " + items.length + " products · store " + store + " · feed " + (publicFeed ? "ON" : "OFF"),
-        "ok"
-      );
+      $("meta").textContent = (d.storeName || store) + " · " + items.length + " items · feed " + (publicFeed ? "ON" : "OFF");
+      setStatus("Loaded " + items.length + " products · store " + store + " · feed " + (publicFeed ? "ON" : "OFF"), "ok");
     }).catch(function (e) {
       setStatus("Load failed: " + e.message, "err");
       $("meta").textContent = "Load failed";
-      $("tbody").innerHTML =
-        '<tr><td colspan="5" style="color:#fecaca">Could not load inventory.</td></tr>';
+      $("tbody").innerHTML = '<tr><td colspan="5" style="color:#fecaca">Could not load inventory.</td></tr>';
     });
   }
 
-  $("confirmNo").onclick = function () {
-    closeModal("confirmModal");
-    pending = null;
-  };
-  $("confirmYes").onclick = function () {
-    var fn = pending;
-    closeModal("confirmModal");
-    pending = null;
-    if (fn) fn();
-  };
-  $("confirmModal").onclick = function (e) {
-    if (e.target === $("confirmModal")) {
-      closeModal("confirmModal");
-      pending = null;
-    }
-  };
+  $("confirmNo").onclick = function () { closeModal("confirmModal"); pending = null; };
+  $("confirmYes").onclick = function () { var fn = pending; closeModal("confirmModal"); pending = null; if (fn) fn(); };
+  $("confirmModal").onclick = function (e) { if (e.target === $("confirmModal")) { closeModal("confirmModal"); pending = null; } };
 
   $("btnReload").onclick = function () { load(); };
   $("btnFeed").onclick = function () {
     var next = !publicFeed;
     openConfirm(
       next ? "Go LIVE?" : "Turn feed OFF?",
-      next
-        ? "jdwapexherp.com will go LIVE with this store's inventory."
-        : "Shut public feed for this store?",
+      next ? "jdwapexherp.com will go LIVE with this store's inventory." : "Shut public feed for this store?",
       next ? "Go LIVE" : "Turn OFF",
       !next,
       function () {
-        api("/api/admin/public-feed", {
-          method: "POST",
-          body: { store: store, enabled: next }
-        }).then(load).catch(function (e) { setStatus(e.message, "err"); });
+        api("/api/admin/public-feed", { method: "POST", body: { store: store, enabled: next } })
+          .then(load).catch(function (e) { setStatus(e.message, "err"); });
       }
     );
   };
 
-  $("btnCat").onclick = function () {
-    $("cat_name").value = "";
-    openModal("catModal");
-  };
+  $("btnCat").onclick = function () { $("cat_name").value = ""; openModal("catModal"); };
   $("cat_cancel").onclick = function () { closeModal("catModal"); };
   $("cat_save").onclick = function () {
     var name = $("cat_name").value.trim();
-    if (!name) {
-      setStatus("Category name required", "err");
-      return;
-    }
-    api("/api/inventory/category", {
-      method: "POST",
-      body: { store: store, name: name }
-    })
-      .then(function () {
-        closeModal("catModal");
-        return load();
-      })
+    if (!name) { setStatus("Category name required", "err"); return; }
+    api("/api/inventory/category", { method: "POST", body: { store: store, name: name } })
+      .then(function () { closeModal("catModal"); return load(); })
       .catch(function (e) { setStatus(e.message, "err"); });
   };
 
   $("btnAdd").onclick = openAdd;
   $("p_cancel").onclick = function () { closeModal("productModal"); };
   $("p_save").onclick = saveProduct;
-  $("productModal").onclick = function (e) {
-    if (e.target === $("productModal")) closeModal("productModal");
-  };
-  $("catModal").onclick = function (e) {
-    if (e.target === $("catModal")) closeModal("catModal");
-  };
+  $("productModal").onclick = function (e) { if (e.target === $("productModal")) closeModal("productModal"); };
+  $("catModal").onclick = function (e) { if (e.target === $("catModal")) closeModal("catModal"); };
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
-      closeModal("productModal");
-      closeModal("catModal");
-      closeModal("confirmModal");
-      pending = null;
+      closeModal("productModal"); closeModal("catModal"); closeModal("confirmModal"); pending = null;
     }
   });
 
