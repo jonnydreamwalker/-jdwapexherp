@@ -33,10 +33,10 @@ if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 app.use("/uploads", express.static(UPLOADS));
 
 app.get("/favicon.ico", function (req, res) {
-  var png = path.join(UPLOADS, "favicon.png");
-  if (fs.existsSync(png)) return res.type("image/png").sendFile(png);
   var svg = path.join(UPLOADS, "apexfreeport-logo.svg");
   if (fs.existsSync(svg)) return res.type("image/svg+xml").sendFile(svg);
+  var png = path.join(UPLOADS, "favicon.png");
+  if (fs.existsSync(png)) return res.type("image/png").sendFile(png);
   return res.status(404).end();
 });
 
