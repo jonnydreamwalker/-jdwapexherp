@@ -165,6 +165,21 @@ function isDropShipItem(it, invMap) {
   return false;
 }
 
+function applyPhotos(item, b) {
+  if (b.image != null) {
+    item.image = String(b.image || "");
+    if (item.image) {
+      item.images = Array.isArray(b.images) && b.images.length ? b.images.slice(0, 10) : [item.image];
+    } else {
+      item.images = Array.isArray(b.images) ? b.images.slice(0, 10) : [];
+    }
+  } else if (Array.isArray(b.images)) {
+    item.images = b.images.slice(0, 10);
+    item.image = item.images[0] || "";
+  }
+  if (!Array.isArray(item.images)) item.images = item.image ? [item.image] : [];
+}
+
 function enrichOrder(o, invMap) {
   const items = (o.items || []).map(function (it) {
     const inv = invMap[it.sku] || {};
@@ -241,6 +256,13 @@ function auth(req, res, next) {
   return res.redirect("/login");
 }
 
+function isPublicListed(i) {
+  if ((i.status || "active") === "archived") return false;
+  if (i.listed === false || i.listed === "false") return false;
+  if (i.hidden === true) return false;
+  return true;
+}
+
 /** Public storefront payload — NEVER include dropShip, supplier, lane, or shippingTerms */
 function publicItem(i) {
   const qty = Number(i.qty) || 0;
@@ -256,7 +278,7 @@ function publicItem(i) {
     available: Math.max(0, qty - reserved),
     status: i.status || "active",
     image: (i.images && i.images[0]) || i.image || "",
-    images: i.images || [],
+    images: i.images || (i.image ? [i.image] : []),
     videos: i.videos || []
   };
 }
@@ -297,9 +319,7 @@ app.get("/api/products", function (req, res) {
       updated: d.updated,
       publicFeed: true,
       store: storeId,
-      items: (st.items || [])
-        .filter(function (i) { return (i.status || "active") !== "archived"; })
-        .map(publicItem)
+      items: (st.items || []).filter(isPublicListed).map(publicItem)
     });
   } catch (e) {
     res.status(500).json({ error: "fail" });
@@ -402,6 +422,8 @@ app.post("/api/inventory/item", auth, function (req, res) {
       shippingTerms: b.shippingTerms || (dropShip ? "Supplier ships — rate on their terms" : ""),
       status: b.status || "active",
       location: b.location || "",
+      listed: true,
+      image: "",
       images: [],
       videos: []
     };
@@ -422,6 +444,10 @@ app.post("/api/inventory/item", auth, function (req, res) {
     if (b.status != null) item.status = b.status;
     if (b.location != null) item.location = b.location;
   }
+  if (b.listed != null) {
+    item.listed = !(b.listed === false || b.listed === "false" || b.listed === 0);
+  }
+  applyPhotos(item, b);
   if (item.category && (st.categories || []).indexOf(item.category) < 0) {
     st.categories = st.categories || [];
     st.categories.push(item.category);
@@ -495,6 +521,7 @@ app.post("/api/inventory/images", auth, function (req, res) {
   urls.slice(0, 10).forEach(function (u) {
     if (typeof u === "string" && u.indexOf("data:") === 0) item.images.push(u);
   });
+  if (item.images[0]) item.image = item.images[0];
   write(d);
   res.json({ ok: true, images: item.images });
 });
