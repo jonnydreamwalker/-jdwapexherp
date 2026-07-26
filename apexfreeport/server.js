@@ -146,7 +146,50 @@ function storeOf(d, id) {
   return d.stores[key];
 }
 
-/* ——— Fulfillment / orders (separate file — does not touch inventory) ——— */
+function skuLookup() {
+  const map = {};
+  const d = read();
+  Object.keys(d.stores || {}).forEach(function (sid) {
+    (d.stores[sid].items || []).forEach(function (it) {
+      if (it && it.sku) map[it.sku] = it;
+    });
+  });
+  return map;
+}
+
+function isDropShipItem(it, invMap) {
+  if (it && it.dropShip === true) return true;
+  if (it && it.lane === "external") return true;
+  const inv = invMap && it && it.sku ? invMap[it.sku] : null;
+  if (inv && (inv.dropShip === true || inv.lane === "external")) return true;
+  return false;
+}
+
+function enrichOrder(o, invMap) {
+  const items = (o.items || []).map(function (it) {
+    const inv = invMap[it.sku] || {};
+    const drop = isDropShipItem(it, invMap);
+    return Object.assign({}, it, {
+      dropShip: drop,
+      supplier: it.supplier || inv.supplier || (drop ? "External supplier" : ""),
+      shippingTerms:
+        it.shippingTerms ||
+        inv.shippingTerms ||
+        (drop
+          ? "Shipping on supplier terms — not calculated from FL warehouse"
+          : "FL warehouse / direct")
+    });
+  });
+  const hasDropShip = items.some(function (i) { return i.dropShip; });
+  const hasWarehouse = items.some(function (i) { return !i.dropShip; });
+  return Object.assign({}, o, {
+    items: items,
+    hasDropShip: hasDropShip || !!o.hasDropShip,
+    hasWarehouse: hasWarehouse,
+    shippingMode: hasDropShip && hasWarehouse ? "split" : hasDropShip ? "supplier" : "warehouse"
+  });
+}
+
 function defaultOrders() {
   return { updated: new Date().toISOString(), warehouse: { name: "JDW Apex FreePort", state: "FL" }, orders: [] };
 }
@@ -171,7 +214,8 @@ function writeOrders(d) {
 
 function serviceRank(s) {
   const m = { next_day: 0, overnight: 0, express: 1, priority: 2, ground: 3 };
-  return m[String(s || "ground").toLowerCase()] != null ? m[String(s || "ground").toLowerCase()] : 9;
+  const k = String(s || "ground").toLowerCase();
+  return m[k] != null ? m[k] : 9;
 }
 
 function sortOrders(list) {
@@ -210,6 +254,7 @@ function publicItem(i) {
     reserved: reserved,
     available: Math.max(0, qty - reserved),
     lane: i.lane || "direct",
+    dropShip: !!(i.dropShip || i.lane === "external"),
     status: i.status || "active",
     image: (i.images && i.images[0]) || i.image || "",
     images: i.images || [],
@@ -337,6 +382,10 @@ app.post("/api/inventory/item", auth, function (req, res) {
   const original = String(b.originalSku || sku).trim();
   if (!sku) return res.status(400).json({ error: "sku required" });
 
+  const dropShip = b.dropShip === true || b.dropShip === "true" || b.dropShip === 1;
+  let lane = b.lane || "direct";
+  if (dropShip && lane === "direct") lane = "external";
+
   let item = (st.items || []).find(function (i) {
     return i.sku === original || i.sku === sku;
   });
@@ -349,7 +398,10 @@ app.post("/api/inventory/item", auth, function (req, res) {
       price: Number(b.price) || 0,
       qty: Number(b.qty) || 0,
       reserved: Number(b.reserved) || 0,
-      lane: b.lane || "direct",
+      lane: lane,
+      dropShip: dropShip,
+      supplier: b.supplier || "",
+      shippingTerms: b.shippingTerms || (dropShip ? "Supplier ships — rate on their terms" : ""),
       status: b.status || "active",
       location: b.location || "",
       images: [],
@@ -365,6 +417,10 @@ app.post("/api/inventory/item", auth, function (req, res) {
     if (b.qty != null) item.qty = Number(b.qty) || 0;
     if (b.reserved != null) item.reserved = Number(b.reserved) || 0;
     if (b.lane != null) item.lane = b.lane;
+    if (b.dropShip != null) item.dropShip = dropShip;
+    if (b.supplier != null) item.supplier = b.supplier;
+    if (b.shippingTerms != null) item.shippingTerms = b.shippingTerms;
+    if (item.dropShip && (!item.lane || item.lane === "direct")) item.lane = "external";
     if (b.status != null) item.status = b.status;
     if (b.location != null) item.location = b.location;
   }
@@ -461,11 +517,14 @@ app.post("/api/inventory/videos", auth, function (req, res) {
   res.json({ ok: true, videos: item.videos });
 });
 
-/* Fulfillment API */
 app.get("/api/fulfillment/orders", auth, function (req, res) {
   try {
     const d = readOrders();
-    res.json({ updated: d.updated, orders: sortOrders(d.orders || []) });
+    const inv = skuLookup();
+    const orders = sortOrders(d.orders || []).map(function (o) {
+      return enrichOrder(o, inv);
+    });
+    res.json({ updated: d.updated, orders: orders });
   } catch (e) {
     res.status(500).json({ error: "fail" });
   }
@@ -514,17 +573,23 @@ app.post("/api/fulfillment/orders/:id/printed", auth, function (req, res) {
 
 app.get("/api/fulfillment/orders/:id/label", auth, function (req, res) {
   const d = readOrders();
-  const o = findOrder(d, req.params.id);
-  if (!o) return res.status(404).send("Order not found");
+  const inv = skuLookup();
+  const raw = findOrder(d, req.params.id);
+  if (!raw) return res.status(404).send("Order not found");
+  const o = enrichOrder(raw, inv);
   const st = o.shipTo || {};
   const items = (o.items || []).map(function (it) {
-    return "<tr><td>" + it.sku + "</td><td>" + it.name + "</td><td>×" + it.qty + "</td></tr>";
+    const ds = it.dropShip ? " <strong style=color:#b45309>[DROP SHIP — ORDER]</strong>" : "";
+    return "<tr><td>" + it.sku + "</td><td>" + it.name + ds + "</td><td>×" + it.qty + "</td></tr>";
   }).join("");
   const boxes = (o.boxes || []).map(function (b, i) {
     return "<p><strong>Box " + (i + 1) + ": " + (b.size || "") + "</strong><br>" +
       (b.contents || []).join(", ") + "<br>Marks: " + ((b.handling || []).join(", ") || "none") + "</p>";
   }).join("");
   const handling = (o.handling || []).join(" · ") || "none";
+  const dsNote = o.hasDropShip
+    ? "<p style=background:#fff7ed;border:1px solid #fdba74;padding:10px><strong>DROP SHIP:</strong> Order supplier lines. Shipping for those lines is on the supplier's terms — not FL warehouse rates.</p>"
+    : "";
   const html = "<!DOCTYPE html><html><head><meta charset=utf-8><title>Label " + o.id + "</title>" +
     "<style>body{font-family:system-ui,sans-serif;max-width:420px;margin:24px auto;padding:16px}" +
     "h1{font-size:18px;margin:0 0 8px}.svc{color:#b45309;font-weight:800}" +
@@ -533,15 +598,15 @@ app.get("/api/fulfillment/orders/:id/label", auth, function (req, res) {
     "@media print{.noprint{display:none}}</style></head><body>" +
     "<p class=noprint><button onclick=window.print()>Print</button></p>" +
     "<h1>Apex FreePort · " + o.id + "</h1>" +
-    "<p class=svc>" + (o.serviceLabel || o.service || "") + "</p>" +
+    "<p class=svc>" + (o.serviceLabel || o.service || "") + "</p>" + dsNote +
     "<div class=box><strong>SHIP TO</strong><br>" +
     (st.name || "") + "<br>" + (st.line1 || "") + (st.line2 ? "<br>" + st.line2 : "") +
     "<br>" + (st.city || "") + ", " + (st.state || "") + " " + (st.zip || "") +
     "</div>" +
     "<p class=marks>" + handling + "</p>" +
-    "<h2 style=font-size:14px>Pack list</h2><table><thead><tr><th>SKU</th><th>Item</th><th>Qty</th></tr></thead><tbody>" +
+    "<h2 style=font-size:14px>Pack / order list</h2><table><thead><tr><th>SKU</th><th>Item</th><th>Qty</th></tr></thead><tbody>" +
     items + "</tbody></table>" + boxes +
-    "<p style=font-size:11px;color:#666>Warehouse: DeFuniak Springs, FL · Not a postage label — use with Pirate Ship / carrier label when ready.</p>" +
+    "<p style=font-size:11px;color:#666>Warehouse: DeFuniak Springs, FL · Pack slip — postage via Pirate Ship / carrier when ready.</p>" +
     "<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>" +
     "</body></html>";
   res.type("html").send(html);
