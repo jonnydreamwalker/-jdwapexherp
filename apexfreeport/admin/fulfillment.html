@@ -6,14 +6,17 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>FreePort · Fulfillment</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='%2322c55e' stroke-width='28'/%3E%3Ctext x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='%2322c55e'%3EAPEX%3C/text%3E%3Cline x1='90' y1='255' x2='422' y2='255' stroke='%2322c55e' stroke-width='14'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='%23fff'%3EFreePort%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg?v=fp-login">
+<link rel="shortcut icon" href="/uploads/apexfreeport-logo.svg?v=fp-login">
+<link rel="apple-touch-icon" href="/uploads/apexfreeport-logo.svg?v=fp-login">
+<script src="nav-shell.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
 header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
 .wrap{max-width:720px;margin:0 auto;padding:16px;flex:1;width:100%}
 .brand{display:flex;align-items:center;gap:12px}
-.brand img{width:40px;height:40px;border-radius:50%;border:1px solid #333;background:#111}
+.brand img{width:40px;height:40px;border-radius:50%;border:1px solid #333;background:#111;object-fit:contain}
 h1{margin:0;font-size:1.05rem;color:#34d399;text-transform:uppercase;letter-spacing:.04em}
 .sub{color:#a1a1aa;font-size:12px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -67,14 +70,17 @@ button.edit{background:#ca8a04;color:#022c22}
 .notes{font-size:13px;color:#d4d4d8}
 .notes li{margin:4px 0}
 textarea{width:100%;min-height:72px;background:rgba(0,0,0,.55);color:#fafafa;border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px;font:inherit}
-footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px;text-align:center;color:#71717a;font-size:12px}
+footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px}
+footer .foot-inner{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+footer .brand img{width:36px;height:36px;border-radius:50%;border:1px solid #333;background:#111;object-fit:contain}
+footer .copy{color:#71717a;font-size:12px}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row" style="justify-content:space-between;max-width:720px;margin:0 auto;padding:0">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="" onerror="this.style.display='none'">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
       <div>
         <h1>Fulfillment</h1>
         <div class="sub" id="meta">Loading queue…</div>
@@ -99,7 +105,18 @@ footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px
   <div class="queue" id="queue"></div>
 </div>
 
-<footer>Apex FreePort · Pack queue · DeFuniak Springs, FL</footer>
+<footer>
+  <div class="foot-inner">
+    <div class="brand">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <div>
+        <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
+        <div class="copy">Pack queue · DeFuniak Springs, FL</div>
+      </div>
+    </div>
+    <div class="copy">© 2026 JDW Apex · Veteran owned</div>
+  </div>
+</footer>
 
 <div class="modal-back" id="panelBack">
   <div class="panel" id="panel" role="dialog" aria-modal="true">
@@ -256,7 +273,6 @@ footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px
         '</span><br><span class="ob-meta">Warehouse pack</span></span><strong>×' + esc(it.qty) + '</strong></div>';
     }).join("") || "<p class='sub'>No items</p>";
 
-    var whBoxes = (o.boxes || []).filter(function () { return o.hasWarehouse !== false; });
     if (o.shippingMode === "supplier") {
       $("pBoxes").innerHTML = '<p class="sub">No warehouse pack — entire order is drop ship.</p>';
     } else {
