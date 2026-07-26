@@ -8,9 +8,25 @@
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <link rel="canonical" href="https://jdwapexherp.com/">
 <meta name="theme-color" content="#000000">
-<link rel="icon" type="image/png" href="assets/images/gallery/Logo.png?v=herp20260726">
-<link rel="shortcut icon" type="image/png" href="assets/images/gallery/Logo.png?v=herp20260726">
-<link rel="apple-touch-icon" href="assets/images/gallery/Logo.png?v=herp20260726">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<link rel="icon" type="image/png" sizes="192x192" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<link rel="shortcut icon" type="image/png" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<script>
+(function () {
+  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
+  document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
+    if (n.parentNode) n.parentNode.removeChild(n);
+  });
+  ["icon", "shortcut icon", "apple-touch-icon"].forEach(function (rel) {
+    var el = document.createElement("link");
+    el.rel = rel;
+    el.type = "image/png";
+    el.href = href;
+    document.head.appendChild(el);
+  });
+})();
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="assets/style.css">
