@@ -6,13 +6,13 @@
 <title>Hardscape | JDW Apex Herp</title>
 <meta name="description" content="Premium natural cork hardscape. Florida warehouse. Direct hardscape source. Fast ship FL-TX-CA.">
 <meta name="theme-color" content="#000000">
-<link rel="icon" type="image/png" sizes="32x32" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<link rel="icon" type="image/png" sizes="192x192" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<link rel="shortcut icon" type="image/png" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/images/gallery/Logo.png?v=herp-hs-1">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/images/gallery/Logo.png?v=herp-hs-1">
+<link rel="shortcut icon" type="image/png" href="../assets/images/gallery/Logo.png?v=herp-hs-1">
+<link rel="apple-touch-icon" href="../assets/images/gallery/Logo.png?v=herp-hs-1">
 <script>
 (function () {
-  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
+  var href = "../assets/images/gallery/Logo.png?v=herp-hs-1";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
     if (n.parentNode) n.parentNode.removeChild(n);
   });
@@ -150,5 +150,20 @@ function startStripePayment(){alert('Stripe checkout ready — connect live keys
 <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Linktree"><i class="fas fa-link"></i></a>
 </div>
 <p class="text-zinc-600 mt-4 text-xs">© 2026 JonnyDreamwalker Apex Herp Supply. All rights reserved.</p></div></div></footer>
+<script>
+(function () {
+  var href = "../assets/images/gallery/Logo.png?v=herp-hs-1";
+  document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
+    if (n.parentNode) n.parentNode.removeChild(n);
+  });
+  ["icon", "shortcut icon", "apple-touch-icon"].forEach(function (rel) {
+    var el = document.createElement("link");
+    el.rel = rel;
+    el.type = "image/png";
+    el.href = href;
+    document.head.appendChild(el);
+  });
+})();
+</script>
 </body>
 </html>
