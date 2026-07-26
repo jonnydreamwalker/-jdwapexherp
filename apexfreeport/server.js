@@ -241,6 +241,7 @@ function auth(req, res, next) {
   return res.redirect("/login");
 }
 
+/** Public storefront payload — NEVER include dropShip, supplier, lane, or shippingTerms */
 function publicItem(i) {
   const qty = Number(i.qty) || 0;
   const reserved = Number(i.reserved) || 0;
@@ -253,13 +254,10 @@ function publicItem(i) {
     qty: qty,
     reserved: reserved,
     available: Math.max(0, qty - reserved),
-    lane: i.lane || "direct",
-    dropShip: !!(i.dropShip || i.lane === "external"),
     status: i.status || "active",
     image: (i.images && i.images[0]) || i.image || "",
     images: i.images || [],
-    videos: i.videos || [],
-    location: i.location || ""
+    videos: i.videos || []
   };
 }
 
