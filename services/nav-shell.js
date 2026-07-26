@@ -1,22 +1,22 @@
 /** Shared cart + nav helpers for service pages */
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
-/** Browser tab = Apex Herp Logo.png ONLY (never FreePort) */
+/** Browser tab = Apex Herp Logo.png ONLY */
 (function ensureTabLogo() {
-  var href = "../assets/images/gallery/Logo.png?v=herp20260726";
+  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
-    n.parentNode.removeChild(n);
+    if (n.parentNode) n.parentNode.removeChild(n);
   });
-  function add(rel, type) {
+  function add(rel) {
     var el = document.createElement("link");
     el.setAttribute("rel", rel);
-    if (type) el.setAttribute("type", type);
+    el.setAttribute("type", "image/png");
     el.setAttribute("href", href);
     document.head.appendChild(el);
   }
-  add("icon", "image/png");
-  add("shortcut icon", "image/png");
-  add("apple-touch-icon", "image/png");
+  add("icon");
+  add("shortcut icon");
+  add("apple-touch-icon");
   var theme = document.querySelector('meta[name="theme-color"]');
   if (!theme) {
     theme = document.createElement("meta");
