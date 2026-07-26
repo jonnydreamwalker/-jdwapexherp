@@ -6,9 +6,10 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>FreePort · Fulfillment</title>
-<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg">
-<link rel="shortcut icon" href="/uploads/apexfreeport-logo.svg">
-<link rel="apple-touch-icon" href="/uploads/apexfreeport-logo.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=fp3">
+<link rel="shortcut icon" href="/favicon.svg?v=fp3">
+<link rel="apple-touch-icon" href="/favicon.svg?v=fp3">
+<script src="/admin/favicon-force.js"></script>
 <style>
 :root{--brand-blue-color:#10b981;--brand-white-color:#ffffff}
 ::selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
@@ -82,7 +83,7 @@ footer .copy{color:#71717a;font-size:12px}
 <header>
   <div class="wrap row" style="justify-content:space-between;max-width:720px;margin:0 auto;padding:0">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <img src="/favicon.svg" alt="Apex FreePort">
       <div>
         <h1>Fulfillment</h1>
         <div class="sub" id="meta">Loading queue…</div>
@@ -94,9 +95,8 @@ footer .copy{color:#71717a;font-size:12px}
     </div>
   </div>
 </header>
-
 <div class="wrap">
-  <p class="sub" style="margin:0 0 8px">Priority queue — top ships first. Drop-ship lines show <strong style="color:#fdba74">ORDER</strong> — supplier ships on their rates, not FL warehouse.</p>
+  <p class="sub" style="margin:0 0 8px">Priority queue — top ships first.</p>
   <div class="filters">
     <button type="button" class="chip active" data-f="open">Open</button>
     <button type="button" class="chip" data-f="fulfilled">Completed</button>
@@ -106,11 +106,10 @@ footer .copy{color:#71717a;font-size:12px}
   <div id="status">Loading…</div>
   <div class="queue" id="queue"></div>
 </div>
-
 <footer>
   <div class="foot-inner">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/apexfreeport-logo.png'">
+      <img src="/favicon.svg" alt="Apex FreePort">
       <div>
         <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
         <div class="copy">Pack queue · DeFuniak Springs, FL</div>
@@ -119,90 +118,40 @@ footer .copy{color:#71717a;font-size:12px}
     <div class="copy">© 2026 JDW Apex · Veteran owned</div>
   </div>
 </footer>
-
 <div class="modal-back" id="panelBack">
   <div class="panel" id="panel" role="dialog" aria-modal="true">
     <div class="row" style="justify-content:space-between">
-      <div>
-        <h2 id="pTitle">Order</h2>
-        <p class="hint" id="pSub"></p>
-      </div>
+      <div><h2 id="pTitle">Order</h2><p class="hint" id="pSub"></p></div>
       <button type="button" class="ghost" id="btnClose">Close</button>
     </div>
     <div id="pDropAlert"></div>
-
-    <div class="block">
-      <h3>Ship to</h3>
-      <div class="addr" id="pShip"></div>
+    <div class="block"><h3>Ship to</h3><div class="addr" id="pShip"></div></div>
+    <div class="block"><h3>Items</h3><div id="pItems"></div></div>
+    <div class="block"><h3>Boxes & pack</h3><div id="pBoxes"></div></div>
+    <div class="block"><h3>Handling</h3><div class="tags" id="pHandling"></div></div>
+    <div class="block"><h3>Notes</h3><ul class="notes" id="pNotes"></ul>
+      <textarea id="pNoteIn" placeholder="Add a note…"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="secondary" id="btnAddNote">Save note</button></div>
     </div>
-
-    <div class="block">
-      <h3>Items</h3>
-      <div id="pItems"></div>
-    </div>
-
-    <div class="block">
-      <h3>Boxes & pack (warehouse only)</h3>
-      <div id="pBoxes"></div>
-    </div>
-
-    <div class="block">
-      <h3>Handling</h3>
-      <div class="tags" id="pHandling"></div>
-    </div>
-
-    <div class="block">
-      <h3>Notes</h3>
-      <ul class="notes" id="pNotes"></ul>
-      <textarea id="pNoteIn" placeholder="Add a note (refund, hold, ordered from supplier…)"></textarea>
-      <div class="row" style="margin-top:8px">
-        <button type="button" class="secondary" id="btnAddNote">Save note</button>
-      </div>
-    </div>
-
     <div class="actions" id="pActions"></div>
   </div>
 </div>
-
 <script>
 (function () {
-  var orders = [];
-  var filter = "open";
-  var current = null;
-
+  var orders = [], filter = "open", current = null;
   function $(id) { return document.getElementById(id); }
-  function esc(s) {
-    var d = document.createElement("div");
-    d.appendChild(document.createTextNode(s == null ? "" : String(s)));
-    return d.innerHTML;
-  }
-
+  function esc(s) { var d = document.createElement("div"); d.appendChild(document.createTextNode(s == null ? "" : String(s))); return d.innerHTML; }
   function api(url, opts) {
-    opts = opts || {};
-    opts.credentials = "same-origin";
-    opts.headers = opts.headers || {};
-    if (opts.body && typeof opts.body === "object") {
-      opts.headers["Content-Type"] = "application/json";
-      opts.body = JSON.stringify(opts.body);
-    }
+    opts = opts || {}; opts.credentials = "same-origin"; opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body === "object") { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.body); }
     return fetch(url, opts).then(function (r) {
       if (r.status === 401) { location.href = "/login"; throw new Error("401"); }
-      return r.json().then(function (j) {
-        if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status));
-        return j;
-      });
+      return r.json().then(function (j) { if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status)); return j; });
     });
   }
-
-  function setStatus(msg, err) {
-    var el = $("status");
-    el.textContent = msg;
-    el.className = err ? "err" : "";
-  }
-
+  function setStatus(msg, err) { var el = $("status"); el.textContent = msg; el.className = err ? "err" : ""; }
   function openPanel() { $("panelBack").classList.add("open"); }
   function closePanel() { $("panelBack").classList.remove("open"); current = null; }
-
   function renderQueue() {
     var list = orders.filter(function (o) {
       if (filter === "open") return o.status !== "fulfilled";
@@ -210,156 +159,64 @@ footer .copy{color:#71717a;font-size:12px}
       return true;
     });
     var q = $("queue");
-    if (!list.length) {
-      q.innerHTML = '<p class="sub">No orders in this view.</p>';
-      return;
-    }
+    if (!list.length) { q.innerHTML = '<p class="sub">No orders in this view.</p>'; return; }
     q.innerHTML = list.map(function (o) {
-      var done = o.status === "fulfilled";
-      var ds = o.hasDropShip;
-      return (
-        '<button type="button" class="order-btn' + (done ? " done" : "") + (ds ? " drop" : "") + '" data-id="' + esc(o.id) + '">' +
-          '<span class="check">' + (done ? "✓" : "") + '</span>' +
-          '<span class="ob-main">' +
-            '<div class="ob-id">' + esc(o.id) + (ds ? ' <span class="badge ds">Drop ship</span>' : '') + '</div>' +
-            '<div class="ob-name">' + esc((o.shipTo && o.shipTo.name) || (o.customer && o.customer.name) || "—") + '</div>' +
-            '<div class="ob-meta">' + esc((o.items || []).length) + " item(s)" +
-              (ds ? " · order supplier lines" : " · " + esc((o.boxes && o.boxes[0] && o.boxes[0].size) || "box TBD")) +
-            '</div>' +
-          '</span>' +
-          '<span class="badge ' + esc(o.service || "") + '">' + esc(o.serviceLabel || o.service || "ship") + '</span>' +
-        '</button>'
-      );
+      var done = o.status === "fulfilled", ds = o.hasDropShip;
+      return '<button type="button" class="order-btn' + (done ? " done" : "") + (ds ? " drop" : "") + '" data-id="' + esc(o.id) + '">' +
+        '<span class="check">' + (done ? "✓" : "") + '</span><span class="ob-main"><div class="ob-id">' + esc(o.id) +
+        (ds ? ' <span class="badge ds">Drop ship</span>' : '') + '</div><div class="ob-name">' +
+        esc((o.shipTo && o.shipTo.name) || "—") + '</div></span><span class="badge ' + esc(o.service || "") + '">' +
+        esc(o.serviceLabel || o.service || "ship") + '</span></button>';
     }).join("");
-    q.querySelectorAll(".order-btn").forEach(function (btn) {
-      btn.onclick = function () { openOrder(btn.getAttribute("data-id")); };
-    });
+    q.querySelectorAll(".order-btn").forEach(function (btn) { btn.onclick = function () { openOrder(btn.getAttribute("data-id")); }; });
   }
-
   function openOrder(id) {
     var o = orders.filter(function (x) { return x.id === id; })[0];
     if (!o) return;
     current = o;
     var done = o.status === "fulfilled";
     $("pTitle").textContent = o.id;
-    $("pSub").textContent = (o.serviceLabel || o.service) + (done ? " · COMPLETED" : " · OPEN") +
-      (o.shippingMode === "split" ? " · SPLIT SHIP" : o.shippingMode === "supplier" ? " · SUPPLIER SHIP" : "") +
-      (o.labelPrintedAt ? " · label printed" : "");
-
-    if (o.hasDropShip) {
-      $("pDropAlert").innerHTML =
-        '<div class="alert"><strong>DROP SHIP on this order.</strong> ' +
-        'Do not pull those lines from the warehouse — place the supplier order. ' +
-        '<br>Shipping for drop-ship lines is on the <strong>supplier\u2019s terms / rates</strong>, not FL warehouse calculation.' +
-        (o.shippingMode === "split" ? "<br>Also pack warehouse lines below." : "") +
-        '</div>';
-    } else {
-      $("pDropAlert").innerHTML = "";
-    }
-
+    $("pSub").textContent = (o.serviceLabel || o.service || "") + (done ? " · COMPLETED" : " · OPEN");
+    $("pDropAlert").innerHTML = o.hasDropShip ? '<div class="alert"><strong>DROP SHIP</strong> — order supplier lines.</div>' : "";
     var st = o.shipTo || {};
-    $("pShip").innerHTML =
-      esc(st.name || "") + "<br>" +
-      esc(st.line1 || "") + (st.line2 ? "<br>" + esc(st.line2) : "") + "<br>" +
-      esc(st.city || "") + ", " + esc(st.state || "") + " " + esc(st.zip || "");
-
+    $("pShip").innerHTML = esc(st.name || "") + "<br>" + esc(st.line1 || "") + "<br>" + esc(st.city || "") + ", " + esc(st.state || "") + " " + esc(st.zip || "");
     $("pItems").innerHTML = (o.items || []).map(function (it) {
-      if (it.dropShip) {
-        return '<div class="item ds"><span><span class="tag ds">ORDER</span> ' +
-          esc(it.name) + ' <span class="ob-id">' + esc(it.sku) + '</span><br>' +
-          '<span class="ob-meta">' + esc(it.supplier || "Supplier") + " · " +
-          esc(it.shippingTerms || "Shipping on supplier terms") + '</span></span>' +
-          '<strong>×' + esc(it.qty) + '</strong></div>';
-      }
-      return '<div class="item"><span>' + esc(it.name) + ' <span class="ob-id">' + esc(it.sku) +
-        '</span><br><span class="ob-meta">Warehouse pack</span></span><strong>×' + esc(it.qty) + '</strong></div>';
+      return '<div class="item' + (it.dropShip ? " ds" : "") + '"><span>' + esc(it.name) + ' <span class="ob-id">' + esc(it.sku) + '</span></span><strong>×' + esc(it.qty) + '</strong></div>';
     }).join("") || "<p class='sub'>No items</p>";
-
-    if (o.shippingMode === "supplier") {
-      $("pBoxes").innerHTML = '<p class="sub">No warehouse pack — entire order is drop ship.</p>';
-    } else {
-      $("pBoxes").innerHTML = (o.boxes || []).map(function (b, i) {
-        return '<div class="box"><div class="size">Box ' + (i + 1) + ': ' + esc(b.size) +
-          (b.qty > 1 ? ' ×' + b.qty : '') + '</div>' +
-          '<div class="ob-meta" style="margin-top:6px">' + esc((b.contents || []).join(" · ")) + '</div>' +
-          (b.handling && b.handling.length ? '<div class="tags">' + b.handling.map(function (h) {
-            var cls = /fragile/i.test(h) ? " tag fragile" : "";
-            return '<span class="tag' + cls + '">' + esc(h) + '</span>';
-          }).join("") + '</div>' : '') +
-          '</div>';
-      }).join("") || "<p class='sub'>No box plan — measure and note.</p>";
-    }
-
-    var hand = o.handling || [];
-    $("pHandling").innerHTML = hand.length
-      ? hand.map(function (h) {
-          var cls = /fragile/i.test(h) ? " tag fragile" : "";
-          return '<span class="tag' + cls + '">' + esc(h) + '</span>';
-        }).join("")
-      : '<span class="sub">None</span>';
-
-    var notes = o.notes || [];
-    $("pNotes").innerHTML = notes.length
-      ? notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("")
-      : "<li class='sub'>No notes yet</li>";
-    $("pNoteIn").value = "";
-
+    $("pBoxes").innerHTML = (o.boxes || []).map(function (b, i) {
+      return '<div class="box"><div class="size">Box ' + (i + 1) + ': ' + esc(b.size) + '</div></div>';
+    }).join("") || "<p class='sub'>No box plan</p>";
+    $("pHandling").innerHTML = (o.handling || []).map(function (h) { return '<span class="tag">' + esc(h) + '</span>'; }).join("") || '<span class="sub">None</span>';
+    $("pNotes").innerHTML = (o.notes || []).map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") || "<li class='sub'>No notes</li>";
     var acts = "";
     if (!done) {
-      acts += '<button type="button" class="print" id="btnPrint">Print label / slip</button>';
-      acts += '<button type="button" class="done" id="btnComplete">✓ Mark fulfilled</button>';
+      acts += '<button type="button" class="print" id="btnPrint">Print label</button>';
+      acts += '<button type="button" class="done" id="btnComplete">Mark fulfilled</button>';
     } else {
-      acts += '<button type="button" class="edit" id="btnEdit">Edit</button>';
       acts += '<button type="button" class="secondary" id="btnReopen">Reopen</button>';
-      acts += '<button type="button" class="print" id="btnPrint">Print again</button>';
     }
     acts += '<button type="button" class="ghost" id="btnClose2">Close</button>';
     $("pActions").innerHTML = acts;
-
-    var pr = $("btnPrint");
-    if (pr) pr.onclick = function () {
-      window.open("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/label", "_blank");
-      api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/printed", { method: "POST", body: {} }).then(load).catch(function () {});
-    };
-    var cm = $("btnComplete");
-    if (cm) cm.onclick = function () {
-      api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/complete", { method: "POST", body: {} })
-        .then(function () { closePanel(); return load(); })
-        .catch(function (e) { setStatus(e.message, true); });
-    };
-    var ed = $("btnEdit");
-    if (ed) ed.onclick = function () { $("pNoteIn").focus(); };
-    var ro = $("btnReopen");
-    if (ro) ro.onclick = function () {
-      api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/reopen", { method: "POST", body: {} })
-        .then(function () { return load().then(function () { openOrder(o.id); }); })
-        .catch(function (e) { setStatus(e.message, true); });
-    };
-    var c2 = $("btnClose2");
-    if (c2) c2.onclick = closePanel;
-
+    var pr = $("btnPrint"); if (pr) pr.onclick = function () { window.open("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/label", "_blank"); };
+    var cm = $("btnComplete"); if (cm) cm.onclick = function () { api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/complete", { method: "POST", body: {} }).then(function () { closePanel(); return load(); }); };
+    var ro = $("btnReopen"); if (ro) ro.onclick = function () { api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/reopen", { method: "POST", body: {} }).then(load); };
+    var c2 = $("btnClose2"); if (c2) c2.onclick = closePanel;
     openPanel();
   }
-
   function load() {
     setStatus("Loading queue…");
     return api("/api/fulfillment/orders").then(function (d) {
       orders = d.orders || [];
       var openN = orders.filter(function (o) { return o.status !== "fulfilled"; }).length;
       $("meta").textContent = openN + " open · " + orders.length + " total";
-      setStatus("Queue ready — " + openN + " open order(s).");
+      setStatus("Queue ready — " + openN + " open.");
       renderQueue();
-    }).catch(function (e) {
-      setStatus("Load failed: " + e.message, true);
-    });
+    }).catch(function (e) { setStatus("Load failed: " + e.message, true); });
   }
-
   document.querySelectorAll(".chip").forEach(function (c) {
     c.onclick = function () {
       document.querySelectorAll(".chip").forEach(function (x) { x.classList.remove("active"); });
-      c.classList.add("active");
-      filter = c.getAttribute("data-f");
-      renderQueue();
+      c.classList.add("active"); filter = c.getAttribute("data-f"); renderQueue();
     };
   });
   $("btnReload").onclick = load;
@@ -367,14 +224,10 @@ footer .copy{color:#71717a;font-size:12px}
   $("panelBack").onclick = function (e) { if (e.target === $("panelBack")) closePanel(); };
   $("btnAddNote").onclick = function () {
     if (!current) return;
-    var t = $("pNoteIn").value.trim();
-    if (!t) return;
-    api("/api/fulfillment/orders/" + encodeURIComponent(current.id) + "/note", { method: "POST", body: { note: t } })
-      .then(function () { return load().then(function () { openOrder(current.id); }); })
-      .catch(function (e) { setStatus(e.message, true); });
+    var t = $("pNoteIn").value.trim(); if (!t) return;
+    api("/api/fulfillment/orders/" + encodeURIComponent(current.id) + "/note", { method: "POST", body: { note: t } }).then(function () { return load().then(function () { openOrder(current.id); }); });
   };
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePanel(); });
-
   load();
 })();
 </script>
