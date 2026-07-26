@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-25T19:40:00Z",
+  "updated": "2026-07-25T19:50:00Z",
   "warehouse": {
     "name": "JDW Apex FreePort",
     "line1": "DeFuniak Springs",
@@ -26,8 +26,8 @@
         "country": "US"
       },
       "items": [
-        { "sku": "HS-UFO-FLAT-01", "name": "UFO Cork Flats", "qty": 2 },
-        { "sku": "LT-ARC-D3-22", "name": "Arcadia D3 12% UVB T5 22W", "qty": 1 }
+        { "sku": "HS-UFO-FLAT-01", "name": "UFO Cork Flats", "qty": 2, "dropShip": false },
+        { "sku": "LT-ARC-D3-22", "name": "Arcadia D3 12% UVB T5 22W", "qty": 1, "dropShip": false }
       ],
       "boxes": [
         {
@@ -39,6 +39,53 @@
       ],
       "handling": ["Fragile", "This side up"],
       "notes": ["Customer paid for next-day — pack first."],
+      "labelPrintedAt": null,
+      "fulfilledAt": null
+    },
+    {
+      "id": "ORD-1009",
+      "created": "2026-07-25T16:00:00Z",
+      "store": "herp",
+      "status": "open",
+      "service": "priority",
+      "serviceLabel": "USPS Priority",
+      "customer": { "name": "Morgan Blake", "email": "morgan@example.com", "phone": "850-555-0112" },
+      "shipTo": {
+        "name": "Morgan Blake",
+        "line1": "501 Main St",
+        "line2": "",
+        "city": "Pensacola",
+        "state": "FL",
+        "zip": "32501",
+        "country": "US"
+      },
+      "items": [
+        {
+          "sku": "AP-TEE-01",
+          "name": "Apex Herp Tee",
+          "qty": 1,
+          "dropShip": true,
+          "supplier": "External apparel",
+          "shippingTerms": "Supplier ships — rate on their terms (not FL warehouse)"
+        },
+        {
+          "sku": "HS-UFO-FLAT-01",
+          "name": "UFO Cork Flats",
+          "qty": 1,
+          "dropShip": false
+        }
+      ],
+      "boxes": [
+        {
+          "size": "12 × 10 × 8 in",
+          "qty": 1,
+          "contents": ["UFO Cork Flats × 1 (warehouse)"],
+          "handling": []
+        }
+      ],
+      "handling": [],
+      "hasDropShip": true,
+      "notes": ["Mixed order: pack cork from WH; ORDER tee from supplier."],
       "labelPrintedAt": null,
       "fulfilledAt": null
     },
@@ -60,8 +107,8 @@
         "country": "US"
       },
       "items": [
-        { "sku": "HS-CORK-HIDE-M", "name": "Cork Hide Medium (8\" tunnel)", "qty": 1 },
-        { "sku": "SB-LUG-COCO-01", "name": "Lugarti Coco Peat Block", "qty": 3 }
+        { "sku": "HS-CORK-HIDE-M", "name": "Cork Hide Medium (8\" tunnel)", "qty": 1, "dropShip": false },
+        { "sku": "SB-LUG-COCO-01", "name": "Lugarti Coco Peat Block", "qty": 3, "dropShip": false }
       ],
       "boxes": [
         {
@@ -94,7 +141,7 @@
         "country": "US"
       },
       "items": [
-        { "sku": "HS-CORK-BULK-01", "name": "Bulk Cork Bark", "qty": 1 }
+        { "sku": "HS-CORK-BULK-01", "name": "Bulk Cork Bark", "qty": 1, "dropShip": false }
       ],
       "boxes": [
         {
@@ -127,18 +174,19 @@
         "country": "US"
       },
       "items": [
-        { "sku": "AP-TEE-01", "name": "Apex Herp Tee", "qty": 2 }
-      ],
-      "boxes": [
         {
-          "size": "10 × 8 × 2 in",
-          "qty": 1,
-          "contents": ["Apex Herp Tee × 2"],
-          "handling": []
+          "sku": "AP-TEE-01",
+          "name": "Apex Herp Tee",
+          "qty": 2,
+          "dropShip": true,
+          "supplier": "External apparel",
+          "shippingTerms": "Supplier ships — rate on their terms"
         }
       ],
+      "boxes": [],
       "handling": [],
-      "notes": ["Shipped 7/24."],
+      "hasDropShip": true,
+      "notes": ["Drop-ship only — ordered from supplier 7/24."],
       "labelPrintedAt": "2026-07-24T09:15:00Z",
       "fulfilledAt": "2026-07-24T09:20:00Z"
     }
