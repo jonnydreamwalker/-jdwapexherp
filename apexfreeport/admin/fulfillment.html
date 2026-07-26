@@ -6,11 +6,13 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>FreePort · Fulfillment</title>
-<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg?v=fp-login">
-<link rel="shortcut icon" href="/uploads/apexfreeport-logo.svg?v=fp-login">
-<link rel="apple-touch-icon" href="/uploads/apexfreeport-logo.svg?v=fp-login">
-<script src="nav-shell.js"></script>
+<link rel="icon" type="image/svg+xml" href="/uploads/apexfreeport-logo.svg">
+<link rel="shortcut icon" href="/uploads/apexfreeport-logo.svg">
+<link rel="apple-touch-icon" href="/uploads/apexfreeport-logo.svg">
 <style>
+:root{--brand-blue-color:#10b981;--brand-white-color:#ffffff}
+::selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
+::-moz-selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
 header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
@@ -248,7 +250,7 @@ footer .copy{color:#71717a;font-size:12px}
       $("pDropAlert").innerHTML =
         '<div class="alert"><strong>DROP SHIP on this order.</strong> ' +
         'Do not pull those lines from the warehouse — place the supplier order. ' +
-        '<br>Shipping for drop-ship lines is on the <strong>supplier’s terms / rates</strong>, not FL warehouse calculation.' +
+        '<br>Shipping for drop-ship lines is on the <strong>supplier\u2019s terms / rates</strong>, not FL warehouse calculation.' +
         (o.shippingMode === "split" ? "<br>Also pack warehouse lines below." : "") +
         '</div>';
     } else {
