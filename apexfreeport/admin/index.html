@@ -7,8 +7,6 @@
 <meta name="theme-color" content="#000000">
 <title>Apex FreePort</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='%2322c55e' stroke-width='28'/%3E%3Ctext x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='%2322c55e'%3EAPEX%3C/text%3E%3Cline x1='90' y1='255' x2='422' y2='255' stroke='%2322c55e' stroke-width='14'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='%23fff'%3EFreePort%3C/text%3E%3C/svg%3E">
-<link rel="icon" href="/uploads/apexfreeport-logo.svg" type="image/svg+xml">
-<link rel="icon" href="/favicon.ico" sizes="any">
 <style>
 :root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
 *{box-sizing:border-box}
@@ -33,6 +31,8 @@ button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 12px;
 button.secondary{background:#27272a;color:#e4e4e7}
 button.ghost{background:transparent;border:1px solid #27272a;color:#a1a1aa;padding:4px 8px;font-size:12px}
 button.del,button.danger{background:linear-gradient(180deg,#f87171,#b91c1c)!important;color:#fff!important}
+button.hide-btn{background:#3f3f46;color:#fde68a;font-size:11px;padding:6px 10px}
+button.show-btn{background:#14532d;color:#bbf7d0;font-size:11px;padding:6px 10px}
 .feed-btn{width:100%;max-width:420px;padding:14px;font-size:14px;text-transform:uppercase;margin:8px 0 14px}
 #status{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:10px 12px;font-size:13px;color:#a1a1aa;margin:8px 0;white-space:pre-wrap}
 #status.err{border-color:#7f1d1d;color:#fecaca;background:#450a0a}
@@ -43,6 +43,8 @@ th{color:#34d399;font-size:11px;text-transform:uppercase}
 .sku{color:#38bdf8;font-family:ui-monospace,monospace;font-size:12px}
 a{color:#38bdf8}
 .ds-badge{font-size:10px;font-weight:800;color:#fdba74;background:#7c2d12;padding:2px 6px;border-radius:999px;margin-left:6px}
+.hid-badge{font-size:10px;font-weight:800;color:#e4e4e7;background:#3f3f46;padding:2px 6px;border-radius:999px;margin-left:6px}
+tr.row-hidden{opacity:.55}
 .modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:90;align-items:center;justify-content:center;padding:16px}
 .modal-back.open{display:flex}
 .modal.frost{background:rgba(9,9,11,.3)!important;backdrop-filter:blur(8px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 16px 40px -12px rgba(0,0,0,.55);border-radius:16px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto;color:#fafafa}
@@ -59,14 +61,16 @@ a{color:#38bdf8}
 .modal.frost button.save-btn{background:#059669}
 .modal.frost button.cancel-btn{background:transparent;border:1px solid rgba(16,185,129,.35);color:#a1a1aa}
 .ds-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(251,191,36,.35);border-radius:12px;background:rgba(0,0,0,.35)}
-.ds-box label.rowlab{display:flex;align-items:center;gap:10px;cursor:pointer;text-transform:none;font-size:13px;color:#fde68a;margin:0}
+.ds-box label.rowlab,.list-box label.rowlab{display:flex;align-items:center;gap:10px;cursor:pointer;text-transform:none;font-size:13px;color:#fde68a;margin:0}
+.list-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(113,113,122,.5);border-radius:12px;background:rgba(0,0,0,.35)}
+.list-box label.rowlab{color:#e4e4e7}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row" style="justify-content:space-between;max-width:1100px;margin:0 auto;padding:0">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/favicon.png'">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <h1>Apex FreePort</h1>
         <div class="sub" id="meta">Starting…</div>
@@ -91,14 +95,14 @@ a{color:#38bdf8}
   <div class="chips" id="catChips"></div>
   <div id="status">Loading inventory…</div>
   <table>
-    <thead><tr><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Actions</th></tr></thead>
-    <tbody id="tbody"><tr><td colspan="5" class="sub">Waiting…</td></tr></tbody>
+    <thead><tr><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Sales page</th><th>Actions</th></tr></thead>
+    <tbody id="tbody"><tr><td colspan="6" class="sub">Waiting…</td></tr></tbody>
   </table>
 </div>
 <footer>
   <div class="foot-inner">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.onerror=null;this.src='/uploads/favicon.png'">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
         <div class="copy">Inventory bridge · DeFuniak Springs, FL</div>
@@ -123,8 +127,11 @@ a{color:#38bdf8}
       <div><label>Reserved</label><input id="p_reserved" type="number" step="1" min="0" value="0"></div>
       <div><label>Status</label><select id="p_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
       <div style="grid-column:1/-1"><label>Location</label><input id="p_location" placeholder="WH-A1"></div>
+      <div class="list-box">
+        <label class="rowlab"><input type="checkbox" id="p_listed" checked style="width:auto;accent-color:#34d399"> <span><strong>SHOW ON SALES PAGE</strong> — uncheck to hide this SKU from the website. Still in inventory &amp; fulfillment.</span></label>
+      </div>
       <div class="ds-box">
-        <label class="rowlab"><input type="checkbox" id="p_dropShip" style="width:auto;accent-color:#f59e0b"> <span><strong>DROP SHIP</strong> — order from supplier; shipping on supplier terms (not FL warehouse).</span></label>
+        <label class="rowlab"><input type="checkbox" id="p_dropShip" style="width:auto;accent-color:#f59e0b"> <span><strong>DROP SHIP</strong> — backend only; customers never see this.</span></label>
         <label>Supplier name (optional)</label>
         <input id="p_supplier" placeholder="Apparel printer / external vendor">
         <label>Supplier shipping terms (optional)</label>
@@ -183,6 +190,11 @@ a{color:#38bdf8}
     var d = document.createElement("div");
     d.appendChild(document.createTextNode(s == null ? "" : String(s)));
     return d.innerHTML.replace(/"/g, "&#34;");
+  }
+  function isListed(it) {
+    if (it.listed === false || it.listed === "false") return false;
+    if (it.hidden === true) return false;
+    return true;
   }
   function api(url, opts) {
     opts = opts || {};
@@ -256,6 +268,7 @@ a{color:#38bdf8}
     $("p_price").value = ""; $("p_qty").value = "0"; $("p_reserved").value = "0";
     $("p_location").value = ""; $("p_description").value = "";
     $("p_lane").value = "direct"; $("p_status").value = "active";
+    $("p_listed").checked = true;
     $("p_dropShip").checked = false; $("p_supplier").value = ""; $("p_shippingTerms").value = "";
     fillCats($("p_category"), categories[0] || "Hardscape");
   }
@@ -276,6 +289,7 @@ a{color:#38bdf8}
     $("p_reserved").value = it.reserved != null ? Number(it.reserved) : 0;
     $("p_status").value = it.status || "active"; $("p_location").value = it.location || "";
     $("p_description").value = it.description || "";
+    $("p_listed").checked = isListed(it);
     var ds = !!(it.dropShip || it.lane === "external");
     $("p_dropShip").checked = ds; $("p_supplier").value = it.supplier || ""; $("p_shippingTerms").value = it.shippingTerms || "";
     openModal("productModal"); setTimeout(function () { $("p_name").focus(); }, 50);
@@ -288,6 +302,7 @@ a{color:#38bdf8}
       price: Number($("p_price").value) || 0, qty: Number($("p_qty").value) || 0,
       reserved: Number($("p_reserved").value) || 0, status: $("p_status").value,
       location: $("p_location").value.trim(), description: $("p_description").value,
+      listed: !!$("p_listed").checked,
       dropShip: !!$("p_dropShip").checked, supplier: $("p_supplier").value.trim(),
       shippingTerms: $("p_shippingTerms").value.trim()
     };
@@ -297,14 +312,41 @@ a{color:#38bdf8}
       closeModal("productModal"); setStatus((editMode ? "Updated " : "Added ") + body.sku, "ok"); return load();
     }).catch(function (e) { setStatus(e.message, "err"); });
   }
+  function setListed(sku, listed) {
+    var it = items.filter(function (x) { return x.sku === sku; })[0];
+    if (!it) return;
+    api("/api/inventory/item", {
+      method: "POST",
+      body: {
+        store: store, originalSku: sku, sku: sku, name: it.name, category: it.category,
+        lane: it.lane, price: it.price, qty: it.qty, reserved: it.reserved, status: it.status,
+        location: it.location, description: it.description, listed: listed,
+        dropShip: !!it.dropShip, supplier: it.supplier || "", shippingTerms: it.shippingTerms || ""
+      }
+    }).then(function () {
+      setStatus(sku + (listed ? " shown on sales page" : " hidden from sales page"), "ok");
+      return load();
+    }).catch(function (e) { setStatus(e.message, "err"); });
+  }
   function renderTable() {
     var tb = $("tbody");
     var list = items.filter(function (it) { return !filterCat || String(it.category || "") === filterCat; });
-    if (!list.length) { tb.innerHTML = '<tr><td colspan="5" style="color:#a1a1aa">No products in this view.</td></tr>'; return; }
+    if (!list.length) { tb.innerHTML = '<tr><td colspan="6" style="color:#a1a1aa">No products in this view.</td></tr>'; return; }
     var html = "";
     list.forEach(function (it) {
+      var listed = isListed(it);
       var ds = (it.dropShip || it.lane === "external") ? '<span class="ds-badge">DROP SHIP</span>' : "";
-      html += '<tr data-sku="' + esc(it.sku) + '"><td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' + ds + '</td><td>' + esc(it.category || "") + '</td><td>$' + (Number(it.price) || 0).toFixed(2) + '</td><td><button type="button" class="ghost" data-act="minus">−</button> <strong>' + (it.qty || 0) + '</strong> <button type="button" class="ghost" data-act="plus">+</button></td><td><button type="button" class="secondary" data-act="edit">Edit</button> <button type="button" class="del" data-act="del">Delete</button></td></tr>';
+      var hid = listed ? "" : '<span class="hid-badge">HIDDEN</span>';
+      var saleBtn = listed
+        ? '<button type="button" class="hide-btn" data-act="hide">Hide from site</button>'
+        : '<button type="button" class="show-btn" data-act="show">Show on site</button>';
+      html += '<tr data-sku="' + esc(it.sku) + '" class="' + (listed ? "" : "row-hidden") + '">' +
+        '<td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' + ds + hid + '</td>' +
+        '<td>' + esc(it.category || "") + '</td>' +
+        '<td>$' + (Number(it.price) || 0).toFixed(2) + '</td>' +
+        '<td><button type="button" class="ghost" data-act="minus">−</button> <strong>' + (it.qty || 0) + '</strong> <button type="button" class="ghost" data-act="plus">+</button></td>' +
+        '<td>' + saleBtn + '</td>' +
+        '<td><button type="button" class="secondary" data-act="edit">Edit</button> <button type="button" class="del" data-act="del">Delete</button></td></tr>';
     });
     tb.innerHTML = html;
     tb.querySelectorAll("[data-act]").forEach(function (btn) {
@@ -313,6 +355,8 @@ a{color:#38bdf8}
         if (act === "plus" || act === "minus") {
           api("/api/inventory/adjust", { method: "POST", body: { store: store, sku: sku, delta: act === "plus" ? 1 : -1 } }).then(load).catch(function (e) { setStatus(e.message, "err"); }); return;
         }
+        if (act === "hide") { setListed(sku, false); return; }
+        if (act === "show") { setListed(sku, true); return; }
         if (act === "del") {
           openConfirm("Delete product?", "Delete " + sku + "?", "Delete", true, function () {
             api("/api/inventory/remove", { method: "POST", body: { store: store, sku: sku } }).then(load).catch(function (e) { setStatus(e.message, "err"); });
@@ -336,7 +380,7 @@ a{color:#38bdf8}
       setStatus("Loaded " + items.length + " products · store " + store + " · feed " + (publicFeed ? "ON" : "OFF"), "ok");
     }).catch(function (e) {
       setStatus("Load failed: " + e.message, "err"); $("meta").textContent = "Load failed";
-      $("tbody").innerHTML = '<tr><td colspan="5" style="color:#fecaca">Could not load inventory.</td></tr>';
+      $("tbody").innerHTML = '<tr><td colspan="6" style="color:#fecaca">Could not load inventory.</td></tr>';
     });
   }
   $("confirmNo").onclick = function () { closeModal("confirmModal"); pending = null; };
