@@ -1,9 +1,9 @@
 /** Shared cart + nav helpers for service pages */
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
-/** Browser tab = Apex Herp favicon only (never FreePort, never 3MB Logo.png) */
+/** Browser tab = same Apex Herp logo as index */
 (function ensureTabLogo() {
-  var href = "https://jdwapexherp.com/assets/images/favicon.png?v=herp-tab";
+  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
     if (n.parentNode) n.parentNode.removeChild(n);
   });
