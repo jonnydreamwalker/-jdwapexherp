@@ -11,6 +11,16 @@ const DATA = path.join(__dirname, "data", "inventory.json");
 const ORDERS = path.join(__dirname, "data", "orders.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 
+/* Same mark as fulfillment page tab icon */
+const FREEPORT_FAVICON_SVG =
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>" +
+  "<rect width='512' height='512' fill='#000'/>" +
+  "<circle cx='256' cy='256' r='220' fill='none' stroke='#22c55e' stroke-width='28'/>" +
+  "<text x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='#22c55e'>APEX</text>" +
+  "<line x1='90' y1='255' x2='422' y2='255' stroke='#22c55e' stroke-width='14'/>" +
+  "<text x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='#fff'>FreePort</text>" +
+  "</svg>";
+
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -32,38 +42,21 @@ app.use(
 
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 
-function ensureBrandIcons() {
-  try {
-    var pairs = [
-      ["favicon.png", "favicon.b64"],
-      ["apple-touch-icon.png", "apple.b64"]
-    ];
-    pairs.forEach(function (pair) {
-      var out = path.join(UPLOADS, pair[0]);
-      var src = path.join(__dirname, "logos", pair[1]);
-      if (fs.existsSync(out) && fs.statSync(out).size > 100) return;
-      if (!fs.existsSync(src)) return;
-      var b64 = fs.readFileSync(src, "utf8").trim();
-      if (!b64 || b64.indexOf("PLACEHOLDER") === 0) return;
-      fs.writeFileSync(out, Buffer.from(b64, "base64"));
-      console.log("wrote " + pair[0] + " from logos/" + pair[1]);
-    });
-  } catch (e) {
-    console.log("icon ensure skip:", e.message);
-  }
-}
-ensureBrandIcons();
-
 app.use("/uploads", express.static(UPLOADS));
 
+/* Always serve the FreePort mark — do not use a bad/overwritten PNG */
 app.get("/favicon.ico", function (req, res) {
-  var png = path.join(UPLOADS, "favicon.png");
-  if (fs.existsSync(png) && fs.statSync(png).size > 100) {
-    return res.type("image/png").sendFile(png);
+  res.setHeader("Cache-Control", "no-cache, max-age=0");
+  var svgPath = path.join(UPLOADS, "apexfreeport-logo.svg");
+  if (fs.existsSync(svgPath) && fs.statSync(svgPath).size > 50) {
+    return res.type("image/svg+xml").sendFile(svgPath);
   }
-  var svg = path.join(UPLOADS, "apexfreeport-logo.svg");
-  if (fs.existsSync(svg)) return res.type("image/svg+xml").sendFile(svg);
-  return res.status(404).end();
+  return res.type("image/svg+xml").send(FREEPORT_FAVICON_SVG);
+});
+
+app.get("/favicon.svg", function (req, res) {
+  res.setHeader("Cache-Control", "no-cache, max-age=0");
+  res.type("image/svg+xml").send(FREEPORT_FAVICON_SVG);
 });
 
 function defaultData() {
@@ -263,7 +256,6 @@ function isPublicListed(i) {
   return true;
 }
 
-/** Public storefront payload — NEVER include dropShip, supplier, lane, or shippingTerms */
 function publicItem(i) {
   const qty = Number(i.qty) || 0;
   const reserved = Number(i.reserved) || 0;
@@ -473,7 +465,8 @@ app.post("/api/inventory/remove", auth, function (req, res) {
   const b = req.body || {};
   const storeId = (b.store || "herp").toLowerCase();
   const st = storeOf(d, storeId);
-  st.items = (st.items || []).filter(function (i) { return i.sku !== b.sku; });
+  const stItems = st.items || [];
+  st.items = stItems.filter(function (i) { return i.sku !== b.sku; });
   write(d);
   res.json({ ok: true });
 });
