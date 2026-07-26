@@ -45,6 +45,7 @@ a{color:#38bdf8}
 .ds-badge{font-size:10px;font-weight:800;color:#fdba74;background:#7c2d12;padding:2px 6px;border-radius:999px;margin-left:6px}
 .hid-badge{font-size:10px;font-weight:800;color:#e4e4e7;background:#3f3f46;padding:2px 6px;border-radius:999px;margin-left:6px}
 tr.row-hidden{opacity:.55}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #333;background:#111;vertical-align:middle;margin-right:8px}
 .modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:90;align-items:center;justify-content:center;padding:16px}
 .modal-back.open{display:flex}
 .modal.frost{background:rgba(9,9,11,.3)!important;backdrop-filter:blur(8px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 16px 40px -12px rgba(0,0,0,.55);border-radius:16px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto;color:#fafafa}
@@ -64,6 +65,11 @@ tr.row-hidden{opacity:.55}
 .ds-box label.rowlab,.list-box label.rowlab{display:flex;align-items:center;gap:10px;cursor:pointer;text-transform:none;font-size:13px;color:#fde68a;margin:0}
 .list-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(113,113,122,.5);border-radius:12px;background:rgba(0,0,0,.35)}
 .list-box label.rowlab{color:#e4e4e7}
+.photo-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(16,185,129,.3);border-radius:12px;background:rgba(0,0,0,.35)}
+.photo-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.photo-preview{width:120px;height:120px;border:1px dashed rgba(16,185,129,.4);border-radius:12px;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.photo-preview img{max-width:100%;max-height:100%;object-fit:cover;display:none}
+.photo-preview .ph{color:#71717a;font-size:11px;text-align:center;padding:8px}
 </style>
 </head>
 <body>
@@ -117,6 +123,7 @@ tr.row-hidden{opacity:.55}
     <h2 id="productTitle">Add product</h2>
     <p class="hint" id="productHint">Fill fields. Category and lane use dropdowns.</p>
     <input type="hidden" id="p_originalSku">
+    <input type="hidden" id="p_image">
     <div class="grid2">
       <div><label>SKU</label><input id="p_sku" placeholder="HS-UFO-FLAT-01" autocomplete="off"></div>
       <div><label>Name</label><input id="p_name" placeholder="UFO Cork Flats" autocomplete="off"></div>
@@ -127,6 +134,21 @@ tr.row-hidden{opacity:.55}
       <div><label>Reserved</label><input id="p_reserved" type="number" step="1" min="0" value="0"></div>
       <div><label>Status</label><select id="p_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
       <div style="grid-column:1/-1"><label>Location</label><input id="p_location" placeholder="WH-A1"></div>
+      <div class="photo-box">
+        <label style="margin-top:0">Product photo</label>
+        <div class="photo-row">
+          <div class="photo-preview" id="p_photoPreview">
+            <span class="ph" id="p_photoPlaceholder">No photo</span>
+            <img id="p_photoImg" alt="Preview">
+          </div>
+          <div style="flex:1;min-width:160px">
+            <input type="file" id="p_photoFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+            <button type="button" class="secondary" id="p_browse">Browse computer…</button>
+            <button type="button" class="cancel-btn" id="p_clearPhoto" style="margin-left:6px">Remove</button>
+            <p class="hint" style="margin:8px 0 0">JPG, PNG, WebP, or GIF from your computer. Saved with the product for the sales site.</p>
+          </div>
+        </div>
+      </div>
       <div class="list-box">
         <label class="rowlab"><input type="checkbox" id="p_listed" checked style="width:auto;accent-color:#34d399"> <span><strong>SHOW ON SALES PAGE</strong> — uncheck to hide this SKU from the website. Still in inventory &amp; fulfillment.</span></label>
       </div>
@@ -195,6 +217,26 @@ tr.row-hidden{opacity:.55}
     if (it.listed === false || it.listed === "false") return false;
     if (it.hidden === true) return false;
     return true;
+  }
+  function itemImage(it) {
+    if (!it) return "";
+    if (it.image) return it.image;
+    if (it.images && it.images.length) return it.images[0];
+    return "";
+  }
+  function setPhotoPreview(src) {
+    var img = $("p_photoImg");
+    var ph = $("p_photoPlaceholder");
+    $("p_image").value = src || "";
+    if (src) {
+      img.src = src;
+      img.style.display = "block";
+      ph.style.display = "none";
+    } else {
+      img.removeAttribute("src");
+      img.style.display = "none";
+      ph.style.display = "block";
+    }
   }
   function api(url, opts) {
     opts = opts || {};
@@ -270,17 +312,19 @@ tr.row-hidden{opacity:.55}
     $("p_lane").value = "direct"; $("p_status").value = "active";
     $("p_listed").checked = true;
     $("p_dropShip").checked = false; $("p_supplier").value = ""; $("p_shippingTerms").value = "";
+    $("p_photoFile").value = "";
+    setPhotoPreview("");
     fillCats($("p_category"), categories[0] || "Hardscape");
   }
   function openAdd() {
     editMode = false; $("productTitle").textContent = "Add product";
-    $("productHint").textContent = "Create a full product record.";
+    $("productHint").textContent = "Create a full product record. Use Browse to attach a photo from your computer.";
     clearProductForm(); openModal("productModal"); setTimeout(function () { $("p_sku").focus(); }, 50);
   }
   function openEdit(sku) {
     var it = items.filter(function (x) { return x.sku === sku; })[0];
     if (!it) { setStatus("Product not found: " + sku, "err"); return; }
-    editMode = true; $("productTitle").textContent = "Edit product"; $("productHint").textContent = "Update any field.";
+    editMode = true; $("productTitle").textContent = "Edit product"; $("productHint").textContent = "Update any field. Browse to replace the photo.";
     $("p_originalSku").value = it.sku; $("p_sku").value = it.sku || ""; $("p_name").value = it.name || "";
     fillCats($("p_category"), it.category || (categories[0] || "Hardscape"));
     $("p_lane").value = it.lane === "external" ? "external" : "direct";
@@ -292,9 +336,12 @@ tr.row-hidden{opacity:.55}
     $("p_listed").checked = isListed(it);
     var ds = !!(it.dropShip || it.lane === "external");
     $("p_dropShip").checked = ds; $("p_supplier").value = it.supplier || ""; $("p_shippingTerms").value = it.shippingTerms || "";
+    $("p_photoFile").value = "";
+    setPhotoPreview(itemImage(it));
     openModal("productModal"); setTimeout(function () { $("p_name").focus(); }, 50);
   }
   function saveProduct() {
+    var img = $("p_image").value.trim();
     var body = {
       store: store, originalSku: $("p_originalSku").value.trim() || undefined,
       sku: $("p_sku").value.trim(), name: $("p_name").value.trim(),
@@ -304,7 +351,9 @@ tr.row-hidden{opacity:.55}
       location: $("p_location").value.trim(), description: $("p_description").value,
       listed: !!$("p_listed").checked,
       dropShip: !!$("p_dropShip").checked, supplier: $("p_supplier").value.trim(),
-      shippingTerms: $("p_shippingTerms").value.trim()
+      shippingTerms: $("p_shippingTerms").value.trim(),
+      image: img,
+      images: img ? [img] : []
     };
     if (body.dropShip) body.lane = "external";
     if (!body.sku || !body.name) { setStatus("SKU and Name are required.", "err"); return; }
@@ -321,7 +370,8 @@ tr.row-hidden{opacity:.55}
         store: store, originalSku: sku, sku: sku, name: it.name, category: it.category,
         lane: it.lane, price: it.price, qty: it.qty, reserved: it.reserved, status: it.status,
         location: it.location, description: it.description, listed: listed,
-        dropShip: !!it.dropShip, supplier: it.supplier || "", shippingTerms: it.shippingTerms || ""
+        dropShip: !!it.dropShip, supplier: it.supplier || "", shippingTerms: it.shippingTerms || "",
+        image: itemImage(it), images: it.images || (itemImage(it) ? [itemImage(it)] : [])
       }
     }).then(function () {
       setStatus(sku + (listed ? " shown on sales page" : " hidden from sales page"), "ok");
@@ -337,11 +387,13 @@ tr.row-hidden{opacity:.55}
       var listed = isListed(it);
       var ds = (it.dropShip || it.lane === "external") ? '<span class="ds-badge">DROP SHIP</span>' : "";
       var hid = listed ? "" : '<span class="hid-badge">HIDDEN</span>';
+      var img = itemImage(it);
+      var thumb = img ? '<img class="thumb" src="' + esc(img) + '" alt="">' : "";
       var saleBtn = listed
         ? '<button type="button" class="hide-btn" data-act="hide">Hide from site</button>'
         : '<button type="button" class="show-btn" data-act="show">Show on site</button>';
       html += '<tr data-sku="' + esc(it.sku) + '" class="' + (listed ? "" : "row-hidden") + '">' +
-        '<td><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' + ds + hid + '</td>' +
+        '<td>' + thumb + '<div style="display:inline-block;vertical-align:middle"><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + '</strong>' + ds + hid + '</div></td>' +
         '<td>' + esc(it.category || "") + '</td>' +
         '<td>$' + (Number(it.price) || 0).toFixed(2) + '</td>' +
         '<td><button type="button" class="ghost" data-act="minus">−</button> <strong>' + (it.qty || 0) + '</strong> <button type="button" class="ghost" data-act="plus">+</button></td>' +
@@ -403,6 +455,17 @@ tr.row-hidden{opacity:.55}
   $("btnAdd").onclick = openAdd;
   $("p_cancel").onclick = function () { closeModal("productModal"); };
   $("p_save").onclick = saveProduct;
+  $("p_browse").onclick = function () { $("p_photoFile").click(); };
+  $("p_clearPhoto").onclick = function () { $("p_photoFile").value = ""; setPhotoPreview(""); };
+  $("p_photoFile").onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { setStatus("Photo too large (max 8 MB). Compress and try again.", "err"); this.value = ""; return; }
+    var reader = new FileReader();
+    reader.onload = function () { setPhotoPreview(String(reader.result || "")); };
+    reader.onerror = function () { setStatus("Could not read that file.", "err"); };
+    reader.readAsDataURL(f);
+  };
   $("productModal").onclick = function (e) { if (e.target === $("productModal")) closeModal("productModal"); };
   $("catModal").onclick = function (e) { if (e.target === $("catModal")) closeModal("catModal"); };
   document.addEventListener("keydown", function (e) {
