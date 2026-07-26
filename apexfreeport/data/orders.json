@@ -1,0 +1,146 @@
+{
+  "updated": "2026-07-25T19:40:00Z",
+  "warehouse": {
+    "name": "JDW Apex FreePort",
+    "line1": "DeFuniak Springs",
+    "state": "FL",
+    "zip": "32433",
+    "country": "US"
+  },
+  "orders": [
+    {
+      "id": "ORD-1007",
+      "created": "2026-07-25T14:00:00Z",
+      "store": "herp",
+      "status": "open",
+      "service": "next_day",
+      "serviceLabel": "Next Day Air",
+      "customer": { "name": "Alex Rivera", "email": "alex@example.com", "phone": "850-555-0107" },
+      "shipTo": {
+        "name": "Alex Rivera",
+        "line1": "1200 Brickell Ave",
+        "line2": "Suite 400",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33131",
+        "country": "US"
+      },
+      "items": [
+        { "sku": "HS-UFO-FLAT-01", "name": "UFO Cork Flats", "qty": 2 },
+        { "sku": "LT-ARC-D3-22", "name": "Arcadia D3 12% UVB T5 22W", "qty": 1 }
+      ],
+      "boxes": [
+        {
+          "size": "12 × 10 × 8 in",
+          "qty": 1,
+          "contents": ["UFO Cork Flats × 2", "Arcadia UVB 22W × 1"],
+          "handling": ["Fragile", "This side up"]
+        }
+      ],
+      "handling": ["Fragile", "This side up"],
+      "notes": ["Customer paid for next-day — pack first."],
+      "labelPrintedAt": null,
+      "fulfilledAt": null
+    },
+    {
+      "id": "ORD-1008",
+      "created": "2026-07-25T15:30:00Z",
+      "store": "herp",
+      "status": "open",
+      "service": "priority",
+      "serviceLabel": "USPS Priority",
+      "customer": { "name": "Jordan Lee", "email": "jordan@example.com", "phone": "407-555-0188" },
+      "shipTo": {
+        "name": "Jordan Lee",
+        "line1": "455 Orange Ave",
+        "line2": "",
+        "city": "Orlando",
+        "state": "FL",
+        "zip": "32801",
+        "country": "US"
+      },
+      "items": [
+        { "sku": "HS-CORK-HIDE-M", "name": "Cork Hide Medium (8\" tunnel)", "qty": 1 },
+        { "sku": "SB-LUG-COCO-01", "name": "Lugarti Coco Peat Block", "qty": 3 }
+      ],
+      "boxes": [
+        {
+          "size": "14 × 12 × 10 in",
+          "qty": 1,
+          "contents": ["Cork Hide Medium × 1", "Coco Peat Block × 3"],
+          "handling": ["This side up"]
+        }
+      ],
+      "handling": ["This side up"],
+      "notes": [],
+      "labelPrintedAt": null,
+      "fulfilledAt": null
+    },
+    {
+      "id": "ORD-1005",
+      "created": "2026-07-24T18:00:00Z",
+      "store": "herp",
+      "status": "open",
+      "service": "ground",
+      "serviceLabel": "Ground Advantage",
+      "customer": { "name": "Sam Ortiz", "email": "sam@example.com", "phone": "813-555-0142" },
+      "shipTo": {
+        "name": "Sam Ortiz",
+        "line1": "88 Bayshore Blvd",
+        "line2": "",
+        "city": "Tampa",
+        "state": "FL",
+        "zip": "33606",
+        "country": "US"
+      },
+      "items": [
+        { "sku": "HS-CORK-BULK-01", "name": "Bulk Cork Bark", "qty": 1 }
+      ],
+      "boxes": [
+        {
+          "size": "18 × 14 × 12 in",
+          "qty": 1,
+          "contents": ["Bulk Cork Bark × 1"],
+          "handling": ["Heavy"]
+        }
+      ],
+      "handling": ["Heavy"],
+      "notes": [],
+      "labelPrintedAt": null,
+      "fulfilledAt": null
+    },
+    {
+      "id": "ORD-1002",
+      "created": "2026-07-23T12:00:00Z",
+      "store": "herp",
+      "status": "fulfilled",
+      "service": "priority",
+      "serviceLabel": "USPS Priority",
+      "customer": { "name": "Casey Ng", "email": "casey@example.com", "phone": "904-555-0199" },
+      "shipTo": {
+        "name": "Casey Ng",
+        "line1": "200 Riverside Ave",
+        "line2": "",
+        "city": "Jacksonville",
+        "state": "FL",
+        "zip": "32202",
+        "country": "US"
+      },
+      "items": [
+        { "sku": "AP-TEE-01", "name": "Apex Herp Tee", "qty": 2 }
+      ],
+      "boxes": [
+        {
+          "size": "10 × 8 × 2 in",
+          "qty": 1,
+          "contents": ["Apex Herp Tee × 2"],
+          "handling": []
+        }
+      ],
+      "handling": [],
+      "notes": ["Shipped 7/24."],
+      "labelPrintedAt": "2026-07-24T09:15:00Z",
+      "fulfilledAt": "2026-07-24T09:20:00Z"
+    }
+  ]
+}
