@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<title>FreePort · Fulfillment</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='%2322c55e' stroke-width='28'/%3E%3Ctext x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='%2322c55e'%3EAPEX%3C/text%3E%3Cline x1='90' y1='255' x2='422' y2='255' stroke='%2322c55e' stroke-width='14'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='%23fff'%3EFreePort%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
+.wrap{max-width:720px;margin:0 auto;padding:16px;flex:1;width:100%}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:40px;height:40px;border-radius:50%;border:1px solid #333;background:#111}
+h1{margin:0;font-size:1.05rem;color:#34d399;text-transform:uppercase;letter-spacing:.04em}
+.sub{color:#a1a1aa;font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+a{color:#38bdf8;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:700;color:#fff;background:#059669}
+button.secondary{background:#27272a;color:#e4e4e7}
+button.ghost{background:transparent;border:1px solid #3f3f46;color:#a1a1aa}
+button.print{background:#2563eb}
+button.done{background:#059669}
+button.edit{background:#ca8a04;color:#022c22}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid #27272a;background:#18181b;color:#a1a1aa;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.chip.active{background:#34d399;color:#022c22;border-color:transparent}
+.queue{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.order-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#18181b;border:1px solid #27272a;border-radius:14px;padding:12px 14px;color:#fafafa;cursor:pointer}
+.order-btn:hover{border-color:#34d399}
+.order-btn.done{opacity:.75;border-color:#14532d}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid #3f3f46;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent}
+.order-btn.done .check{border-color:#34d399;background:#052e16;color:#34d399}
+.ob-main{flex:1;min-width:0}
+.ob-id{font-family:ui-monospace,monospace;font-size:12px;color:#38bdf8}
+.ob-name{font-weight:700;font-size:15px}
+.ob-meta{font-size:12px;color:#a1a1aa;margin-top:2px}
+.badge{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#27272a;color:#e4e4e7}
+.badge.next_day{background:#7f1d1d;color:#fecaca}
+.badge.priority{background:#854d0e;color:#fde68a}
+.badge.ground{background:#1e3a5f;color:#bae6fd}
+#status{font-size:13px;color:#a1a1aa;margin:8px 0}
+#status.err{color:#fecaca}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:90;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+.modal-back.open{display:flex}
+.panel{background:rgba(9,9,11,.55);backdrop-filter:blur(10px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 20px 50px -12px rgba(0,0,0,.6);border-radius:16px;padding:20px;width:min(560px,100%);margin:24px auto;color:#fafafa}
+.panel h2{margin:0 0 4px;color:#34d399;font-size:1rem;text-transform:uppercase}
+.panel .hint{color:#a1a1aa;font-size:12px;margin:0 0 14px}
+.block{margin:14px 0;padding-top:12px;border-top:1px solid rgba(16,185,129,.2)}
+.block h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#a1a1aa}
+.addr{line-height:1.45;font-size:14px}
+.item{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #27272a;font-size:14px}
+.box{background:rgba(0,0,0,.35);border:1px solid #27272a;border-radius:12px;padding:12px;margin-bottom:8px}
+.box .size{color:#fbbf24;font-weight:800;font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;font-weight:800;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:#422006;color:#fde68a;border:1px solid #854d0e}
+.tag.fragile{background:#450a0a;color:#fecaca;border-color:#7f1d1d}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(16,185,129,.25)}
+.notes{font-size:13px;color:#d4d4d8}
+.notes li{margin:4px 0}
+textarea{width:100%;min-height:72px;background:rgba(0,0,0,.55);color:#fafafa;border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px;font:inherit}
+footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px;text-align:center;color:#71717a;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap row" style="justify-content:space-between;max-width:720px;margin:0 auto;padding:0">
+    <div class="brand">
+      <img src="/uploads/apexfreeport-logo.svg" alt="" onerror="this.style.display='none'">
+      <div>
+        <h1>Fulfillment</h1>
+        <div class="sub" id="meta">Loading queue…</div>
+      </div>
+    </div>
+    <div class="row">
+      <a href="/admin">Inventory</a>
+      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="sub" style="margin:0 0 8px">Priority queue — top ships first. Open an order for box size, contents, handling marks, print, and check-off.</p>
+  <div class="filters">
+    <button type="button" class="chip active" data-f="open">Open</button>
+    <button type="button" class="chip" data-f="fulfilled">Completed</button>
+    <button type="button" class="chip" data-f="all">All</button>
+    <button type="button" class="secondary" id="btnReload" style="margin-left:auto">Reload</button>
+  </div>
+  <div id="status">Loading…</div>
+  <div class="queue" id="queue"></div>
+</div>
+
+<footer>Apex FreePort · Pack queue · DeFuniak Springs, FL</footer>
+
+<div class="modal-back" id="panelBack">
+  <div class="panel" id="panel" role="dialog" aria-modal="true">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h2 id="pTitle">Order</h2>
+        <p class="hint" id="pSub"></p>
+      </div>
+      <button type="button" class="ghost" id="btnClose">Close</button>
+    </div>
+
+    <div class="block">
+      <h3>Ship to</h3>
+      <div class="addr" id="pShip"></div>
+    </div>
+
+    <div class="block">
+      <h3>Items</h3>
+      <div id="pItems"></div>
+    </div>
+
+    <div class="block">
+      <h3>Boxes & pack</h3>
+      <div id="pBoxes"></div>
+    </div>
+
+    <div class="block">
+      <h3>Handling</h3>
+      <div class="tags" id="pHandling"></div>
+    </div>
+
+    <div class="block">
+      <h3>Notes</h3>
+      <ul class="notes" id="pNotes"></ul>
+      <textarea id="pNoteIn" placeholder="Add a note (refund, hold, damage…)"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="secondary" id="btnAddNote">Save note</button>
+      </div>
+    </div>
+
+    <div class="actions" id="pActions"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var orders = [];
+  var filter = "open";
+  var current = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    var d = document.createElement("div");
+    d.appendChild(document.createTextNode(s == null ? "" : String(s)));
+    return d.innerHTML;
+  }
+
+  function api(url, opts) {
+    opts = opts || {};
+    opts.credentials = "same-origin";
+    opts.headers = opts.headers || {};
+    if (opts.body && typeof opts.body === "object") {
+      opts.headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(opts.body);
+    }
+    return fetch(url, opts).then(function (r) {
+      if (r.status === 401) { location.href = "/login"; throw new Error("401"); }
+      return r.json().then(function (j) {
+        if (!r.ok) throw new Error((j && j.error) || ("HTTP " + r.status));
+        return j;
+      });
+    });
+  }
+
+  function setStatus(msg, err) {
+    var el = $("status");
+    el.textContent = msg;
+    el.className = err ? "err" : "";
+  }
+
+  function openPanel() { $("panelBack").classList.add("open"); }
+  function closePanel() { $("panelBack").classList.remove("open"); current = null; }
+
+  function renderQueue() {
+    var list = orders.filter(function (o) {
+      if (filter === "open") return o.status !== "fulfilled";
+      if (filter === "fulfilled") return o.status === "fulfilled";
+      return true;
+    });
+    var q = $("queue");
+    if (!list.length) {
+      q.innerHTML = '<p class="sub">No orders in this view.</p>';
+      return;
+    }
+    q.innerHTML = list.map(function (o) {
+      var done = o.status === "fulfilled";
+      return (
+        '<button type="button" class="order-btn' + (done ? " done" : "") + '" data-id="' + esc(o.id) + '">' +
+          '<span class="check">' + (done ? "✓" : "") + '</span>' +
+          '<span class="ob-main">' +
+            '<div class="ob-id">' + esc(o.id) + '</div>' +
+            '<div class="ob-name">' + esc((o.shipTo && o.shipTo.name) || o.customer && o.customer.name || "—") + '</div>' +
+            '<div class="ob-meta">' + esc((o.items || []).length) + " item(s) · " +
+              esc((o.boxes && o.boxes[0] && o.boxes[0].size) || "box TBD") + '</div>' +
+          '</span>' +
+          '<span class="badge ' + esc(o.service || "") + '">' + esc(o.serviceLabel || o.service || "ship") + '</span>' +
+        '</button>'
+      );
+    }).join("");
+    q.querySelectorAll(".order-btn").forEach(function (btn) {
+      btn.onclick = function () { openOrder(btn.getAttribute("data-id")); };
+    });
+  }
+
+  function openOrder(id) {
+    var o = orders.filter(function (x) { return x.id === id; })[0];
+    if (!o) return;
+    current = o;
+    var done = o.status === "fulfilled";
+    $("pTitle").textContent = o.id;
+    $("pSub").textContent = (o.serviceLabel || o.service) + (done ? " · COMPLETED" : " · OPEN") +
+      (o.labelPrintedAt ? " · label printed" : "");
+
+    var st = o.shipTo || {};
+    $("pShip").innerHTML =
+      esc(st.name || "") + "<br>" +
+      esc(st.line1 || "") + (st.line2 ? "<br>" + esc(st.line2) : "") + "<br>" +
+      esc(st.city || "") + ", " + esc(st.state || "") + " " + esc(st.zip || "");
+
+    $("pItems").innerHTML = (o.items || []).map(function (it) {
+      return '<div class="item"><span>' + esc(it.name) + ' <span class="ob-id">' + esc(it.sku) + '</span></span><strong>×' + esc(it.qty) + '</strong></div>';
+    }).join("") || "<p class='sub'>No items</p>";
+
+    $("pBoxes").innerHTML = (o.boxes || []).map(function (b, i) {
+      return '<div class="box"><div class="size">Box ' + (i + 1) + ': ' + esc(b.size) +
+        (b.qty > 1 ? ' ×' + b.qty : '') + '</div>' +
+        '<div class="ob-meta" style="margin-top:6px">' + esc((b.contents || []).join(" · ")) + '</div>' +
+        (b.handling && b.handling.length ? '<div class="tags">' + b.handling.map(function (h) {
+          var cls = /fragile/i.test(h) ? " tag fragile" : "";
+          return '<span class="tag' + cls + '">' + esc(h) + '</span>';
+        }).join("") + '</div>' : '') +
+        '</div>';
+    }).join("") || "<p class='sub'>No box plan — measure and note.</p>";
+
+    var hand = o.handling || [];
+    $("pHandling").innerHTML = hand.length
+      ? hand.map(function (h) {
+          var cls = /fragile/i.test(h) ? " tag fragile" : "";
+          return '<span class="tag' + cls + '">' + esc(h) + '</span>';
+        }).join("")
+      : '<span class="sub">None</span>';
+
+    var notes = o.notes || [];
+    $("pNotes").innerHTML = notes.length
+      ? notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("")
+      : "<li class='sub'>No notes yet</li>";
+    $("pNoteIn").value = "";
+
+    var acts = "";
+    if (!done) {
+      acts += '<button type="button" class="print" id="btnPrint">Print label / slip</button>';
+      acts += '<button type="button" class="done" id="btnComplete">✓ Mark fulfilled</button>';
+    } else {
+      acts += '<button type="button" class="edit" id="btnEdit">Edit</button>';
+      acts += '<button type="button" class="secondary" id="btnReopen">Reopen</button>';
+      acts += '<button type="button" class="print" id="btnPrint">Print again</button>';
+    }
+    acts += '<button type="button" class="ghost" id="btnClose2">Close</button>';
+    $("pActions").innerHTML = acts;
+
+    var pr = $("btnPrint");
+    if (pr) pr.onclick = function () { window.open("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/label", "_blank"); api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/printed", { method: "POST", body: {} }).then(load).catch(function () {}); };
+    var cm = $("btnComplete");
+    if (cm) cm.onclick = function () {
+      api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/complete", { method: "POST", body: {} })
+        .then(function () { closePanel(); return load(); })
+        .catch(function (e) { setStatus(e.message, true); });
+    };
+    var ed = $("btnEdit");
+    if (ed) ed.onclick = function () { $("pNoteIn").focus(); };
+    var ro = $("btnReopen");
+    if (ro) ro.onclick = function () {
+      api("/api/fulfillment/orders/" + encodeURIComponent(o.id) + "/reopen", { method: "POST", body: {} })
+        .then(function () { return load().then(function () { openOrder(o.id); }); })
+        .catch(function (e) { setStatus(e.message, true); });
+    };
+    var c2 = $("btnClose2");
+    if (c2) c2.onclick = closePanel;
+
+    openPanel();
+  }
+
+  function load() {
+    setStatus("Loading queue…");
+    return api("/api/fulfillment/orders").then(function (d) {
+      orders = d.orders || [];
+      var openN = orders.filter(function (o) { return o.status !== "fulfilled"; }).length;
+      $("meta").textContent = openN + " open · " + orders.length + " total";
+      setStatus("Queue ready — " + openN + " open order(s).");
+      renderQueue();
+    }).catch(function (e) {
+      setStatus("Load failed: " + e.message, true);
+    });
+  }
+
+  document.querySelectorAll(".chip").forEach(function (c) {
+    c.onclick = function () {
+      document.querySelectorAll(".chip").forEach(function (x) { x.classList.remove("active"); });
+      c.classList.add("active");
+      filter = c.getAttribute("data-f");
+      renderQueue();
+    };
+  });
+  $("btnReload").onclick = load;
+  $("btnClose").onclick = closePanel;
+  $("panelBack").onclick = function (e) { if (e.target === $("panelBack")) closePanel(); };
+  $("btnAddNote").onclick = function () {
+    if (!current) return;
+    var t = $("pNoteIn").value.trim();
+    if (!t) return;
+    api("/api/fulfillment/orders/" + encodeURIComponent(current.id) + "/note", { method: "POST", body: { note: t } })
+      .then(function () { return load().then(function () { openOrder(current.id); }); })
+      .catch(function (e) { setStatus(e.message, true); });
+  };
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePanel(); });
+
+  load();
+})();
+</script>
+</body>
+</html>
