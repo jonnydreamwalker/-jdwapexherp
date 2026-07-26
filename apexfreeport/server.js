@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000;
 const PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const DATA = path.join(__dirname, "data", "inventory.json");
+const ORDERS = path.join(__dirname, "data", "orders.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 
 app.use(function (req, res, next) {
@@ -145,6 +146,49 @@ function storeOf(d, id) {
   return d.stores[key];
 }
 
+/* ——— Fulfillment / orders (separate file — does not touch inventory) ——— */
+function defaultOrders() {
+  return { updated: new Date().toISOString(), warehouse: { name: "JDW Apex FreePort", state: "FL" }, orders: [] };
+}
+
+function readOrders() {
+  try {
+    if (!fs.existsSync(ORDERS)) {
+      const d = defaultOrders();
+      writeOrders(d);
+      return d;
+    }
+    return JSON.parse(fs.readFileSync(ORDERS, "utf8"));
+  } catch (e) {
+    return defaultOrders();
+  }
+}
+
+function writeOrders(d) {
+  d.updated = new Date().toISOString();
+  fs.writeFileSync(ORDERS, JSON.stringify(d, null, 2));
+}
+
+function serviceRank(s) {
+  const m = { next_day: 0, overnight: 0, express: 1, priority: 2, ground: 3 };
+  return m[String(s || "ground").toLowerCase()] != null ? m[String(s || "ground").toLowerCase()] : 9;
+}
+
+function sortOrders(list) {
+  return (list || []).slice().sort(function (a, b) {
+    const af = a.status === "fulfilled" ? 1 : 0;
+    const bf = b.status === "fulfilled" ? 1 : 0;
+    if (af !== bf) return af - bf;
+    const sr = serviceRank(a.service) - serviceRank(b.service);
+    if (sr !== 0) return sr;
+    return String(a.created || "").localeCompare(String(b.created || ""));
+  });
+}
+
+function findOrder(d, id) {
+  return (d.orders || []).find(function (o) { return o.id === id; });
+}
+
 function auth(req, res, next) {
   if (req.session && req.session.ok) return next();
   if (req.path.startsWith("/api/")) {
@@ -180,6 +224,7 @@ app.get("/health", function (req, res) {
     ok: true,
     service: "ApexFreePort",
     multiStore: true,
+    fulfillment: true,
     stores: {
       herp: !!(d.stores.herp && d.stores.herp.publicFeed),
       k9: !!(d.stores.k9 && d.stores.k9.publicFeed),
@@ -244,6 +289,10 @@ app.post("/logout", function (req, res) {
 
 app.get("/admin", auth, function (req, res) {
   res.sendFile(path.join(__dirname, "admin", "index.html"));
+});
+
+app.get("/admin/fulfillment", auth, function (req, res) {
+  res.sendFile(path.join(__dirname, "admin", "fulfillment.html"));
 });
 
 app.get("/api/inventory", auth, function (req, res) {
@@ -412,9 +461,96 @@ app.post("/api/inventory/videos", auth, function (req, res) {
   res.json({ ok: true, videos: item.videos });
 });
 
+/* Fulfillment API */
+app.get("/api/fulfillment/orders", auth, function (req, res) {
+  try {
+    const d = readOrders();
+    res.json({ updated: d.updated, orders: sortOrders(d.orders || []) });
+  } catch (e) {
+    res.status(500).json({ error: "fail" });
+  }
+});
+
+app.post("/api/fulfillment/orders/:id/complete", auth, function (req, res) {
+  const d = readOrders();
+  const o = findOrder(d, req.params.id);
+  if (!o) return res.status(404).json({ error: "not found" });
+  o.status = "fulfilled";
+  o.fulfilledAt = new Date().toISOString();
+  writeOrders(d);
+  res.json({ ok: true, order: o });
+});
+
+app.post("/api/fulfillment/orders/:id/reopen", auth, function (req, res) {
+  const d = readOrders();
+  const o = findOrder(d, req.params.id);
+  if (!o) return res.status(404).json({ error: "not found" });
+  o.status = "open";
+  o.fulfilledAt = null;
+  writeOrders(d);
+  res.json({ ok: true, order: o });
+});
+
+app.post("/api/fulfillment/orders/:id/note", auth, function (req, res) {
+  const d = readOrders();
+  const o = findOrder(d, req.params.id);
+  if (!o) return res.status(404).json({ error: "not found" });
+  const note = String((req.body && req.body.note) || "").trim();
+  if (!note) return res.status(400).json({ error: "note required" });
+  o.notes = o.notes || [];
+  o.notes.push(note);
+  writeOrders(d);
+  res.json({ ok: true, order: o });
+});
+
+app.post("/api/fulfillment/orders/:id/printed", auth, function (req, res) {
+  const d = readOrders();
+  const o = findOrder(d, req.params.id);
+  if (!o) return res.status(404).json({ error: "not found" });
+  o.labelPrintedAt = new Date().toISOString();
+  writeOrders(d);
+  res.json({ ok: true, order: o });
+});
+
+app.get("/api/fulfillment/orders/:id/label", auth, function (req, res) {
+  const d = readOrders();
+  const o = findOrder(d, req.params.id);
+  if (!o) return res.status(404).send("Order not found");
+  const st = o.shipTo || {};
+  const items = (o.items || []).map(function (it) {
+    return "<tr><td>" + it.sku + "</td><td>" + it.name + "</td><td>×" + it.qty + "</td></tr>";
+  }).join("");
+  const boxes = (o.boxes || []).map(function (b, i) {
+    return "<p><strong>Box " + (i + 1) + ": " + (b.size || "") + "</strong><br>" +
+      (b.contents || []).join(", ") + "<br>Marks: " + ((b.handling || []).join(", ") || "none") + "</p>";
+  }).join("");
+  const handling = (o.handling || []).join(" · ") || "none";
+  const html = "<!DOCTYPE html><html><head><meta charset=utf-8><title>Label " + o.id + "</title>" +
+    "<style>body{font-family:system-ui,sans-serif;max-width:420px;margin:24px auto;padding:16px}" +
+    "h1{font-size:18px;margin:0 0 8px}.svc{color:#b45309;font-weight:800}" +
+    "table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border-bottom:1px solid #ccc;padding:6px;text-align:left;font-size:13px}" +
+    ".box{border:2px dashed #333;padding:12px;margin:12px 0}.marks{font-size:20px;font-weight:900;letter-spacing:.04em}" +
+    "@media print{.noprint{display:none}}</style></head><body>" +
+    "<p class=noprint><button onclick=window.print()>Print</button></p>" +
+    "<h1>Apex FreePort · " + o.id + "</h1>" +
+    "<p class=svc>" + (o.serviceLabel || o.service || "") + "</p>" +
+    "<div class=box><strong>SHIP TO</strong><br>" +
+    (st.name || "") + "<br>" + (st.line1 || "") + (st.line2 ? "<br>" + st.line2 : "") +
+    "<br>" + (st.city || "") + ", " + (st.state || "") + " " + (st.zip || "") +
+    "</div>" +
+    "<p class=marks>" + handling + "</p>" +
+    "<h2 style=font-size:14px>Pack list</h2><table><thead><tr><th>SKU</th><th>Item</th><th>Qty</th></tr></thead><tbody>" +
+    items + "</tbody></table>" + boxes +
+    "<p style=font-size:11px;color:#666>Warehouse: DeFuniak Springs, FL · Not a postage label — use with Pirate Ship / carrier label when ready.</p>" +
+    "<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script>" +
+    "</body></html>";
+  res.type("html").send(html);
+});
+
 app.get("/", function (req, res) { res.redirect("/admin"); });
 
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
   console.log("Square: " + (process.env.SQUARE_ACCESS_TOKEN ? "set" : "no"));
+  console.log("Fulfillment: /admin/fulfillment");
 });
