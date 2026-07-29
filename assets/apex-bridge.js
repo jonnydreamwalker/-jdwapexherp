@@ -2,8 +2,8 @@
 (function (global) {
   var MAX_PHOTOS = 6;
   var DEFAULTS = [
-    "https://api.jdwapexherp.com",
     "https://freeport.jdwapexherp.com",
+    "https://api.jdwapexherp.com",
     "http://3.14.14.127:3000"
   ];
 
@@ -82,7 +82,8 @@
     var res = await fetch(apiBase + "/api/products" + q, {
       mode: "cors",
       cache: "no-store",
-      credentials: "omit"
+      credentials: "omit",
+      headers: { "ngrok-skip-browser-warning": "1" }
     });
     if (!res.ok) throw new Error("products " + res.status + " @ " + apiBase);
     var data = await res.json();
@@ -182,11 +183,19 @@
           if (i === cur) {
             s.classList.remove("opacity-0", "pointer-events-none");
             s.classList.add("opacity-100");
-            if (v) { try { v.play(); } catch (e) {} }
+            if (v) {
+              try {
+                v.play();
+              } catch (e) {}
+            }
           } else {
             s.classList.add("opacity-0", "pointer-events-none");
             s.classList.remove("opacity-100");
-            if (v) { try { v.pause(); } catch (e) {} }
+            if (v) {
+              try {
+                v.pause();
+              } catch (e) {}
+            }
           }
         });
         dots.forEach(function (d, i) {
@@ -292,9 +301,9 @@
     } catch (e) {
       console.warn("ApexBridge", e);
       el.innerHTML =
-        '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. FreePort must be reachable over HTTPS (tunnel). Node is fine — the public URL is not.</p>';
+        '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. Check ApexFreePort node.</p>';
       if (status) {
-        status.textContent = "Inventory offline — need HTTPS tunnel to FreePort";
+        status.textContent = "Inventory offline";
         status.className = "text-amber-400 text-sm mt-3";
       }
     }
