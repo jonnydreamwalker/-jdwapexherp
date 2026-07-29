@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Dealer Password | JDW Apex Herp Wholesale</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center px-4">
+<div class="w-full max-w-md bg-zinc-900 border border-emerald-900/50 rounded-2xl p-8">
+<h1 class="text-2xl font-black text-emerald-400 mb-2">Set Your Password</h1>
+<p class="text-zinc-500 text-sm mb-6">Use the invite link from your approval email. Choose a password only you know — one login unlocks the full wholesale catalog.</p>
+<form id="setup-form" class="space-y-4">
+<div>
+<label class="block text-xs uppercase text-zinc-500 mb-1">Invite token</label>
+<input name="token" id="token" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-600 font-mono text-sm">
+</div>
+<div>
+<label class="block text-xs uppercase text-zinc-500 mb-1">New password</label>
+<input type="password" name="password" required minlength="8" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-600">
+</div>
+<div>
+<label class="block text-xs uppercase text-zinc-500 mb-1">Confirm password</label>
+<input type="password" name="password2" required minlength="8" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-600">
+</div>
+<p id="err" class="text-red-400 text-sm hidden"></p>
+<p id="ok" class="text-emerald-400 text-sm hidden"></p>
+<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase py-3 rounded-xl">Save Password</button>
+</form>
+<p class="text-center text-xs text-zinc-600 mt-6"><a href="login.html" class="text-emerald-400 hover:underline">Go to login</a></p>
+</div>
+<script>
+(function () {
+  var API = (localStorage.getItem("APEX_API_BASE") || "https://freeport.jdwapexherp.com").replace(/\/$/, "");
+  var params = new URLSearchParams(location.search);
+  if (params.get("token")) document.getElementById("token").value = params.get("token");
+  document.getElementById("setup-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var err = document.getElementById("err");
+    var ok = document.getElementById("ok");
+    err.classList.add("hidden");
+    ok.classList.add("hidden");
+    var fd = new FormData(e.target);
+    if (fd.get("password") !== fd.get("password2")) {
+      err.textContent = "Passwords do not match";
+      err.classList.remove("hidden");
+      return;
+    }
+    try {
+      var r = await fetch(API + "/api/wholesale/setup-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: fd.get("token"), password: fd.get("password") })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) {
+        err.textContent = j.error || "Setup failed";
+        err.classList.remove("hidden");
+        return;
+      }
+      ok.textContent = "Password saved. Redirecting to login…";
+      ok.classList.remove("hidden");
+      setTimeout(function () { location.href = "login.html"; }, 1200);
+    } catch (ex) {
+      err.textContent = "Cannot reach FreePort";
+      err.classList.remove("hidden");
+    }
+  });
+})();
+</script>
+</body>
+</html>
