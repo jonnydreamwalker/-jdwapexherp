@@ -1,25 +1,44 @@
 /** ApexFreePort bridge — live catalog, category filter, up to 6 photos */
 (function (global) {
   var MAX_PHOTOS = 6;
+  var PRIMARY = "https://freeport.jdwapexherp.com";
   var DEFAULTS = [
-    "https://freeport.jdwapexherp.com",
-    "https://api.jdwapexherp.com",
-    "http://3.14.14.127:3000"
+    PRIMARY,
+    "https://api.jdwapexherp.com"
   ];
+
+  function isDeadBase(u) {
+    var s = String(u || "").toLowerCase();
+    if (!s) return true;
+    if (s.indexOf("ngrok") >= 0) return true;
+    if (s.indexOf("http://3.14.") === 0) return true;
+    if (s.indexOf("http://127.") === 0) return true;
+    if (s.indexOf("http://localhost") === 0) return true;
+    return false;
+  }
 
   function candidateBases() {
     var list = [];
+    list.push(PRIMARY);
     try {
       var ls = global.localStorage && localStorage.getItem("APEX_API_BASE");
-      if (ls) list.push(String(ls).replace(/\/$/, ""));
+      if (ls) {
+        ls = String(ls).replace(/\/$/, "");
+        if (isDeadBase(ls)) {
+          try { localStorage.removeItem("APEX_API_BASE"); } catch (e2) {}
+        } else if (list.indexOf(ls) === -1) {
+          list.push(ls);
+        }
+      }
     } catch (e) {}
-    if (global.APEX_API_BASE) list.push(String(global.APEX_API_BASE).replace(/\/$/, ""));
-    DEFAULTS.forEach(function (u) { list.push(u); });
-    var out = [];
-    list.forEach(function (u) {
-      if (u && out.indexOf(u) === -1) out.push(u);
+    if (global.APEX_API_BASE) {
+      var g = String(global.APEX_API_BASE).replace(/\/$/, "");
+      if (!isDeadBase(g) && list.indexOf(g) === -1) list.push(g);
+    }
+    DEFAULTS.forEach(function (u) {
+      if (u && list.indexOf(u) === -1) list.push(u);
     });
-    return out;
+    return list;
   }
 
   function base() {
@@ -48,9 +67,9 @@
 
   function esc(s) {
     return String(s == null ? "" : s)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/"/g, """);
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/"/g, "&quot;");
   }
 
   function normCat(c) {
@@ -82,8 +101,7 @@
     var res = await fetch(apiBase + "/api/products" + q, {
       mode: "cors",
       cache: "no-store",
-      credentials: "omit",
-      headers: { "ngrok-skip-browser-warning": "1" }
+      credentials: "omit"
     });
     if (!res.ok) throw new Error("products " + res.status + " @ " + apiBase);
     var data = await res.json();
@@ -183,19 +201,11 @@
           if (i === cur) {
             s.classList.remove("opacity-0", "pointer-events-none");
             s.classList.add("opacity-100");
-            if (v) {
-              try {
-                v.play();
-              } catch (e) {}
-            }
+            if (v) { try { v.play(); } catch (e) {} }
           } else {
             s.classList.add("opacity-0", "pointer-events-none");
             s.classList.remove("opacity-100");
-            if (v) {
-              try {
-                v.pause();
-              } catch (e) {}
-            }
+            if (v) { try { v.pause(); } catch (e) {} }
           }
         });
         dots.forEach(function (d, i) {
