@@ -11,7 +11,6 @@ const DATA = path.join(__dirname, "data", "inventory.json");
 const ORDERS = path.join(__dirname, "data", "orders.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
 
-/* Same mark as fulfillment page tab icon */
 const FREEPORT_FAVICON_SVG =
   "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>" +
   "<rect width='512' height='512' fill='#000'/>" +
@@ -44,7 +43,6 @@ if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 
 app.use("/uploads", express.static(UPLOADS));
 
-/* Always serve the FreePort mark — do not use a bad/overwritten PNG */
 app.get("/favicon.ico", function (req, res) {
   res.setHeader("Cache-Control", "no-cache, max-age=0");
   var svgPath = path.join(UPLOADS, "apexfreeport-logo.svg");
@@ -275,6 +273,25 @@ function publicItem(i) {
   };
 }
 
+/** Apply a partial SKU order into the full items array (for category-filtered drag). */
+function applySkuOrder(items, orderedSkus) {
+  if (!Array.isArray(orderedSkus) || !orderedSkus.length) return items || [];
+  const list = items || [];
+  const set = {};
+  orderedSkus.forEach(function (s) { set[s] = true; });
+  const queue = [];
+  orderedSkus.forEach(function (sku) {
+    const found = list.find(function (i) { return i.sku === sku; });
+    if (found) queue.push(found);
+  });
+  if (!queue.length) return list;
+  let qi = 0;
+  return list.map(function (it) {
+    if (set[it.sku]) return queue[qi++];
+    return it;
+  });
+}
+
 app.get("/health", function (req, res) {
   const d = read();
   res.json({
@@ -306,12 +323,21 @@ app.get("/api/products", function (req, res) {
         store: storeId
       });
     }
+    let items = (st.items || []).filter(isPublicListed);
+    const cat = (req.query.category || "").trim();
+    if (cat) {
+      const want = cat.toLowerCase();
+      items = items.filter(function (i) {
+        return String(i.category || "").trim().toLowerCase() === want;
+      });
+    }
     res.json({
       warehouse: d.warehouse,
       updated: d.updated,
       publicFeed: true,
       store: storeId,
-      items: (st.items || []).filter(isPublicListed).map(publicItem)
+      category: cat || null,
+      items: items.map(publicItem)
     });
   } catch (e) {
     res.status(500).json({ error: "fail" });
@@ -487,6 +513,19 @@ app.post("/api/inventory/reorder", auth, function (req, res) {
   items[j] = tmp;
   write(d);
   res.json({ ok: true });
+});
+
+/** Drag-and-drop: full or partial SKU order for the sales site. */
+app.post("/api/inventory/sort", auth, function (req, res) {
+  const d = read();
+  const b = req.body || {};
+  const storeId = (b.store || "herp").toLowerCase();
+  const st = storeOf(d, storeId);
+  const skus = Array.isArray(b.skus) ? b.skus.map(function (s) { return String(s); }) : [];
+  if (!skus.length) return res.status(400).json({ error: "skus required" });
+  st.items = applySkuOrder(st.items || [], skus);
+  write(d);
+  res.json({ ok: true, count: st.items.length });
 });
 
 app.post("/api/inventory/category", auth, function (req, res) {
