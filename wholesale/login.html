@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dealer Portal Login | JDW Apex Herp Wholesale</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col">
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] py-2 text-emerald-300/90">Dealer Portal · Exclusive Pricing · One Login</div>
+<div class="flex-1 flex items-center justify-center px-4 py-16">
+<div class="w-full max-w-md bg-zinc-900 border border-emerald-900/50 rounded-2xl p-8">
+<div class="text-center mb-8">
+<img src="../assets/images/gallery/Logo.png" alt="Apex Herp" class="h-14 mx-auto mb-3 opacity-90">
+<h1 class="text-2xl font-black text-emerald-400 tracking-tight">Wholesale Portal</h1>
+<p class="text-zinc-500 text-sm mt-1">Approved dealers only</p>
+</div>
+<form id="login-form" class="space-y-4">
+<div>
+<label class="block text-xs uppercase text-zinc-500 mb-1">Email</label>
+<input type="email" name="email" required autocomplete="username" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-600">
+</div>
+<div>
+<label class="block text-xs uppercase text-zinc-500 mb-1">Password</label>
+<input type="password" name="password" required autocomplete="current-password" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 outline-none focus:border-emerald-600">
+</div>
+<p id="err" class="text-red-400 text-sm hidden"></p>
+<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase py-3 rounded-xl">Enter Portal</button>
+</form>
+<p class="text-center text-xs text-zinc-600 mt-6">
+<a href="../services/wholesale.html" class="text-emerald-400 hover:underline">Apply for dealer access</a>
+· <a href="setup.html" class="text-zinc-400 hover:underline">Set password (invite link)</a>
+</p>
+<p class="text-center text-xs text-zinc-700 mt-4"><a href="../index.html" class="hover:text-zinc-400">← Back to store</a></p>
+</div>
+</div>
+<script>
+(function () {
+  var API = (localStorage.getItem("APEX_API_BASE") || "https://freeport.jdwapexherp.com").replace(/\/$/, "");
+  document.getElementById("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var err = document.getElementById("err");
+    err.classList.add("hidden");
+    var fd = new FormData(e.target);
+    try {
+      var r = await fetch(API + "/api/wholesale/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: fd.get("email"), password: fd.get("password") })
+      });
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) {
+        err.textContent = j.error || "Login failed";
+        err.classList.remove("hidden");
+        return;
+      }
+      if (j.token) localStorage.setItem("jdw_dealer_token", j.token);
+      if (j.dealer) localStorage.setItem("jdw_dealer", JSON.stringify(j.dealer));
+      location.href = "index.html";
+    } catch (ex) {
+      err.textContent = "Cannot reach FreePort. Try again.";
+      err.classList.remove("hidden");
+    }
+  });
+})();
+</script>
+</body>
+</html>
