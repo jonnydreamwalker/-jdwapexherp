@@ -1,4 +1,10 @@
 /** Shared cart + nav helpers for service pages */
+window.APEX_API_BASE = "https://freeport.jdwapexherp.com";
+try {
+  localStorage.setItem("APEX_API_BASE", "https://freeport.jdwapexherp.com");
+  localStorage.removeItem("__APEX_API_ACTIVE__");
+} catch (e) {}
+
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
 /** Browser tab = same Apex Herp logo as index */
