@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-22T20:00:00Z",
+  "updated": "2026-07-29T10:00:00Z",
   "warehouse": "DeFuniak Springs, FL",
   "stores": {
     "herp": {
@@ -21,6 +21,66 @@
           "image": "",
           "location": "WH-A1",
           "unit": "flat"
+        },
+        {
+          "sku": "HS-CORK-5LB",
+          "name": "5 lb Custom Recovery Pack",
+          "category": "Hardscape",
+          "description": "Portuguese virgin cork — 5 lb custom recovery pack. Florida warehouse direct.",
+          "price": 95.0,
+          "qty": 20,
+          "reserved": 0,
+          "reorder": 5,
+          "lane": "direct",
+          "status": "active",
+          "image": "",
+          "location": "WH-A2",
+          "unit": "pack"
+        },
+        {
+          "sku": "HS-CORK-100LB",
+          "name": "100 lb Distributor Tier",
+          "category": "Hardscape",
+          "description": "Wholesale Portuguese cork bark — 100 lb distributor tier. Direct warehouse ship FL-TX-CA.",
+          "price": 850.0,
+          "qty": 8,
+          "reserved": 0,
+          "reorder": 2,
+          "lane": "direct",
+          "status": "active",
+          "image": "",
+          "location": "WH-A2",
+          "unit": "crate"
+        },
+        {
+          "sku": "HS-CORK-200LB",
+          "name": "200 lb Arbitrage Tier",
+          "category": "Hardscape",
+          "description": "Wholesale Portuguese cork bark — 200 lb arbitrage tier. Bulk warehouse direct.",
+          "price": 1000.0,
+          "qty": 5,
+          "reserved": 0,
+          "reorder": 1,
+          "lane": "direct",
+          "status": "active",
+          "image": "",
+          "location": "WH-A2",
+          "unit": "crate"
+        },
+        {
+          "sku": "HS-CORK-400LB",
+          "name": "400 lb Enterprise Tier",
+          "category": "Hardscape",
+          "description": "Enterprise Portuguese cork bark — 400 lb tier. Full pallet warehouse direct.",
+          "price": 2300.0,
+          "qty": 3,
+          "reserved": 0,
+          "reorder": 1,
+          "lane": "direct",
+          "status": "active",
+          "image": "",
+          "location": "WH-A2",
+          "unit": "pallet"
         },
         {
           "sku": "HS-CORK-BULK-01",
