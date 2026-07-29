@@ -7,22 +7,24 @@ try {
 
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
-/** Browser tab = same Apex Herp logo as index */
+/** Fast tab icon — SVG, not 3MB Logo.png */
 (function ensureTabLogo() {
-  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
+  var icon = "https://jdwapexherp.com/assets/images/favicon.svg?v=20260729c";
+  var apple = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apple-20260729";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
     if (n.parentNode) n.parentNode.removeChild(n);
   });
-  function add(rel) {
+  function add(rel, href, type, sizes) {
     var el = document.createElement("link");
     el.setAttribute("rel", rel);
-    el.setAttribute("type", "image/png");
+    if (type) el.setAttribute("type", type);
+    if (sizes) el.setAttribute("sizes", sizes);
     el.setAttribute("href", href);
     document.head.appendChild(el);
   }
-  add("icon");
-  add("shortcut icon");
-  add("apple-touch-icon");
+  add("icon", icon, "image/svg+xml");
+  add("shortcut icon", icon, "image/svg+xml");
+  add("apple-touch-icon", apple, "image/png", "180x180");
   var theme = document.querySelector('meta[name="theme-color"]');
   if (!theme) {
     theme = document.createElement("meta");
