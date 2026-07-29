@@ -1,1 +1,184 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<title>FreePort · Fulfillment</title>
+<script src="/admin/favicon-force.js"></script>
+<style>
+:root{--brand-blue-color:#10b981;--brand-white-color:#ffffff}
+::selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
+.wrap{max-width:720px;margin:0 auto;padding:16px;flex:1;width:100%}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:40px;height:40px;border-radius:50%;border:1px solid #333;background:#111;object-fit:contain}
+h1{margin:0;font-size:1.05rem;color:#34d399;text-transform:uppercase;letter-spacing:.04em}
+.sub{color:#a1a1aa;font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+a{color:#38bdf8;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:700;color:#fff;background:#059669}
+button.secondary{background:#27272a;color:#e4e4e7}
+button.ghost{background:transparent;border:1px solid #3f3f46;color:#a1a1aa}
+button.print{background:#2563eb}
+button.done{background:#059669}
+button.ship{background:#ca8a04;color:#022c22}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid #27272a;background:#18181b;color:#a1a1aa;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.chip.active{background:#34d399;color:#022c22;border-color:transparent}
+.chip.active.shipped{background:#fbbf24;color:#422006}
+.queue{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.order-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#18181b;border:1px solid #27272a;border-radius:14px;padding:12px 14px;color:#fafafa;cursor:pointer}
+.order-btn:hover{border-color:#34d399}
+.order-btn.done{opacity:.75;border-color:#14532d}
+.order-btn.shipped{border-color:#a16207}
+.check{width:28px;height:28px;border-radius:50%;border:2px solid #3f3f46;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent}
+.order-btn.done .check{border-color:#34d399;background:#052e16;color:#34d399}
+.order-btn.shipped .check{border-color:#fbbf24;background:#422006;color:#fbbf24}
+.ob-main{flex:1;min-width:0}
+.ob-id{font-family:ui-monospace,monospace;font-size:12px;color:#38bdf8}
+.ob-name{font-weight:700;font-size:15px}
+.ob-meta{font-size:12px;color:#a1a1aa;margin-top:2px}
+.badge{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;background:#27272a;color:#e4e4e7}
+.badge.next_day{background:#7f1d1d;color:#fecaca}
+.badge.priority{background:#854d0e;color:#fde68a}
+.badge.ground{background:#1e3a5f;color:#bae6fd}
+.badge.ds{background:#7c2d12;color:#fed7aa;margin-left:4px}
+.badge.shipped{background:#854d0e;color:#fde68a;margin-left:4px}
+#status{font-size:13px;color:#a1a1aa;margin:8px 0}
+#status.err{color:#fecaca}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:90;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+.modal-back.open{display:flex}
+.panel{background:rgba(9,9,11,.55);backdrop-filter:blur(10px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 20px 50px -12px rgba(0,0,0,.6);border-radius:16px;padding:20px;width:min(560px,100%);margin:24px auto;color:#fafafa}
+.panel h2{margin:0 0 4px;color:#34d399;font-size:1rem;text-transform:uppercase}
+.panel .hint{color:#a1a1aa;font-size:12px;margin:0 0 14px}
+.block{margin:14px 0;padding-top:12px;border-top:1px solid rgba(16,185,129,.2)}
+.block h3{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#a1a1aa}
+.ship-box{background:rgba(66,32,6,.45);border:1px solid #a16207;border-radius:12px;padding:14px;margin-top:8px}
+.ship-box .trk{font-family:ui-monospace,monospace;color:#fde68a;font-size:15px;font-weight:700;word-break:break-all}
+.ship-box .ins{color:#fed7aa;font-size:13px;margin-top:8px}
+.addr{line-height:1.45;font-size:14px}
+.item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #27272a;font-size:14px}
+.item.ds{background:rgba(124,45,18,.25);margin:0 -8px;padding:8px;border-radius:8px;border:1px solid #9a3412}
+.box{background:rgba(0,0,0,.35);border:1px solid #27272a;border-radius:12px;padding:12px;margin-bottom:8px}
+.box .size{color:#fbbf24;font-weight:800;font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;font-weight:800;text-transform:uppercase;padding:4px 8px;border-radius:6px;background:#422006;color:#fde68a;border:1px solid #854d0e}
+.alert{background:rgba(124,45,18,.4);border:1px solid #c2410c;border-radius:12px;padding:12px;font-size:13px;color:#fed7aa;margin-bottom:8px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(16,185,129,.25)}
+.notes{font-size:13px;color:#d4d4d8}
+textarea,input,select{width:100%;background:rgba(0,0,0,.55);color:#fafafa;border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px;font:inherit;margin:4px 0 10px}
+label{display:block;font-size:11px;color:#a1a1aa;text-transform:uppercase;margin-top:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+footer{margin-top:auto;border-top:1px solid #27272a;background:#000;padding:16px}
+footer .foot-inner{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+footer .copy{color:#71717a;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap row" style="justify-content:space-between;max-width:720px;margin:0 auto;padding:0">
+    <div class="brand">
+      <img src="/favicon.svg" alt="Apex FreePort">
+      <div><h1>Fulfillment</h1><div class="sub" id="meta">Loading queue…</div></div>
+    </div>
+    <div class="row">
+      <a href="/admin">Inventory</a>
+      <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <p class="sub" style="margin:0 0 8px">Priority queue — open packs first, then shipped with tracking.</p>
+  <div class="filters">
+    <button type="button" class="chip active" data-f="open">Open</button>
+    <button type="button" class="chip" data-f="shipped">Shipped</button>
+    <button type="button" class="chip" data-f="fulfilled">Completed</button>
+    <button type="button" class="chip" data-f="all">All</button>
+    <button type="button" class="secondary" id="btnNew" style="margin-left:auto">+ Order</button>
+    <button type="button" class="secondary" id="btnReload">Reload</button>
+  </div>
+  <div id="status">Loading…</div>
+  <div class="queue" id="queue"></div>
+</div>
+<footer>
+  <div class="foot-inner">
+    <div class="brand"><img src="/favicon.svg" alt="Apex FreePort"><div><div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div><div class="copy">Pack · Ship · Track · DeFuniak Springs, FL</div></div></div>
+    <div class="copy">© 2026 JDW Apex · Veteran owned</div>
+  </div>
+</footer>
+<div class="modal-back" id="panelBack">
+  <div class="panel" id="panel" role="dialog">
+    <div class="row" style="justify-content:space-between">
+      <div><h2 id="pTitle">Order</h2><p class="hint" id="pSub"></p></div>
+      <button type="button" class="ghost" id="btnClose">Close</button>
+    </div>
+    <div id="pDropAlert"></div>
+    <div class="block"><h3>Ship to</h3><div class="addr" id="pShip"></div></div>
+    <div class="block"><h3>Items</h3><div id="pItems"></div></div>
+    <div class="block"><h3>Boxes & pack</h3><div id="pBoxes"></div></div>
+    <div class="block"><h3>Handling</h3><div class="tags" id="pHandling"></div></div>
+    <div class="block"><h3>Shipped · Tracking · Insurance</h3><div id="pShipInfo"></div></div>
+    <div class="block"><h3>Notes</h3><ul class="notes" id="pNotes"></ul>
+      <textarea id="pNoteIn" placeholder="Add a note…"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="secondary" id="btnAddNote">Save note</button></div>
+    </div>
+    <div class="actions" id="pActions"></div>
+  </div>
+</div>
+<div class="modal-back" id="shipBack">
+  <div class="panel" role="dialog">
+    <h2>Mark shipped</h2>
+    <p class="hint">Paste tracking from Pirate Ship. Add insurance if you bought it on the label.</p>
+    <label>Carrier</label>
+    <select id="s_carrier"><option value="USPS">USPS</option><option value="UPS">UPS</option><option value="FedEx">FedEx</option><option value="DHL">DHL</option><option value="Other">Other</option></select>
+    <label>Tracking number</label>
+    <input id="s_tracking" placeholder="9400… or 1Z…" autocomplete="off">
+    <div class="grid2">
+      <div><label>Insurance amount (USD)</label><input id="s_insAmt" type="number" step="0.01" min="0" placeholder="0.00"></div>
+      <div><label>Insurance provider</label><input id="s_insProv" placeholder="Pirate Ship / USPS / Shipsurance"></div>
+    </div>
+    <label>Insurance notes (optional)</label>
+    <input id="s_insNotes" placeholder="Declared value, claim phone, etc.">
+    <label>Label cost (optional)</label>
+    <input id="s_labelCost" type="number" step="0.01" min="0" placeholder="0.00">
+    <div class="actions">
+      <button type="button" class="ship" id="s_save">Save shipped</button>
+      <button type="button" class="ghost" id="s_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-back" id="newBack">
+  <div class="panel" role="dialog">
+    <h2>New order</h2>
+    <p class="hint">Manual / viral / phone order. Creates an open pack ticket.</p>
+    <label>Customer name</label><input id="n_name" placeholder="Full name">
+    <label>Email</label><input id="n_email" type="email" placeholder="optional">
+    <label>Phone</label><input id="n_phone" placeholder="optional">
+    <label>Address line 1</label><input id="n_line1" placeholder="Street">
+    <label>Address line 2</label><input id="n_line2" placeholder="Apt / suite">
+    <div class="grid2">
+      <div><label>City</label><input id="n_city"></div>
+      <div><label>State</label><input id="n_state" maxlength="2" placeholder="FL"></div>
+    </div>
+    <div class="grid2">
+      <div><label>ZIP</label><input id="n_zip"></div>
+      <div><label>Service</label><select id="n_service"><option value="ground">Ground</option><option value="priority">USPS Priority</option><option value="next_day">Next Day</option><option value="express">Express</option></select></div>
+    </div>
+    <label>Items (SKU x qty, one per line)</label>
+    <textarea id="n_items" placeholder="HS-UFO-FLAT-01 x 2"></textarea>
+    <label>Payment note</label>
+    <input id="n_pay" placeholder="Square / Stripe / Venmo / Cash — amount">
+    <div class="actions">
+      <button type="button" id="n_save">Create order</button>
+      <button type="button" class="ghost" id="n_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+<script src="/admin/fulfillment-app.js?v=3"></script>
+</body>
+</html>
