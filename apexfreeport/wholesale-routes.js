@@ -1,6 +1,7 @@
 /**
  * ApexFreePort — Wholesale dealer applications + portal API
  * Mount: require("./wholesale-routes")(app, { auth, dataDir, readInventory, writeInventory });
+ * Pricing rule: dealerPrice is EXACTLY what you enter. Never auto-discount. pricePerLb = dealerPrice / weightLb.
  */
 const fs = require("fs");
 const path = require("path");
@@ -510,10 +511,13 @@ module.exports = function mountWholesale(app, opts) {
       });
       const mapped = items.map(function (i) {
         const retail = Number(i.price) || 0;
+        // Exact wholesale price from FreePort — NEVER auto-discount
         let dealer = i.dealerPrice != null ? Number(i.dealerPrice) : null;
-        if (dealer == null || isNaN(dealer)) {
-          dealer = Math.round(retail * 0.85 * 100) / 100;
-        }
+        if (dealer != null && isNaN(dealer)) dealer = null;
+        const lb = i.weightLb != null ? Number(i.weightLb) : null;
+        const perLb = (dealer != null && lb > 0)
+          ? Math.round((dealer / lb) * 10000) / 10000
+          : (i.pricePerLb != null ? Number(i.pricePerLb) : null);
         return {
           sku: i.sku,
           name: i.name,
@@ -522,12 +526,13 @@ module.exports = function mountWholesale(app, opts) {
           image: i.image || (i.images && i.images[0]) || "",
           retailPrice: retail,
           dealerPrice: dealer,
+          weightLb: lb,
+          pricePerLb: perLb,
           qty: i.qty,
           reserved: i.reserved,
           available: Math.max(0, (i.qty || 0) - (i.reserved || 0)),
           status: i.status,
           lane: i.lane,
-          weightLb: i.weightLb || null,
           pool: itemPool(i),
           bulk: true
         };
@@ -557,12 +562,15 @@ module.exports = function mountWholesale(app, opts) {
       });
       if (!item) return res.status(404).json({ error: "SKU not found" });
       item.dealerPrice = dealerPrice;
+      if (item.weightLb != null && Number(item.weightLb) > 0) {
+        item.pricePerLb = Math.round((dealerPrice / Number(item.weightLb)) * 10000) / 10000;
+      }
       if (typeof opts.writeInventory === "function") opts.writeInventory(inv);
       else {
         inv.updated = new Date().toISOString();
         fs.writeFileSync(path.join(dataDir, "inventory.json"), JSON.stringify(inv, null, 2));
       }
-      res.json({ ok: true, sku: sku, dealerPrice: dealerPrice, retailPrice: item.price });
+      res.json({ ok: true, sku: sku, dealerPrice: dealerPrice, pricePerLb: item.pricePerLb || null, retailPrice: item.price });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
@@ -572,5 +580,5 @@ module.exports = function mountWholesale(app, opts) {
     res.sendFile(path.join(__dirname, "admin", "dealers.html"));
   });
 
-  console.log("Wholesale routes: registered (dealer desk + request_info email)");
+  console.log("Wholesale routes: exact price + pricePerLb (no auto discount)");
 };
