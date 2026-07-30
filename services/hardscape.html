@@ -10,11 +10,11 @@
 <link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style.css?v=20260730frost">
 <script src="nav-shell.js"></script>
 <script src="./checkout-client.js?v=20260730b"></script>
 <script>
-/* Direct FreePort catalog — overlay details (no grid stretch) */
+/* Direct FreePort catalog — frost overlay details (no grid stretch) */
 (function () {
   var API = "https://freeport.jdwapexherp.com";
   function esc(s) {
@@ -60,18 +60,18 @@
     if (!desc) {
       detailBlock =
         '<div class="apex-detail-wrap relative mb-3 text-left">' +
-        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-500/90 hover:border-emerald-800">' +
+        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-emerald-900/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-500/90 hover:border-emerald-600">' +
         '<span>Details</span><span class="apex-detail-arrow">\u25bc</span></button>' +
-        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden rounded-xl border border-zinc-700 bg-zinc-950 p-3 shadow-2xl shadow-black/80">' +
-        '<p class="text-zinc-500 text-sm">No description on file yet.</p></div></div>';
+        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden rounded-xl p-3">' +
+        '<p class="text-zinc-400 text-sm">No description on file yet.</p></div></div>';
     } else {
       detailBlock =
         '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(short) + "</p>" +
         '<div class="apex-detail-wrap relative mb-3 text-left">' +
-        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-emerald-900/60 bg-zinc-950/80 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-400 hover:border-emerald-600 hover:bg-zinc-900">' +
+        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-emerald-900/50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-400 hover:border-emerald-500">' +
         '<span>Full details</span><span class="apex-detail-arrow">\u25bc</span></button>' +
-        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-48 overflow-y-auto rounded-xl border border-emerald-900 bg-zinc-950 p-3 text-left shadow-2xl shadow-black/80">' +
-        '<p class="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">' + esc(desc) + "</p></div></div>";
+        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-48 overflow-y-auto rounded-xl p-3 text-left">' +
+        '<p class="text-zinc-200 text-sm leading-relaxed whitespace-pre-wrap">' + esc(desc) + "</p></div></div>";
     }
     var img = (i.images && i.images[0]) || i.image || "";
     if (img && img.charAt(0) === "/") img = API + img;
