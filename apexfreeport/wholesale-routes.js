@@ -1,8 +1,6 @@
 /**
  * ApexFreePort — Wholesale dealer applications + portal API
  * Mount: require("./wholesale-routes")(app, { auth, dataDir, readInventory, writeInventory });
- *
- * Dealer catalog mirrors FreePort admin Wholesale tab (same pool rules as admin/app.js).
  */
 const fs = require("fs");
 const path = require("path");
@@ -113,10 +111,6 @@ module.exports = function mountWholesale(app, opts) {
     return d;
   }
 
-  /**
-   * Same pool logic as FreePort admin/app.js itemPool()
-   * retail | wholesale | both
-   */
   function itemPool(it) {
     if (!it) return "retail";
     var p = String(it.pool || it.channel || "").toLowerCase();
@@ -129,7 +123,6 @@ module.exports = function mountWholesale(app, opts) {
     return "retail";
   }
 
-  /** Same rule as FreePort Wholesale tab: pool wholesale OR both only */
   function isWholesaleTabItem(it) {
     var pool = itemPool(it);
     return pool === "wholesale" || pool === "both";
@@ -175,6 +168,31 @@ module.exports = function mountWholesale(app, opts) {
       raw = JSON.parse(fs.readFileSync(invPath, "utf8"));
     }
     return flattenInventory(raw);
+  }
+
+  function emailApplicant(to, subject, message, meta) {
+    meta = meta || {};
+    var payload = {
+      _subject: subject,
+      _template: "box",
+      _captcha: "false",
+      message: message,
+      application_id: meta.id || "",
+      business_name: meta.business_name || "",
+      reply_hint: "Reply to this email or withdraw by replying WITHDRAW."
+    };
+    return fetch("https://formsubmit.co/ajax/" + encodeURIComponent(to), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        console.log("Applicant email:", r.status, to, subject);
+        return r;
+      })
+      .catch(function (e) {
+        console.log("Applicant email failed:", e.message);
+      });
   }
 
   function notifyApplicationEmail(appRow) {
@@ -288,10 +306,34 @@ module.exports = function mountWholesale(app, opts) {
         row.status = "rejected";
         row.decided = new Date().toISOString();
         writeApps(apps);
+        emailApplicant(
+          row.email,
+          "JDW Apex Wholesale — application update",
+          "Thank you for applying to JDW Apex Herp Wholesale. After review we are unable to approve your application at this time.\n\nIf you believe this is an error, reply to this email.\n\n— JDW Apex Herp Supply",
+          row
+        );
         return res.json({ ok: true, status: "rejected" });
       }
+
+      if (decision === "request_info" || decision === "info") {
+        var msg = String((req.body && req.body.message) || "").trim();
+        if (!msg) return res.status(400).json({ error: "message required for request_info" });
+        row.status = "info_requested";
+        row.infoRequestMessage = msg;
+        row.infoRequestedAt = new Date().toISOString();
+        writeApps(apps);
+        emailApplicant(
+          row.email,
+          "JDW Apex Wholesale — more information needed",
+          msg +
+            "\n\nYou may reply with the requested details or withdraw your application by replying WITHDRAW.\n\n— JDW Apex Herp Supply · DeFuniak Springs, FL",
+          row
+        );
+        return res.json({ ok: true, status: "info_requested", emailed: true });
+      }
+
       if (decision !== "approve") {
-        return res.status(400).json({ error: "decision must be approve or reject" });
+        return res.status(400).json({ error: "decision must be approve, reject, or request_info" });
       }
 
       row.status = "approved";
@@ -336,13 +378,22 @@ module.exports = function mountWholesale(app, opts) {
         "/setup.html?token=" +
         setupToken;
 
+      emailApplicant(
+        row.email,
+        "JDW Apex Wholesale — application approved",
+        "Your dealer application was approved.\n\nSet your portal password using this secure link:\n" +
+          setupUrl +
+          "\n\nAfter that, log in at the wholesale dealer portal.\n\n— JDW Apex Herp Supply",
+        row
+      );
+
       res.json({
         ok: true,
         status: "approved",
         dealerId: existing.id,
         setupToken: setupToken,
         setupUrl: setupUrl,
-        note: "Send setupUrl to dealer so they set their own password"
+        note: "Setup link emailed to dealer; also shown in admin"
       });
     } catch (e) {
       res.status(500).json({ error: e.message });
@@ -433,25 +484,17 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ dealer: publicDealer(d) });
   });
 
-  /**
-   * Dealer portal = ONLY what FreePort Wholesale tab shows.
-   * Same filter as admin: pool wholesale OR both (not pure retail).
-   */
   app.get("/api/wholesale/catalog", function (req, res) {
     const d = dealerFromToken(req);
     if (!d) return res.status(401).json({ error: "Unauthorized" });
     try {
       const inv = loadInventory();
       let items = inv.items || [];
-
       items = items.filter(function (i) {
         var st = String(i.status || "active").toLowerCase();
         return st !== "archived" && st !== "deleted";
       });
-
-      // Strict: Wholesale tab only
       items = items.filter(isWholesaleTabItem);
-
       const cat = req.query.category;
       if (cat) {
         const c = String(cat).toLowerCase();
@@ -459,12 +502,12 @@ module.exports = function mountWholesale(app, opts) {
           return String(i.category || "").toLowerCase() === c;
         });
       }
-
       items = items.slice().sort(function (a, b) {
-        return String(a.category || "").localeCompare(String(b.category || "")) ||
-          String(a.name || "").localeCompare(String(b.name || ""));
+        return (
+          String(a.category || "").localeCompare(String(b.category || "")) ||
+          String(a.name || "").localeCompare(String(b.name || ""))
+        );
       });
-
       const mapped = items.map(function (i) {
         const retail = Number(i.price) || 0;
         let dealer = i.dealerPrice != null ? Number(i.dealerPrice) : null;
@@ -489,7 +532,6 @@ module.exports = function mountWholesale(app, opts) {
           bulk: true
         };
       });
-
       res.json({
         warehouse: inv.warehouse || "DeFuniak Springs, FL",
         updated: inv.updated,
@@ -530,5 +572,5 @@ module.exports = function mountWholesale(app, opts) {
     res.sendFile(path.join(__dirname, "admin", "dealers.html"));
   });
 
-  console.log("Wholesale routes: registered (catalog = FreePort Wholesale tab only)");
+  console.log("Wholesale routes: registered (dealer desk + request_info email)");
 };
