@@ -7,7 +7,6 @@ try {
 
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
-/** Fast tab icon — SVG, not 3MB Logo.png */
 (function ensureTabLogo() {
   var icon = "https://jdwapexherp.com/assets/images/favicon.svg?v=20260729c";
   var apple = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apple-20260729";
@@ -135,8 +134,63 @@ function addToCart(name, sku, price) {
   updateCartCount();
 }
 function populatePayPalFormFields() { return true; }
-function startSquarePayment() { alert("Square checkout — live keys in ApexFreePort."); }
-function startStripePayment() { alert("Stripe checkout — live keys in ApexFreePort."); }
+
+function cartPayload() {
+  var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
+  return cart.map(function (i) {
+    return {
+      name: i.name,
+      sku: i.sku,
+      price: Number(i.price) || 0,
+      quantity: Number(i.quantity) || 1
+    };
+  });
+}
+function freeportBase() {
+  return window.APEX_API_BASE || localStorage.getItem("APEX_API_BASE") || "https://freeport.jdwapexherp.com";
+}
+function startCheckout(path, label) {
+  var items = cartPayload();
+  if (!items.length) {
+    alert("Your cart is empty.");
+    return;
+  }
+  fetch(freeportBase() + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: items,
+      successUrl: location.origin + location.pathname + "?paid=1",
+      cancelUrl: location.href
+    })
+  })
+    .then(function (r) {
+      return r.json().then(function (j) {
+        return { ok: r.ok, status: r.status, j: j };
+      });
+    })
+    .then(function (x) {
+      if (x.ok && x.j && x.j.url) {
+        window.location.href = x.j.url;
+        return;
+      }
+      var msg =
+        (x.j && (x.j.message || x.j.error)) ||
+        (label + " is not available right now. Try again in a moment.");
+      alert(msg);
+      console.error(label, x);
+    })
+    .catch(function (e) {
+      alert(label + " could not reach FreePort. Check the inventory bridge.");
+      console.error(e);
+    });
+}
+function startSquarePayment() {
+  startCheckout("/api/checkout/square", "Square");
+}
+function startStripePayment() {
+  startCheckout("/api/checkout/stripe", "Stripe");
+}
 
 function polishServiceFooter() {
   var foot = document.querySelector("footer");
