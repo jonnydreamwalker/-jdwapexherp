@@ -1,6 +1,8 @@
 /**
  * ApexFreePort — Wholesale dealer applications + portal API
  * Mount: require("./wholesale-routes")(app, { auth, dataDir, readInventory, writeInventory });
+ *
+ * Dealer catalog mirrors FreePort admin Wholesale tab (same pool rules as admin/app.js).
  */
 const fs = require("fs");
 const path = require("path");
@@ -111,17 +113,26 @@ module.exports = function mountWholesale(app, opts) {
     return d;
   }
 
-  function isBulkItem(i) {
-    if (!i) return false;
-    if (i.dealerEligible === true) return true;
-    var pool = String(i.pool || i.channel || "").toLowerCase();
-    if (pool === "wholesale" || pool === "both" || pool === "dealer") return true;
-    var w = Number(i.weightLb) || 0;
-    if (w >= 50) return true;
-    var n = String(i.name || "").toLowerCase();
+  /**
+   * Same pool logic as FreePort admin/app.js itemPool()
+   * retail | wholesale | both
+   */
+  function itemPool(it) {
+    if (!it) return "retail";
+    var p = String(it.pool || it.channel || "").toLowerCase();
+    if (p === "wholesale" || p === "dealer") return "wholesale";
+    if (p === "both") return "both";
+    var w = Number(it.weightLb) || 0;
+    var n = String(it.name || "").toLowerCase();
     var m = n.match(/(\d+)\s*lb/);
-    if (m && Number(m[1]) >= 50) return true;
-    return false;
+    if (w >= 50 || (m && Number(m[1]) >= 50) || it.dealerEligible === true) return "wholesale";
+    return "retail";
+  }
+
+  /** Same rule as FreePort Wholesale tab: pool wholesale OR both only */
+  function isWholesaleTabItem(it) {
+    var pool = itemPool(it);
+    return pool === "wholesale" || pool === "both";
   }
 
   function flattenInventory(raw) {
@@ -166,7 +177,6 @@ module.exports = function mountWholesale(app, opts) {
     return flattenInventory(raw);
   }
 
-  /** Email alert on new dealer application (FormSubmit — no SMTP setup) */
   function notifyApplicationEmail(appRow) {
     var to = notifyEmail;
     var payload = {
@@ -424,11 +434,8 @@ module.exports = function mountWholesale(app, opts) {
   });
 
   /**
-   * Catalog rules:
-   * - Owner (DLR-OWNER): all active SKUs
-   * - External dealers: bulk / dealerEligible / 50 lb+ only
-   * - Query bulk=1 forces bulk filter even for owner
-   * - Query all=1 forces full catalog only for owner
+   * Dealer portal = ONLY what FreePort Wholesale tab shows.
+   * Same filter as admin: pool wholesale OR both (not pure retail).
    */
   app.get("/api/wholesale/catalog", function (req, res) {
     const d = dealerFromToken(req);
@@ -436,22 +443,14 @@ module.exports = function mountWholesale(app, opts) {
     try {
       const inv = loadInventory();
       let items = inv.items || [];
+
       items = items.filter(function (i) {
         var st = String(i.status || "active").toLowerCase();
         return st !== "archived" && st !== "deleted";
       });
 
-      var owner = isOwnerDealer(d);
-      var forceBulk = String(req.query.bulk || "") === "1";
-      var forceAll = String(req.query.all || "") === "1";
-
-      if (forceBulk || (!owner && !forceAll)) {
-        items = items.filter(isBulkItem);
-      }
-      // external cannot override with all=1
-      if (!owner && forceAll) {
-        items = items.filter(isBulkItem);
-      }
+      // Strict: Wholesale tab only
+      items = items.filter(isWholesaleTabItem);
 
       const cat = req.query.category;
       if (cat) {
@@ -462,7 +461,8 @@ module.exports = function mountWholesale(app, opts) {
       }
 
       items = items.slice().sort(function (a, b) {
-        return (isBulkItem(b) ? 1 : 0) - (isBulkItem(a) ? 1 : 0);
+        return String(a.category || "").localeCompare(String(b.category || "")) ||
+          String(a.name || "").localeCompare(String(b.name || ""));
       });
 
       const mapped = items.map(function (i) {
@@ -485,14 +485,16 @@ module.exports = function mountWholesale(app, opts) {
           status: i.status,
           lane: i.lane,
           weightLb: i.weightLb || null,
-          bulk: isBulkItem(i)
+          pool: itemPool(i),
+          bulk: true
         };
       });
+
       res.json({
         warehouse: inv.warehouse || "DeFuniak Springs, FL",
         updated: inv.updated,
         dealer: publicDealer(d),
-        mode: owner ? "owner-full" : "bulk-only",
+        mode: "wholesale-tab",
         count: mapped.length,
         items: mapped
       });
@@ -528,5 +530,5 @@ module.exports = function mountWholesale(app, opts) {
     res.sendFile(path.join(__dirname, "admin", "dealers.html"));
   });
 
-  console.log("Wholesale routes: registered (admin password = FreePort password)");
+  console.log("Wholesale routes: registered (catalog = FreePort Wholesale tab only)");
 };
