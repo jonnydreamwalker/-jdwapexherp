@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wholesale Dealer Application | JDW Apex Herp</title>
+<meta name="description" content="Apply for wholesale dealer pricing on premium reptile hardscape, UVB lighting, and bioactive substrates. Veteran-owned. Florida warehouse.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://jdwapexherp.com/services/wholesale.html">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+<link rel="apple-touch-icon" href="../assets/images/gallery/Logo.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="nav-shell.js"></script>
+</head>
+<body class="bg-zinc-950 text-white">
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Wholesale · Dealer Pricing · Florida Warehouse · Direct Hardscape Source</div>
+<nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
+<div class="absolute inset-0 bg-[url('../assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative z-10">
+<div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<a href="../index.html"><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 sm:h-12 logo-placeholder flex-shrink-0"></a>
+<div class="min-w-0"><h1 class="text-lg sm:text-2xl font-black tracking-tighter text-emerald-400 truncate">JONNYDREAMWALKER</h1><p class="text-[10px] text-zinc-500 -mt-1">APEX HERP SUPPLY</p></div>
+</div>
+<div class="hidden md:flex absolute left-1/2 -translate-x-1/2 gap-6 lg:gap-8 text-sm font-medium items-center justify-center">
+<a href="../index.html" class="hover:text-emerald-400 transition">Home</a>
+<a href="deals.html" class="hover:text-emerald-400 transition">Deals</a>
+<a href="wholesale.html" class="text-emerald-400 transition font-semibold">Wholesale</a>
+<a href="../about.html" class="hover:text-emerald-400 transition">About</a>
+</div>
+<div class="flex items-center gap-3 flex-shrink-0 relative z-50">
+<a href="../wholesale/login.html" class="hidden sm:inline text-xs uppercase tracking-wider text-emerald-400 border border-emerald-800 px-3 py-1.5 rounded-lg hover:bg-emerald-950">Dealer Login</a>
+<button type="button" onclick="toggleMobileMenu()" class="md:hidden text-emerald-400 text-2xl p-2" aria-label="Open menu"><i class="fas fa-bars" id="hamburger-icon"></i></button>
+</div></div></div></nav>
+<div id="mobile-menu" class="md:hidden fixed inset-0 bg-zinc-950 z-[60] hidden flex-col pt-20 px-6 overflow-y-auto">
+<div class="flex flex-col text-lg font-medium">
+<a href="../index.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Home</a>
+<a href="wholesale.html" class="py-4 border-b border-zinc-800 text-emerald-400" onclick="closeMobileMenu()">Wholesale Application</a>
+<a href="../wholesale/login.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Dealer Login</a>
+<a href="deals.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Deals</a>
+<a href="../about.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">About</a>
+</div></div>
+<header class="h-[36vh] flex items-center justify-center relative overflow-hidden">
+<video autoplay loop muted playsinline class="w-full h-full object-cover absolute opacity-40"><source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4"></video>
+<div class="relative z-10 text-center px-6">
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter">Wholesale</h1>
+<p class="text-zinc-400 text-sm md:text-base mt-3 max-w-xl mx-auto">Dealer pricing for qualified retailers, breeders, and institutions. Same laboratory-grade catalog — exclusive rates. 50 lb cork and up.</p>
+</div>
+</header>
+<section class="py-12 px-6 max-w-3xl mx-auto">
+<div class="bg-zinc-900 border border-emerald-900/60 rounded-2xl p-6 md:p-10">
+<h2 class="text-2xl font-black text-emerald-400 mb-2">Dealer Application</h2>
+<p class="text-zinc-400 text-sm mb-8">Complete the form. We review website, social proof, and tax credentials before issuing portal access. You will set your own password after approval.</p>
+<form id="dealer-app-form" class="space-y-5" novalidate>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business name *</label>
+<input name="business_name" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="Store or LLC name"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Contact name *</label>
+<input name="contact_name" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="Full name"></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Email *</label>
+<input type="email" name="email" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Phone *</label>
+<input type="tel" name="phone" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Tax ID / EIN *</label>
+<input name="tax_id" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Resale certificate #</label>
+<input name="resale_cert" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business type *</label>
+<select name="business_type" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none">
+<option value="">Select…</option>
+<option>Pet / reptile store</option>
+<option>Online retailer</option>
+<option>Breeder</option>
+<option>Zoo / education / rescue</option>
+<option>Distributor</option>
+<option>Other</option>
+</select></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business address *</label>
+<input name="address" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div class="grid md:grid-cols-3 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">City *</label>
+<input name="city" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">State *</label>
+<input name="state" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" maxlength="2"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">ZIP *</label>
+<input name="zip" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Website *</label>
+<input type="url" name="website" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="https://"></div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Instagram</label>
+<input name="instagram" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Facebook / other social</label>
+<input name="social" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Notes</label>
+<textarea name="message" rows="3" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></textarea></div>
+<p id="form-status" class="text-sm text-zinc-500 hidden"></p>
+<button type="submit" id="submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase tracking-wider py-4 rounded-xl">Submit Dealer Application</button>
+<p class="text-xs text-zinc-600 text-center">Already approved? <a href="../wholesale/login.html" class="text-emerald-400 hover:underline">Dealer portal login</a></p>
+</form>
+</div>
+</section>
+<footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-12">
+<div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
+<div><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 mb-4 opacity-80"><p class="text-zinc-500">Veteran Owned and Operated<br>DeFuniak Springs, Florida Warehouse</p></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Shop</h4><ul class="space-y-2 text-zinc-400"><li><a href="hardscape.html" class="hover:text-emerald-400">Hardscape</a></li><li><a href="wholesale.html" class="hover:text-emerald-400">Wholesale</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400"><li><a href="../about.html" class="hover:text-emerald-400">About</a></li><li><a href="../wholesale/login.html" class="hover:text-emerald-400">Dealer Login</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Connect</h4><p class="text-zinc-600 text-xs">© 2026 JDW Apex Herp</p></div>
+</div></footer>
+<script>
+(function () {
+  var API = (window.APEX_API_BASE || localStorage.getItem("APEX_API_BASE") || "https://freeport.jdwapexherp.com").replace(/\/$/, "");
+  var form = document.getElementById("dealer-app-form");
+  var status = document.getElementById("form-status");
+  var btn = document.getElementById("submit-btn");
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    status.classList.remove("hidden");
+    status.className = "text-sm text-zinc-400";
+    status.textContent = "Sending application…";
+    btn.disabled = true;
+    var fd = new FormData(form);
+    var payload = {
+      business_name: fd.get("business_name"),
+      contact_name: fd.get("contact_name"),
+      email: fd.get("email"),
+      phone: fd.get("phone"),
+      tax_id: fd.get("tax_id"),
+      resale_cert: fd.get("resale_cert") || "",
+      business_type: fd.get("business_type"),
+      address: fd.get("address"),
+      city: fd.get("city"),
+      state: fd.get("state"),
+      zip: fd.get("zip"),
+      website: fd.get("website"),
+      instagram: fd.get("instagram") || "",
+      social: fd.get("social") || "",
+      message: fd.get("message") || "",
+      interests: []
+    };
+    var freeportOk = false;
+    try {
+      var r = await fetch(API + "/api/wholesale/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      freeportOk = r.ok;
+    } catch (err) {}
+    try {
+      var emailBody = new FormData();
+      emailBody.append("_subject", "Dealer application");
+      emailBody.append("_template", "table");
+      emailBody.append("_captcha", "false");
+      Object.keys(payload).forEach(function (k) {
+        var v = payload[k];
+        emailBody.append(k, Array.isArray(v) ? v.join(", ") : String(v || ""));
+      });
+      await fetch("https://formsubmit.co/ajax/jonnydreamwalker@gmail.com", {
+        method: "POST",
+        body: emailBody,
+        headers: { Accept: "application/json" }
+      });
+    } catch (err2) {}
+    status.className = "text-sm text-emerald-400";
+    status.textContent = freeportOk
+      ? "Application received. We will review your site and socials and email you if approved."
+      : "Application sent for review. We will follow up after review.";
+    form.reset();
+    btn.disabled = false;
+  });
+})();
+</script>
+</body>
+</html>
