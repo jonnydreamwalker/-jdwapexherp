@@ -13,6 +13,7 @@ module.exports = function mountWholesale(app, opts) {
   const APP_FILE = path.join(dataDir, "applications.json");
   const DEALER_FILE = path.join(dataDir, "dealers.json");
   const notifyEmail = process.env.WHOLESALE_NOTIFY_EMAIL || "jonnydreamwalker@gmail.com";
+  const ADMIN_PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
 
   function ensure(file, fallback) {
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -37,7 +38,7 @@ module.exports = function mountWholesale(app, opts) {
   function hashPass(password, salt) {
     salt = salt || crypto.randomBytes(16).toString("hex");
     const hash = crypto.scryptSync(String(password), salt, 64).toString("hex");
-    return { salt, hash };
+    return { salt: salt, hash: hash };
   }
   function verifyPass(password, salt, hash) {
     try {
@@ -55,9 +56,11 @@ module.exports = function mountWholesale(app, opts) {
     const t = req.headers["x-dealer-token"] || (req.session && req.session.dealerToken);
     if (!t) return null;
     const db = readDealers();
-    return (db.dealers || []).find(function (d) {
-      return d.status === "active" && d.sessionToken === t;
-    }) || null;
+    return (
+      (db.dealers || []).find(function (d) {
+        return d.status === "active" && d.sessionToken === t;
+      }) || null
+    );
   }
 
   function publicDealer(d) {
@@ -68,6 +71,55 @@ module.exports = function mountWholesale(app, opts) {
       contact_name: d.contact_name,
       status: d.status
     };
+  }
+
+  function ensureOwnerDealer(email) {
+    const db = readDealers();
+    let d = (db.dealers || []).find(function (x) {
+      return x.id === "DLR-OWNER" || x.email === (email || "jonnydreamwalker@gmail.com");
+    });
+    if (!d) {
+      d = {
+        id: "DLR-OWNER",
+        email: email || "jonnydreamwalker@gmail.com",
+        business_name: "JDW Apex Herp Supply",
+        contact_name: "Jonathan Roberts",
+        phone: "",
+        website: "https://jdwapexherp.com",
+        tax_id: "OWNER",
+        status: "active",
+        setupToken: null,
+        created: new Date().toISOString(),
+        passHash: null,
+        passSalt: null,
+        sessionToken: null
+      };
+      db.dealers = db.dealers || [];
+      db.dealers.push(d);
+    }
+    d.status = "active";
+    if (email) d.email = email;
+    writeDealers(db);
+    return d;
+  }
+
+  function isWholesaleItem(i) {
+    if (!i) return false;
+    if (i.dealerEligible === true) return true;
+    var pool = String(i.pool || i.channel || "").toLowerCase();
+    if (pool === "wholesale" || pool === "both" || pool === "dealer") return true;
+    var w = Number(i.weightLb) || 0;
+    if (w >= 50) return true;
+    var n = String(i.name || "").toLowerCase();
+    var m = n.match(/(\d+)\s*lb/);
+    if (m && Number(m[1]) >= 50) return true;
+    return false;
+  }
+
+  function loadInventory() {
+    if (typeof opts.readInventory === "function") return opts.readInventory();
+    const invPath = path.join(dataDir, "inventory.json");
+    return JSON.parse(fs.readFileSync(invPath, "utf8"));
   }
 
   app.post("/api/wholesale/apply", function (req, res) {
@@ -228,11 +280,31 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ ok: true, message: "Password set — you can log in" });
   });
 
+  // Same password as Apex FreePort admin (ADMIN_PASSWORD env)
   app.post("/api/wholesale/login", function (req, res) {
     const email = String((req.body && req.body.email) || "")
       .trim()
       .toLowerCase();
     const password = (req.body && req.body.password) || "";
+
+    if (password && password === ADMIN_PASS) {
+      const d = ensureOwnerDealer(email || "jonnydreamwalker@gmail.com");
+      d.sessionToken = token();
+      d.lastLogin = new Date().toISOString();
+      const db = readDealers();
+      const hit = (db.dealers || []).find(function (x) {
+        return x.id === d.id;
+      });
+      if (hit) {
+        hit.sessionToken = d.sessionToken;
+        hit.lastLogin = d.lastLogin;
+        hit.status = "active";
+        writeDealers(db);
+      }
+      if (req.session) req.session.dealerToken = d.sessionToken;
+      return res.json({ ok: true, token: d.sessionToken, dealer: publicDealer(d) });
+    }
+
     const db = readDealers();
     const d = (db.dealers || []).find(function (x) {
       return x.email === email;
@@ -272,27 +344,14 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ dealer: publicDealer(d) });
   });
 
+  // Same bulk list FreePort Wholesale tab uses
   app.get("/api/wholesale/catalog", function (req, res) {
     const d = dealerFromToken(req);
     if (!d) return res.status(401).json({ error: "Unauthorized" });
     try {
-      let inv;
-      if (typeof opts.readInventory === "function") {
-        inv = opts.readInventory();
-      } else {
-        const invPath = path.join(dataDir, "inventory.json");
-        inv = JSON.parse(fs.readFileSync(invPath, "utf8"));
-      }
+      const inv = loadInventory();
       let items = inv.items || [];
-      // Dealer portal: 50 lb and up only
-      items = items.filter(function (i) {
-        var w = Number(i.weightLb) || 0;
-        if (w >= 50) return true;
-        var n = String(i.name || "").toLowerCase();
-        var m = n.match(/(\d+)\s*lb/);
-        if (m && Number(m[1]) >= 50) return true;
-        return false;
-      });
+      items = items.filter(isWholesaleItem);
       const cat = req.query.category;
       if (cat) {
         const c = String(cat).toLowerCase();
@@ -329,6 +388,7 @@ module.exports = function mountWholesale(app, opts) {
         items: mapped
       });
     } catch (e) {
+      console.error("wholesale catalog", e.message);
       res.status(500).json({ error: "Catalog unavailable" });
     }
   });
@@ -338,9 +398,7 @@ module.exports = function mountWholesale(app, opts) {
       const sku = req.body && req.body.sku;
       const dealerPrice = Number(req.body && req.body.dealerPrice);
       if (!sku || isNaN(dealerPrice)) return res.status(400).json({ error: "sku and dealerPrice required" });
-      let inv;
-      if (typeof opts.readInventory === "function") inv = opts.readInventory();
-      else inv = JSON.parse(fs.readFileSync(path.join(dataDir, "inventory.json"), "utf8"));
+      let inv = loadInventory();
       const item = (inv.items || []).find(function (i) {
         return i.sku === sku;
       });
@@ -361,5 +419,5 @@ module.exports = function mountWholesale(app, opts) {
     res.sendFile(path.join(__dirname, "admin", "dealers.html"));
   });
 
-  console.log("Wholesale routes: registered → notify", notifyEmail);
+  console.log("Wholesale routes: registered (admin password = FreePort password)");
 };
