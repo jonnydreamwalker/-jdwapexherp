@@ -3,35 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FreePort · Login</title>
-<meta name="robots" content="noindex">
+<title>FreePort Login · Apex Inventory Bridge</title>
+<meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#000000">
-<script src="/admin/favicon-force.js"></script>
-<style>
-:root{--brand-blue-color:#10b981;--brand-white-color:#ffffff}
-::selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
-::-moz-selection{background-color:var(--brand-blue-color);color:var(--brand-white-color)}
-</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<style>
+  body {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.18), transparent),
+      #09090b;
+  }
+  .glass {
+    background: rgba(24, 24, 27, 0.72);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+  .glow-btn {
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35), 0 12px 40px -12px rgba(16, 185, 129, 0.55);
+  }
+  .glow-btn:hover {
+    box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.5), 0 16px 48px -10px rgba(16, 185, 129, 0.7);
+  }
+</style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen flex items-center justify-center p-4">
-<form method="POST" action="/login" autocomplete="on" class="bg-black border border-emerald-900 rounded-2xl p-8 w-full max-w-sm space-y-4">
-  <div class="text-center">
-    <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" class="h-24 w-24 mx-auto mb-3 object-contain rounded-full border border-emerald-800 bg-black" onerror="this.style.display='none'">
-    <p class="text-emerald-500 text-[10px] font-bold tracking-[0.3em] uppercase">JDW</p>
-    <h1 class="text-2xl font-black text-emerald-400">Apex FreePort</h1>
+<body class="text-white min-h-screen flex flex-col">
+  <div class="bg-emerald-950/90 border-b border-emerald-900 text-center text-[11px] py-2.5 text-emerald-300/90 tracking-wide">
+    <i class="fa-solid fa-shield-halved mr-1.5 opacity-80"></i>
+    ApexFreePort · Inventory Bridge · Staff Only
   </div>
-  <label class="block text-xs text-zinc-500 uppercase" for="username">Username</label>
-  <input type="text" name="username" id="username" required autocomplete="username" class="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white" placeholder="Username">
-  <label class="block text-xs text-zinc-500 uppercase" for="password">Password</label>
-  <input type="password" name="password" id="password" required autocomplete="current-password" class="w-full bg-black border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white" placeholder="Password">
-  <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
-    <input type="checkbox" name="remember" value="1" checked class="rounded border-zinc-600">
-    Stay signed in (30 days)
-  </label>
-  <p id="err" class="text-red-400 text-xs text-center hidden">Wrong username or password.</p>
-  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold uppercase text-sm py-3 rounded-xl">Enter</button>
-</form>
-<script>if(location.search.indexOf("err=1")>=0)document.getElementById("err").classList.remove("hidden");</script>
+
+  <div class="flex-1 flex items-center justify-center px-4 py-14">
+    <div class="w-full max-w-md glass border border-emerald-900/50 rounded-2xl p-8 md:p-10 shadow-2xl shadow-black/50">
+      <div class="text-center mb-8">
+        <img
+          src="/uploads/apexfreeport-logo.svg"
+          alt="Apex FreePort"
+          class="h-20 w-20 mx-auto mb-4 object-contain rounded-full border border-emerald-800/70 bg-black/60"
+          onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex'"
+        >
+        <div id="logo-fallback" class="mx-auto mb-4 h-16 w-16 rounded-2xl bg-black/60 border border-emerald-800/60 hidden items-center justify-center">
+          <i class="fa-solid fa-warehouse text-2xl text-emerald-400"></i>
+        </div>
+        <p class="text-emerald-500/90 text-[11px] font-bold tracking-[0.28em] uppercase mb-2">JDW Apex</p>
+        <h1 class="text-2xl md:text-3xl font-black text-emerald-400 tracking-tight">FreePort Control</h1>
+        <p class="text-zinc-500 text-sm mt-2">Warehouse inventory · wholesale · fulfillment</p>
+      </div>
+
+      <form method="POST" action="/login" class="space-y-4" autocomplete="on">
+        <div>
+          <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1.5" for="username">Username</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 text-sm"></i>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              value="admin"
+              required
+              autocomplete="username"
+              class="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-700/50 transition"
+            >
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1.5" for="password">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-600 text-sm"></i>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              required
+              autofocus
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-700/50 transition"
+            >
+          </div>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer select-none">
+          <input type="checkbox" name="remember" value="1" checked class="rounded border-zinc-600 accent-emerald-500">
+          Stay signed in (30 days)
+        </label>
+
+        <p id="err" class="text-red-400 text-sm flex items-center gap-2 hidden">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>Wrong username or password.</span>
+        </p>
+
+        <button
+          type="submit"
+          class="glow-btn w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase tracking-wide text-sm py-3.5 rounded-xl transition"
+        >
+          Enter FreePort
+        </button>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-zinc-800/80 text-center space-y-2">
+        <p class="text-[11px] text-zinc-600 uppercase tracking-wider">Same stack as the dealer portal</p>
+        <p class="text-xs text-zinc-500">
+          <a href="https://jdwapexherp.com/wholesale/login.html" class="text-emerald-500/90 hover:text-emerald-400 hover:underline">Dealer portal</a>
+          <span class="text-zinc-700 mx-2">·</span>
+          <a href="https://jdwapexherp.com" class="text-zinc-400 hover:text-zinc-300 hover:underline">Storefront</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-center text-[10px] text-zinc-700 pb-6">DeFuniak Springs, FL · Veteran-owned · Laboratory grade</p>
+
+  <script>
+    if (location.search.indexOf("err") >= 0) {
+      var el = document.getElementById("err");
+      if (el) el.classList.remove("hidden");
+    }
+  </script>
 </body>
 </html>
