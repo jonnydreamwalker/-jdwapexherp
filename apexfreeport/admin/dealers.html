@@ -4,46 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dealers · ApexFreePort</title>
+<meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
 <header class="border-b border-zinc-800 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-<div>
-<p class="text-emerald-400 font-black tracking-tight text-xl">ApexFreePort · Dealers</p>
-<p class="text-xs text-zinc-500">Approve applications · issue password invites · set dealer prices</p>
-</div>
-<div class="flex gap-3 text-sm">
-<a href="/admin" class="text-zinc-400 hover:text-emerald-400">Inventory</a>
-<a href="/admin/fulfillment" class="text-zinc-400 hover:text-emerald-400">Fulfillment</a>
-</div>
+  <div>
+    <p class="text-emerald-400 font-black tracking-tight text-xl">ApexFreePort · Dealers</p>
+    <p class="text-xs text-zinc-500">Approve · reject · request more info · password invites</p>
+  </div>
+  <div class="flex gap-3 text-sm">
+    <a href="/admin" class="text-zinc-400 hover:text-emerald-400">Inventory</a>
+    <a href="/admin/fulfillment" class="text-zinc-400 hover:text-emerald-400">Fulfillment</a>
+  </div>
 </header>
+
 <main class="max-w-6xl mx-auto px-4 py-8 space-y-10">
-<section>
-<h2 class="text-lg font-bold text-emerald-400 mb-4">Pending applications</h2>
-<div id="apps" class="space-y-4 text-sm"></div>
-</section>
-<section>
-<h2 class="text-lg font-bold text-emerald-400 mb-4">Active / setup dealers</h2>
-<div id="dealers" class="space-y-3 text-sm"></div>
-</section>
-<section>
-<h2 class="text-lg font-bold text-emerald-400 mb-4">Set dealer price by SKU</h2>
-<form id="price-form" class="flex flex-wrap gap-3 items-end">
-<div>
-<label class="block text-xs text-zinc-500 mb-1">SKU</label>
-<input name="sku" required class="bg-black border border-zinc-700 rounded-lg px-3 py-2" placeholder="HS-UFO-FLAT-01">
-</div>
-<div>
-<label class="block text-xs text-zinc-500 mb-1">Dealer price (USD)</label>
-<input name="dealerPrice" type="number" step="0.01" required class="bg-black border border-zinc-700 rounded-lg px-3 py-2" placeholder="21.24">
-</div>
-<button class="bg-emerald-600 text-black font-bold px-4 py-2 rounded-lg">Save</button>
-<span id="price-msg" class="text-xs text-zinc-500"></span>
-</form>
-</section>
+  <section>
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <h2 class="text-lg font-bold text-emerald-400">Dealer applications</h2>
+      <div class="flex gap-2 text-xs">
+        <button type="button" data-filter="pending" class="filt active px-3 py-1 rounded-lg border border-emerald-700 text-emerald-400">Pending</button>
+        <button type="button" data-filter="info_requested" class="filt px-3 py-1 rounded-lg border border-zinc-700 text-zinc-400">Needs info</button>
+        <button type="button" data-filter="all" class="filt px-3 py-1 rounded-lg border border-zinc-700 text-zinc-400">All</button>
+      </div>
+    </div>
+    <div id="apps" class="space-y-4 text-sm"></div>
+  </section>
+
+  <section>
+    <h2 class="text-lg font-bold text-emerald-400 mb-4">Active / setup dealers</h2>
+    <div id="dealers" class="space-y-3 text-sm"></div>
+  </section>
+
+  <section>
+    <h2 class="text-lg font-bold text-emerald-400 mb-4">Set dealer price by SKU</h2>
+    <form id="price-form" class="flex flex-wrap gap-3 items-end">
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">SKU</label>
+        <input name="sku" required class="bg-black border border-zinc-700 rounded-lg px-3 py-2" placeholder="HS-CORK-50LB-01">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Dealer price (USD)</label>
+        <input name="dealerPrice" type="number" step="0.01" required class="bg-black border border-zinc-700 rounded-lg px-3 py-2" placeholder="119.99">
+      </div>
+      <button class="bg-emerald-600 text-black font-bold px-4 py-2 rounded-lg">Save</button>
+      <span id="price-msg" class="text-xs text-zinc-500"></span>
+    </form>
+  </section>
 </main>
+
+<div id="infoModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50" style="display:none">
+  <div class="w-full max-w-lg bg-zinc-900 border border-amber-700/50 rounded-2xl p-6">
+    <h3 class="text-lg font-black text-amber-400 mb-1">Request more information</h3>
+    <p class="text-xs text-zinc-500 mb-4">Emails the applicant. They can reply with updates or withdraw.</p>
+    <p id="infoTarget" class="text-sm text-zinc-300 mb-3"></p>
+    <label class="block text-xs text-zinc-500 mb-1">What do you need?</label>
+    <textarea id="infoMsg" rows="5" class="w-full bg-black border border-zinc-700 rounded-xl px-3 py-2 text-sm mb-4" placeholder="Example: Please send a clearer resale certificate photo and confirm your warehouse shipping address."></textarea>
+    <div class="flex flex-wrap gap-2 justify-end">
+      <button type="button" id="infoCancel" class="px-4 py-2 rounded-lg border border-zinc-600 text-sm">Cancel</button>
+      <button type="button" id="infoSend" class="px-4 py-2 rounded-lg bg-amber-500 text-black font-bold text-sm">Send email</button>
+    </div>
+    <p id="infoStatus" class="text-xs text-zinc-500 mt-3"></p>
+  </div>
+</div>
+
 <script>
+var allApps = [];
+var filter = "pending";
+var infoAppId = null;
+
 async function api(path, opts) {
   opts = opts || {};
   opts.credentials = "include";
@@ -52,73 +84,188 @@ async function api(path, opts) {
   if (r.status === 401) { location.href = "/login"; return null; }
   return r;
 }
-async function load() {
-  const ra = await api("/api/wholesale/applications");
-  const rd = await api("/api/wholesale/dealers");
-  if (!ra || !rd) return;
-  const apps = (await ra.json()).applications || [];
-  const dealers = (await rd.json()).dealers || [];
-  const box = document.getElementById("apps");
-  const pending = apps.filter(function (a) { return a.status === "pending"; });
-  if (!pending.length) {
-    box.innerHTML = '<p class="text-zinc-600">No pending applications.</p>';
-  } else {
-    box.innerHTML = pending.map(function (a) {
-      return '<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4">' +
-        '<div class="flex flex-wrap justify-between gap-2"><strong>' + a.business_name + '</strong><span class="text-zinc-500">' + a.id + '</span></div>' +
-        '<p class="text-zinc-400 mt-1">' + a.contact_name + ' · ' + a.email + ' · ' + a.phone + '</p>' +
-        '<p class="text-zinc-500 mt-1">Tax/EIN: ' + a.tax_id + (a.resale_cert ? ' · Resale: ' + a.resale_cert : '') + '</p>' +
-        '<p class="mt-1"><a class="text-emerald-400 underline" href="' + a.website + '" target="_blank" rel="noopener">Website</a>' +
-        (a.instagram ? ' · IG: ' + a.instagram : '') +
-        (a.social ? ' · ' + a.social : '') + '</p>' +
-        '<p class="text-zinc-500 mt-1">' + a.business_type + ' · ' + a.city + ', ' + a.state + ' · interests: ' + (a.interests || []).join(', ') + '</p>' +
-        (a.message ? '<p class="text-zinc-600 mt-1">' + a.message + '</p>' : '') +
-        '<div class="mt-3 flex gap-2">' +
-        '<button data-id="' + a.id + '" data-act="approve" class="decide bg-emerald-600 text-black font-bold px-3 py-1.5 rounded-lg text-xs">APPROVE</button>' +
-        '<button data-id="' + a.id + '" data-act="reject" class="decide bg-zinc-800 border border-zinc-600 px-3 py-1.5 rounded-lg text-xs">REJECT</button>' +
-        '</div><p class="setup-url text-xs text-amber-400/90 mt-2 hidden"></p></div>';
-    }).join("");
-    box.querySelectorAll(".decide").forEach(function (btn) {
-      btn.addEventListener("click", async function () {
-        const id = btn.getAttribute("data-id");
-        const decision = btn.getAttribute("data-act");
-        const r = await api("/api/wholesale/applications/" + id + "/decide", {
-          method: "POST",
-          body: JSON.stringify({ decision: decision })
-        });
-        if (!r) return;
-        const j = await r.json();
-        if (decision === "approve" && j.setupUrl) {
-          const card = btn.closest("div");
-          const el = card.querySelector(".setup-url");
-          el.classList.remove("hidden");
-          el.innerHTML = 'Send setup link: <a class="underline break-all" href="' + j.setupUrl + '">' + j.setupUrl + "</a>";
-        } else {
-          load();
-        }
-      });
-    });
+
+function esc(s) {
+  var d = document.createElement("div");
+  d.appendChild(document.createTextNode(s == null ? "" : String(s)));
+  return d.innerHTML;
+}
+
+function statusBadge(st) {
+  st = String(st || "pending");
+  var colors = {
+    pending: "bg-amber-900/50 text-amber-300 border-amber-700",
+    info_requested: "bg-sky-900/50 text-sky-300 border-sky-700",
+    approved: "bg-emerald-900/50 text-emerald-300 border-emerald-700",
+    rejected: "bg-red-900/40 text-red-300 border-red-800",
+    withdrawn: "bg-zinc-800 text-zinc-400 border-zinc-600"
+  };
+  var c = colors[st] || colors.pending;
+  return '<span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border ' + c + '">' + esc(st.replace("_", " ")) + "</span>";
+}
+
+function renderApps() {
+  var box = document.getElementById("apps");
+  var list = allApps.filter(function (a) {
+    if (filter === "all") return true;
+    if (filter === "pending") return a.status === "pending";
+    if (filter === "info_requested") return a.status === "info_requested";
+    return a.status === filter;
+  });
+  if (!list.length) {
+    box.innerHTML = '<p class="text-zinc-600">No applications in this view.</p>';
+    return;
   }
+  box.innerHTML = list.map(function (a) {
+    var canAct = a.status === "pending" || a.status === "info_requested";
+    return '<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4" data-app="' + esc(a.id) + '">' +
+      '<div class="flex flex-wrap justify-between gap-2 items-start">' +
+        '<div><strong class="text-base">' + esc(a.business_name) + "</strong> " + statusBadge(a.status) +
+        '<p class="text-zinc-400 mt-1">' + esc(a.contact_name) + " · " + esc(a.email) + " · " + esc(a.phone || "") + "</p></div>" +
+        '<span class="text-zinc-600 text-xs">' + esc(a.id) + "<br>" + esc((a.submitted || "").slice(0, 10)) + "</span>" +
+      "</div>" +
+      '<p class="text-zinc-500 mt-2">Tax/EIN: ' + esc(a.tax_id) + (a.resale_cert ? " · Resale: " + esc(a.resale_cert) : "") + "</p>" +
+      '<p class="mt-1"><a class="text-emerald-400 underline" href="' + esc(a.website) + '" target="_blank" rel="noopener">Website</a>' +
+        (a.instagram ? " · IG: " + esc(a.instagram) : "") +
+        (a.social ? " · " + esc(a.social) : "") + "</p>" +
+      '<p class="text-zinc-500 mt-1">' + esc(a.business_type || "") + " · " + esc(a.city || "") + ", " + esc(a.state || "") +
+        (a.years_in_business ? " · " + esc(a.years_in_business) + " yrs" : "") +
+        (a.monthly_volume ? " · vol: " + esc(a.monthly_volume) : "") +
+        (a.interests && a.interests.length ? " · interests: " + esc(a.interests.join(", ")) : "") + "</p>" +
+      (a.message ? '<p class="text-zinc-400 mt-2 border-l-2 border-zinc-700 pl-3">' + esc(a.message) + "</p>" : "") +
+      (a.infoRequestMessage ? '<p class="text-sky-400/90 mt-2 text-xs"><i class="fa-solid fa-envelope mr-1"></i>Last info request: ' + esc(a.infoRequestMessage) + "</p>" : "") +
+      (canAct
+        ? '<div class="mt-4 flex flex-wrap gap-2">' +
+            '<button data-id="' + esc(a.id) + '" data-act="approve" class="decide bg-emerald-600 hover:bg-emerald-500 text-black font-bold px-3 py-2 rounded-lg text-xs"><i class="fa-solid fa-check mr-1"></i>APPROVE</button>' +
+            '<button data-id="' + esc(a.id) + '" data-act="info" class="info-btn bg-amber-600/90 hover:bg-amber-500 text-black font-bold px-3 py-2 rounded-lg text-xs"><i class="fa-solid fa-envelope mr-1"></i>REQUEST INFO</button>' +
+            '<button data-id="' + esc(a.id) + '" data-act="reject" class="decide bg-zinc-800 border border-red-900/60 hover:border-red-600 px-3 py-2 rounded-lg text-xs text-red-300"><i class="fa-solid fa-xmark mr-1"></i>REJECT</button>' +
+          "</div>"
+        : "") +
+      '<p class="setup-url text-xs text-amber-400/90 mt-2 hidden"></p>' +
+    "</div>";
+  }).join("");
+
+  box.querySelectorAll(".decide").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      var id = btn.getAttribute("data-id");
+      var decision = btn.getAttribute("data-act");
+      if (decision === "reject" && !confirm("Reject this application?")) return;
+      btn.disabled = true;
+      var r = await api("/api/wholesale/applications/" + encodeURIComponent(id) + "/decide", {
+        method: "POST",
+        body: JSON.stringify({ decision: decision })
+      });
+      if (!r) return;
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) {
+        alert(j.error || "Failed");
+        btn.disabled = false;
+        return;
+      }
+      if (decision === "approve" && j.setupUrl) {
+        var card = btn.closest("[data-app]");
+        var el = card.querySelector(".setup-url");
+        el.classList.remove("hidden");
+        el.innerHTML = 'Approved. Send setup link to dealer: <a class="underline break-all" href="' + esc(j.setupUrl) + '">' + esc(j.setupUrl) + "</a>";
+      }
+      load();
+    });
+  });
+
+  box.querySelectorAll(".info-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      infoAppId = btn.getAttribute("data-id");
+      var app = allApps.filter(function (x) { return x.id === infoAppId; })[0];
+      document.getElementById("infoTarget").textContent = app
+        ? (app.business_name + " · " + app.email)
+        : infoAppId;
+      document.getElementById("infoMsg").value =
+        "Thanks for applying to JDW Apex Herp Wholesale.\n\n" +
+        "We need a bit more information before we can finish reviewing your application. Please reply to this email with the details requested below, or let us know if you wish to withdraw.\n\n" +
+        "What we need:\n- \n\n" +
+        "— JDW Apex Herp Supply · DeFuniak Springs, FL";
+      document.getElementById("infoStatus").textContent = "";
+      var m = document.getElementById("infoModal");
+      m.style.display = "flex";
+      m.classList.remove("hidden");
+    });
+  });
+}
+
+async function load() {
+  var ra = await api("/api/wholesale/applications");
+  var rd = await api("/api/wholesale/dealers");
+  if (!ra || !rd) return;
+  allApps = (await ra.json()).applications || [];
+  var dealers = (await rd.json()).dealers || [];
+  renderApps();
   document.getElementById("dealers").innerHTML = dealers.length
     ? dealers.map(function (d) {
         return '<div class="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 flex flex-wrap justify-between gap-2">' +
-          "<div><strong>" + d.business_name + "</strong> · " + d.email +
-          '<span class="text-zinc-500"> · ' + d.status + (d.hasPassword ? " · password set" : " · awaiting password") + "</span></div></div>";
+          "<div><strong>" + esc(d.business_name) + "</strong> · " + esc(d.email) +
+          '<span class="text-zinc-500"> · ' + esc(d.status) + (d.hasPassword ? " · password set" : " · awaiting password") +
+          (d.owner ? " · OWNER" : "") + "</span></div></div>";
       }).join("")
     : '<p class="text-zinc-600">No dealers yet.</p>';
 }
+
+document.querySelectorAll(".filt").forEach(function (b) {
+  b.addEventListener("click", function () {
+    filter = b.getAttribute("data-filter");
+    document.querySelectorAll(".filt").forEach(function (x) {
+      x.classList.remove("active", "border-emerald-700", "text-emerald-400");
+      x.classList.add("border-zinc-700", "text-zinc-400");
+    });
+    b.classList.add("active", "border-emerald-700", "text-emerald-400");
+    b.classList.remove("border-zinc-700", "text-zinc-400");
+    renderApps();
+  });
+});
+
+document.getElementById("infoCancel").onclick = function () {
+  var m = document.getElementById("infoModal");
+  m.style.display = "none";
+  m.classList.add("hidden");
+  infoAppId = null;
+};
+
+document.getElementById("infoSend").onclick = async function () {
+  var msg = document.getElementById("infoMsg").value.trim();
+  if (!infoAppId || !msg) {
+    document.getElementById("infoStatus").textContent = "Message required.";
+    return;
+  }
+  document.getElementById("infoStatus").textContent = "Sending…";
+  var r = await api("/api/wholesale/applications/" + encodeURIComponent(infoAppId) + "/decide", {
+    method: "POST",
+    body: JSON.stringify({ decision: "request_info", message: msg })
+  });
+  if (!r) return;
+  var j = await r.json().catch(function () { return {}; });
+  if (!r.ok) {
+    document.getElementById("infoStatus").textContent = j.error || "Failed to send";
+    return;
+  }
+  document.getElementById("infoStatus").textContent = "Email queued to applicant.";
+  setTimeout(function () {
+    document.getElementById("infoCancel").click();
+    load();
+  }, 800);
+};
+
 document.getElementById("price-form").addEventListener("submit", async function (e) {
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const r = await api("/api/wholesale/sku-price", {
+  var fd = new FormData(e.target);
+  var r = await api("/api/wholesale/sku-price", {
     method: "POST",
     body: JSON.stringify({ sku: fd.get("sku"), dealerPrice: Number(fd.get("dealerPrice")) })
   });
-  const msg = document.getElementById("price-msg");
+  var msg = document.getElementById("price-msg");
   if (!r) return;
-  const j = await r.json();
+  var j = await r.json();
   msg.textContent = r.ok ? ("Saved " + j.sku + " dealer $" + j.dealerPrice) : (j.error || "Failed");
 });
+
 load();
 </script>
 </body>
