@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-29T22:00:00Z",
+  "updated": "2026-07-30T04:10:00Z",
   "warehouse": "DeFuniak Springs, FL",
   "lanes": {
     "direct": "Florida warehouse — hardscape bulk",
@@ -19,7 +19,8 @@
       "location": "WH-A1",
       "price": 24.99,
       "description": "Premium hand-selected Portuguese cork bark flats for terrariums and bioactive builds.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/HS-UFO-FLAT-01.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/HS-UFO-FLAT-01.jpg"]
     },
     {
       "sku": "HS-CORK-BULK-01",
@@ -34,7 +35,8 @@
       "location": "WH-A2",
       "price": 49.99,
       "description": "Portuguese virgin cork bark — warehouse direct. Rounds and slabs for climbing and hides.",
-      "images": [],
+      "image": "https://jdwapexherp.com/assets/products/HS-CORK-BULK-10.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/HS-CORK-BULK-10.jpg"],
       "dealerEligible": true,
       "weightLb": 50,
       "dealerPrice": 42.49
@@ -52,7 +54,8 @@
       "location": "WH-B1",
       "price": 34.99,
       "description": "Arcadia D3 12% UVB T5 tube 22W. Pro-grade lighting for desert and high-UV species.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/LT-ARC-D3-22-10.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/LT-ARC-D3-22-10.jpg"]
     },
     {
       "sku": "LT-ARC-D3-34",
@@ -67,7 +70,8 @@
       "location": "WH-B1",
       "price": 39.99,
       "description": "Arcadia D3 12% UVB T5 tube 34W. Longer length for larger enclosures.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/LT-ARC-D3-34-10.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/LT-ARC-D3-34-10.jpg"]
     },
     {
       "sku": "SB-LUG-COCO-01",
@@ -82,7 +86,8 @@
       "location": "WH-C1",
       "price": 24.99,
       "description": "Expands clean for bioactive and humidity-holding setups. Compressed coco peat block.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/SB-LUG-COCO-06.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/SB-LUG-COCO-06.jpg"]
     },
     {
       "sku": "AP-TEE-01",
@@ -97,6 +102,7 @@
       "location": "EXT-FULFILL",
       "price": 29.99,
       "description": "Official Apex Herp Supply tee. Soft cotton, veteran-owned brand.",
+      "image": "",
       "images": []
     },
     {
@@ -112,6 +118,7 @@
       "location": "WH-D1",
       "price": 12.99,
       "description": "Reptile calcium with D3. Coming soon from Florida warehouse.",
+      "image": "",
       "images": []
     },
     {
@@ -130,7 +137,8 @@
       "weightLb": 50,
       "dealerEligible": true,
       "description": "Wholesale 50 lb bag Portuguese cork bark. Warehouse direct. Dealer tier.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg"]
     },
     {
       "sku": "HS-CORK-100LB-01",
@@ -148,7 +156,8 @@
       "weightLb": 100,
       "dealerEligible": true,
       "description": "Wholesale 100 lb Portuguese cork bark. Best per-lb rate for high-volume dealers.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg"]
     },
     {
       "sku": "HS-CORK-200LB-01",
@@ -166,7 +175,8 @@
       "weightLb": 200,
       "dealerEligible": true,
       "description": "Wholesale 200 lb crate Portuguese cork bark. Florida warehouse direct.",
-      "images": []
+      "image": "https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg",
+      "images": ["https://jdwapexherp.com/assets/products/HS-CORK-BULK-50.jpg"]
     }
   ],
   "movements": []
