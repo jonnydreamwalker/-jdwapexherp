@@ -51,7 +51,8 @@
       var r = await fetch(API + "/api/wholesale/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        mode: "cors",
+        credentials: "omit",
         body: JSON.stringify({ email: fd.get("email"), password: fd.get("password") })
       });
       var j = await r.json().catch(function () { return {}; });
@@ -64,7 +65,7 @@
       if (j.dealer) localStorage.setItem("jdw_dealer", JSON.stringify(j.dealer));
       location.href = "index.html";
     } catch (ex) {
-      err.textContent = "Cannot reach FreePort. Try again.";
+      err.textContent = "Cannot reach FreePort (" + API + "). Check freeport is online.";
       err.classList.remove("hidden");
     }
   });
