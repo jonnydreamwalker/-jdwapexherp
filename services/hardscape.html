@@ -14,7 +14,7 @@
 <script src="nav-shell.js"></script>
 <script src="./checkout-client.js?v=20260730b"></script>
 <script>
-/* Direct FreePort catalog — no external bridge required */
+/* Direct FreePort catalog — overlay details (no grid stretch) */
 (function () {
   var API = "https://freeport.jdwapexherp.com";
   function esc(s) {
@@ -26,17 +26,53 @@
       .replace(/"/g, "\u0026quot;");
   }
   function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+  function closeAllDetails() {
+    document.querySelectorAll(".apex-detail-panel").forEach(function (p) {
+      p.classList.add("hidden");
+    });
+    document.querySelectorAll(".apex-detail-arrow").forEach(function (a) {
+      a.textContent = "\u25bc";
+    });
+  }
+  window.toggleApexDetails = function (btn) {
+    var wrap = btn.closest(".apex-detail-wrap");
+    if (!wrap) return;
+    var panel = wrap.querySelector(".apex-detail-panel");
+    var arrow = wrap.querySelector(".apex-detail-arrow");
+    if (!panel) return;
+    var opening = panel.classList.contains("hidden");
+    closeAllDetails();
+    if (opening) {
+      panel.classList.remove("hidden");
+      if (arrow) arrow.textContent = "\u25b2";
+    }
+  };
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".apex-detail-wrap")) closeAllDetails();
+  });
   function card(i) {
     var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
     var nameSafe = String(i.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     var skuSafe = String(i.sku || "Standard").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     var desc = String(i.description || "").trim();
-    var descHtml = desc
-      ? '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(desc.length > 160 ? desc.slice(0, 160) + "\u2026" : desc) + "</p>" +
-        (desc.length > 160
-          ? '<details class="text-left mb-3 rounded-lg border border-emerald-900/50 bg-zinc-950/70 px-3 py-2"><summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-400">Full details</summary><p class="text-zinc-400 text-sm leading-relaxed mt-2 whitespace-pre-wrap">' + esc(desc) + "</p></details>"
-          : "")
-      : '<details class="text-left mb-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2"><summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-500/90">Details</summary><p class="text-zinc-500 text-sm mt-2">No description on file yet.</p></details>';
+    var short = desc.length > 100 ? desc.slice(0, 100).replace(/\s+\S*$/, "") + "\u2026" : desc;
+    var detailBlock;
+    if (!desc) {
+      detailBlock =
+        '<div class="apex-detail-wrap relative mb-3 text-left">' +
+        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-500/90 hover:border-emerald-800">' +
+        '<span>Details</span><span class="apex-detail-arrow">\u25bc</span></button>' +
+        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden rounded-xl border border-zinc-700 bg-zinc-950 p-3 shadow-2xl shadow-black/80">' +
+        '<p class="text-zinc-500 text-sm">No description on file yet.</p></div></div>';
+    } else {
+      detailBlock =
+        '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(short) + "</p>" +
+        '<div class="apex-detail-wrap relative mb-3 text-left">' +
+        '<button type="button" onclick="event.stopPropagation();toggleApexDetails(this);" class="w-full flex items-center justify-between gap-2 rounded-lg border border-emerald-900/60 bg-zinc-950/80 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-400 hover:border-emerald-600 hover:bg-zinc-900">' +
+        '<span>Full details</span><span class="apex-detail-arrow">\u25bc</span></button>' +
+        '<div class="apex-detail-panel absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-48 overflow-y-auto rounded-xl border border-emerald-900 bg-zinc-950 p-3 text-left shadow-2xl shadow-black/80">' +
+        '<p class="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">' + esc(desc) + "</p></div></div>";
+    }
     var img = (i.images && i.images[0]) || i.image || "";
     if (img && img.charAt(0) === "/") img = API + img;
     var media = img
@@ -46,11 +82,11 @@
       ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
       : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + skuSafe + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
     return (
-      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center">' +
+      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center relative overflow-visible">' +
       media +
       (i.category ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>" : "") +
       '<h3 class="text-xl font-bold text-emerald-400 mb-2">' + esc(i.name) + "</h3>" +
-      descHtml +
+      detailBlock +
       '<div class="text-2xl font-black text-white mb-1">' + money(i.price) + "</div>" +
       '<div class="mt-auto pt-4">' + btn + "</div></div>"
     );
