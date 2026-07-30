@@ -133,7 +133,6 @@ function addToCart(name, sku, price) {
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
 }
-function populatePayPalFormFields() { return true; }
 
 function cartPayload() {
   var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
@@ -190,6 +189,13 @@ function startSquarePayment() {
 }
 function startStripePayment() {
   startCheckout("/api/checkout/stripe", "Stripe");
+}
+function startPayPalPayment() {
+  startCheckout("/api/checkout/paypal", "PayPal");
+}
+function populatePayPalFormFields(form) {
+  startCheckout("/api/checkout/paypal", "PayPal");
+  return false;
 }
 
 function polishServiceFooter() {
