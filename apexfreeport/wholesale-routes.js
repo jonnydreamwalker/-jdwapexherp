@@ -103,7 +103,8 @@ module.exports = function mountWholesale(app, opts) {
     return d;
   }
 
-  function isWholesaleItem(i) {
+  /** Bulk / wholesale-priority flag (for sorting); catalog shows all active SKUs */
+  function isBulkItem(i) {
     if (!i) return false;
     if (i.dealerEligible === true) return true;
     var pool = String(i.pool || i.channel || "").toLowerCase();
@@ -116,10 +117,49 @@ module.exports = function mountWholesale(app, opts) {
     return false;
   }
 
+  function flattenInventory(raw) {
+    if (!raw || typeof raw !== "object") return { warehouse: "DeFuniak Springs, FL", updated: null, items: [] };
+    // Multi-store FreePort shape
+    if (raw.stores) {
+      var herp = raw.stores.herp || {};
+      var items = Array.isArray(herp.items) ? herp.items : [];
+      // If herp empty, merge all stores
+      if (!items.length) {
+        items = [];
+        Object.keys(raw.stores).forEach(function (sid) {
+          var st = raw.stores[sid];
+          if (st && Array.isArray(st.items)) {
+            st.items.forEach(function (it) {
+              items.push(it);
+            });
+          }
+        });
+      }
+      return {
+        warehouse: raw.warehouse || "DeFuniak Springs, FL",
+        updated: raw.updated,
+        items: items,
+        publicFeed: !!(herp.publicFeed)
+      };
+    }
+    // Legacy flat
+    return {
+      warehouse: raw.warehouse || "DeFuniak Springs, FL",
+      updated: raw.updated,
+      items: Array.isArray(raw.items) ? raw.items : [],
+      publicFeed: !!raw.publicFeed
+    };
+  }
+
   function loadInventory() {
-    if (typeof opts.readInventory === "function") return opts.readInventory();
-    const invPath = path.join(dataDir, "inventory.json");
-    return JSON.parse(fs.readFileSync(invPath, "utf8"));
+    var raw;
+    if (typeof opts.readInventory === "function") {
+      raw = opts.readInventory();
+    } else {
+      var invPath = path.join(dataDir, "inventory.json");
+      raw = JSON.parse(fs.readFileSync(invPath, "utf8"));
+    }
+    return flattenInventory(raw);
   }
 
   app.post("/api/wholesale/apply", function (req, res) {
@@ -280,7 +320,6 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ ok: true, message: "Password set — you can log in" });
   });
 
-  // Same password as Apex FreePort admin (ADMIN_PASSWORD env)
   app.post("/api/wholesale/login", function (req, res) {
     const email = String((req.body && req.body.email) || "")
       .trim()
@@ -344,14 +383,22 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ dealer: publicDealer(d) });
   });
 
-  // Same bulk list FreePort Wholesale tab uses
+  // Dealer catalog = same FreePort inventory (all active SKUs) + dealer prices
   app.get("/api/wholesale/catalog", function (req, res) {
     const d = dealerFromToken(req);
     if (!d) return res.status(401).json({ error: "Unauthorized" });
     try {
       const inv = loadInventory();
       let items = inv.items || [];
-      items = items.filter(isWholesaleItem);
+      // Active only (not archived)
+      items = items.filter(function (i) {
+        var st = String(i.status || "active").toLowerCase();
+        return st !== "archived" && st !== "deleted";
+      });
+      // bulk=1 query keeps old 50lb+ filter if needed
+      if (String(req.query.bulk || "") === "1") {
+        items = items.filter(isBulkItem);
+      }
       const cat = req.query.category;
       if (cat) {
         const c = String(cat).toLowerCase();
@@ -359,6 +406,10 @@ module.exports = function mountWholesale(app, opts) {
           return String(i.category || "").toLowerCase() === c;
         });
       }
+      // Bulk / wholesale lines first
+      items = items.slice().sort(function (a, b) {
+        return (isBulkItem(b) ? 1 : 0) - (isBulkItem(a) ? 1 : 0);
+      });
       const mapped = items.map(function (i) {
         const retail = Number(i.price) || 0;
         let dealer = i.dealerPrice != null ? Number(i.dealerPrice) : null;
@@ -370,7 +421,7 @@ module.exports = function mountWholesale(app, opts) {
           name: i.name,
           category: i.category,
           description: i.description || "",
-          image: i.image || "",
+          image: i.image || (i.images && i.images[0]) || "",
           retailPrice: retail,
           dealerPrice: dealer,
           qty: i.qty,
@@ -378,18 +429,20 @@ module.exports = function mountWholesale(app, opts) {
           available: Math.max(0, (i.qty || 0) - (i.reserved || 0)),
           status: i.status,
           lane: i.lane,
-          weightLb: i.weightLb || null
+          weightLb: i.weightLb || null,
+          bulk: isBulkItem(i)
         };
       });
       res.json({
         warehouse: inv.warehouse || "DeFuniak Springs, FL",
         updated: inv.updated,
         dealer: publicDealer(d),
+        count: mapped.length,
         items: mapped
       });
     } catch (e) {
       console.error("wholesale catalog", e.message);
-      res.status(500).json({ error: "Catalog unavailable" });
+      res.status(500).json({ error: "Catalog unavailable", detail: e.message });
     }
   });
 
