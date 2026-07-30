@@ -54,11 +54,13 @@
   }
 
   function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;")
+      .replace(/'/g, "\u0026#39;");
   }
 
   function normCat(c) {
@@ -187,7 +189,7 @@
         "</details>"
       );
     }
-    var short = raw.length > 120 ? raw.slice(0, 120).replace(/\s+\S*$/, "") + "…" : raw;
+    var short = raw.length > 120 ? raw.slice(0, 120).replace(/\s+\S*$/, "") + "\u2026" : raw;
     return (
       '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(short) + "</p>" +
       (raw.length > 120
@@ -202,10 +204,11 @@
   function productCard(i, idx, compact) {
     var parts = productMedia(i);
     var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
-    var nameSafe = String(i.name || "").replace(/'/g, "\\'");
+    var nameSafe = String(i.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    var skuSafe = String(i.sku || "Standard").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     var btn = disabled
       ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
-      : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + String(i.sku || "Standard").replace(/'/g, "\\'") + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
+      : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + skuSafe + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
     var catLink = i.category ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>" : "";
     return (
       '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center ' +
@@ -225,7 +228,7 @@
     if (!el) return;
     var status = document.getElementById("apex-bridge-status");
     if (status) {
-      status.textContent = "Connecting inventory…";
+      status.textContent = "Connecting inventory\u2026";
       status.className = "text-zinc-500 text-sm mt-3";
     }
     try {
@@ -235,7 +238,7 @@
       if (!items.length) {
         el.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-12">No products in this category yet.</p>';
         if (status) {
-          status.textContent = "Live · " + (category || "all") + " · empty";
+          status.textContent = "Live \u00b7 " + (category || "all") + " \u00b7 empty";
           status.className = "text-zinc-500 text-sm mt-3";
         }
         return;
@@ -243,7 +246,7 @@
       el.innerHTML = items.map(function (i, idx) { return productCard(i, idx, false); }).join("");
       wireCarousels(el);
       if (status) {
-        status.textContent = "Live · " + (category || data.store || "") + " · " + items.length + " item" + (items.length === 1 ? "" : "s");
+        status.textContent = "Live \u00b7 " + (category || data.store || "") + " \u00b7 " + items.length + " item" + (items.length === 1 ? "" : "s");
         status.className = "text-emerald-400 text-sm mt-3";
       }
     } catch (e) {
@@ -264,7 +267,7 @@
       var data = await fetchProducts();
       var items = (data.items || []).filter(function (i) { return i.status !== "hold"; });
       if (!items.length) {
-        el.innerHTML = '<p class="text-zinc-500 text-center w-full py-8">Catalog offline or empty — flip Herp feed live in FreePort.</p>';
+        el.innerHTML = '<p class="text-zinc-500 text-center w-full py-8">Catalog offline or empty \u2014 flip Herp feed live in FreePort.</p>';
         if (status) status.textContent = "Showcase empty";
         return;
       }
