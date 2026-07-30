@@ -1,4 +1,4 @@
-/** ApexFreePort bridge — live catalog, category filter, up to 6 photos */
+/** ApexFreePort bridge — live catalog, category filter, up to 6 photos + descriptions */
 (function (global) {
   var MAX_PHOTOS = 6;
   var PRIMARY = "https://freeport.jdwapexherp.com";
@@ -54,7 +54,7 @@
   }
 
   function esc(s) {
-    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    return String(s == null ? "" : s).replace(/&/g, "&").replace(/</g, "<").replace(/"/g, """);
   }
 
   function normCat(c) {
@@ -181,9 +181,13 @@
       ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
       : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + i.sku + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
     var catLink = i.category ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>" : "";
+    var desc = i.description
+      ? '<p class="text-zinc-400 text-sm leading-relaxed mb-3 px-1">' + esc(String(i.description).slice(0, 280)) + (String(i.description).length > 280 ? "…" : "") + "</p>"
+      : "";
     return '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center ' + (compact ? "min-w-[260px] max-w-[280px] snap-start flex-shrink-0" : "") + '">' +
       mediaBlock(parts, idx) + catLink +
       '<h3 class="text-xl font-bold text-emerald-400 mb-2">' + esc(i.name) + "</h3>" +
+      desc +
       '<div class="text-2xl font-black text-white mb-1">' + money(i.price) + "</div>" +
       '<div class="mt-auto pt-4">' + btn + "</div></div>";
   }
