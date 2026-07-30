@@ -14,6 +14,7 @@ module.exports = function mountWholesale(app, opts) {
   const DEALER_FILE = path.join(dataDir, "dealers.json");
   const notifyEmail = process.env.WHOLESALE_NOTIFY_EMAIL || "jonnydreamwalker@gmail.com";
   const ADMIN_PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
+  const OWNER_EMAIL = String(process.env.OWNER_EMAIL || "jonnydreamwalker@gmail.com").toLowerCase();
 
   function ensure(file, fallback) {
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -52,6 +53,12 @@ module.exports = function mountWholesale(app, opts) {
     return crypto.randomBytes(24).toString("hex");
   }
 
+  function isOwnerDealer(d) {
+    if (!d) return false;
+    if (d.id === "DLR-OWNER") return true;
+    return String(d.email || "").toLowerCase() === OWNER_EMAIL;
+  }
+
   function dealerFromToken(req) {
     const t = req.headers["x-dealer-token"] || (req.session && req.session.dealerToken);
     if (!t) return null;
@@ -69,19 +76,20 @@ module.exports = function mountWholesale(app, opts) {
       email: d.email,
       business_name: d.business_name,
       contact_name: d.contact_name,
-      status: d.status
+      status: d.status,
+      owner: isOwnerDealer(d)
     };
   }
 
   function ensureOwnerDealer(email) {
     const db = readDealers();
     let d = (db.dealers || []).find(function (x) {
-      return x.id === "DLR-OWNER" || x.email === (email || "jonnydreamwalker@gmail.com");
+      return x.id === "DLR-OWNER" || x.email === (email || OWNER_EMAIL);
     });
     if (!d) {
       d = {
         id: "DLR-OWNER",
-        email: email || "jonnydreamwalker@gmail.com",
+        email: email || OWNER_EMAIL,
         business_name: "JDW Apex Herp Supply",
         contact_name: "Jonathan Roberts",
         phone: "",
@@ -103,7 +111,6 @@ module.exports = function mountWholesale(app, opts) {
     return d;
   }
 
-  /** Bulk / wholesale-priority flag (for sorting); catalog shows all active SKUs */
   function isBulkItem(i) {
     if (!i) return false;
     if (i.dealerEligible === true) return true;
@@ -119,11 +126,9 @@ module.exports = function mountWholesale(app, opts) {
 
   function flattenInventory(raw) {
     if (!raw || typeof raw !== "object") return { warehouse: "DeFuniak Springs, FL", updated: null, items: [] };
-    // Multi-store FreePort shape
     if (raw.stores) {
       var herp = raw.stores.herp || {};
       var items = Array.isArray(herp.items) ? herp.items : [];
-      // If herp empty, merge all stores
       if (!items.length) {
         items = [];
         Object.keys(raw.stores).forEach(function (sid) {
@@ -142,7 +147,6 @@ module.exports = function mountWholesale(app, opts) {
         publicFeed: !!(herp.publicFeed)
       };
     }
-    // Legacy flat
     return {
       warehouse: raw.warehouse || "DeFuniak Springs, FL",
       updated: raw.updated,
@@ -160,6 +164,40 @@ module.exports = function mountWholesale(app, opts) {
       raw = JSON.parse(fs.readFileSync(invPath, "utf8"));
     }
     return flattenInventory(raw);
+  }
+
+  /** Email alert on new dealer application (FormSubmit — no SMTP setup) */
+  function notifyApplicationEmail(appRow) {
+    var to = notifyEmail;
+    var payload = {
+      _subject: "New dealer application: " + appRow.business_name,
+      _template: "table",
+      _captcha: "false",
+      id: appRow.id,
+      business_name: appRow.business_name,
+      contact_name: appRow.contact_name,
+      email: appRow.email,
+      phone: appRow.phone,
+      tax_id: appRow.tax_id,
+      resale_cert: appRow.resale_cert,
+      business_type: appRow.business_type,
+      website: appRow.website,
+      city: appRow.city,
+      state: appRow.state,
+      message: appRow.message,
+      review: "https://freeport.jdwapexherp.com/admin/dealers"
+    };
+    fetch("https://formsubmit.co/ajax/" + encodeURIComponent(to), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        console.log("Wholesale apply email:", r.status, to);
+      })
+      .catch(function (e) {
+        console.log("Wholesale apply email failed:", e.message);
+      });
   }
 
   app.post("/api/wholesale/apply", function (req, res) {
@@ -197,6 +235,7 @@ module.exports = function mountWholesale(app, opts) {
       db.applications.unshift(appRow);
       writeApps(db);
       console.log("Wholesale application:", appRow.id, appRow.business_name, "→", notifyEmail);
+      notifyApplicationEmail(appRow);
       res.json({ ok: true, id: appRow.id, message: "Application received" });
     } catch (e) {
       res.status(500).json({ error: "Failed to save application" });
@@ -219,7 +258,8 @@ module.exports = function mountWholesale(app, opts) {
         status: d.status,
         website: d.website,
         created: d.created,
-        hasPassword: !!(d.passHash && d.passSalt)
+        hasPassword: !!(d.passHash && d.passSalt),
+        owner: isOwnerDealer(d)
       };
     });
     res.json({ dealers: list });
@@ -327,7 +367,7 @@ module.exports = function mountWholesale(app, opts) {
     const password = (req.body && req.body.password) || "";
 
     if (password && password === ADMIN_PASS) {
-      const d = ensureOwnerDealer(email || "jonnydreamwalker@gmail.com");
+      const d = ensureOwnerDealer(email || OWNER_EMAIL);
       d.sessionToken = token();
       d.lastLogin = new Date().toISOString();
       const db = readDealers();
@@ -383,22 +423,36 @@ module.exports = function mountWholesale(app, opts) {
     res.json({ dealer: publicDealer(d) });
   });
 
-  // Dealer catalog = same FreePort inventory (all active SKUs) + dealer prices
+  /**
+   * Catalog rules:
+   * - Owner (DLR-OWNER): all active SKUs
+   * - External dealers: bulk / dealerEligible / 50 lb+ only
+   * - Query bulk=1 forces bulk filter even for owner
+   * - Query all=1 forces full catalog only for owner
+   */
   app.get("/api/wholesale/catalog", function (req, res) {
     const d = dealerFromToken(req);
     if (!d) return res.status(401).json({ error: "Unauthorized" });
     try {
       const inv = loadInventory();
       let items = inv.items || [];
-      // Active only (not archived)
       items = items.filter(function (i) {
         var st = String(i.status || "active").toLowerCase();
         return st !== "archived" && st !== "deleted";
       });
-      // bulk=1 query keeps old 50lb+ filter if needed
-      if (String(req.query.bulk || "") === "1") {
+
+      var owner = isOwnerDealer(d);
+      var forceBulk = String(req.query.bulk || "") === "1";
+      var forceAll = String(req.query.all || "") === "1";
+
+      if (forceBulk || (!owner && !forceAll)) {
         items = items.filter(isBulkItem);
       }
+      // external cannot override with all=1
+      if (!owner && forceAll) {
+        items = items.filter(isBulkItem);
+      }
+
       const cat = req.query.category;
       if (cat) {
         const c = String(cat).toLowerCase();
@@ -406,10 +460,11 @@ module.exports = function mountWholesale(app, opts) {
           return String(i.category || "").toLowerCase() === c;
         });
       }
-      // Bulk / wholesale lines first
+
       items = items.slice().sort(function (a, b) {
         return (isBulkItem(b) ? 1 : 0) - (isBulkItem(a) ? 1 : 0);
       });
+
       const mapped = items.map(function (i) {
         const retail = Number(i.price) || 0;
         let dealer = i.dealerPrice != null ? Number(i.dealerPrice) : null;
@@ -437,6 +492,7 @@ module.exports = function mountWholesale(app, opts) {
         warehouse: inv.warehouse || "DeFuniak Springs, FL",
         updated: inv.updated,
         dealer: publicDealer(d),
+        mode: owner ? "owner-full" : "bulk-only",
         count: mapped.length,
         items: mapped
       });
