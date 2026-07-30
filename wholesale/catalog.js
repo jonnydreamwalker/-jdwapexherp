@@ -15,7 +15,12 @@ function dealerHeaders() {
 function dealerLogout() {
   localStorage.removeItem("jdw_dealer_token");
   localStorage.removeItem("jdw_dealer");
-  fetch(apiBase() + "/api/wholesale/logout", { method: "POST", credentials: "include" }).catch(function () {});
+  fetch(apiBase() + "/api/wholesale/logout", {
+    method: "POST",
+    headers: dealerHeaders(),
+    mode: "cors",
+    credentials: "omit"
+  }).catch(function () {});
   location.href = "login.html";
 }
 
@@ -28,7 +33,8 @@ async function requireDealerAuth() {
   try {
     var r = await fetch(apiBase() + "/api/wholesale/me", {
       headers: dealerHeaders(),
-      credentials: "include"
+      mode: "cors",
+      credentials: "omit"
     });
     if (!r.ok) {
       dealerLogout();
@@ -51,10 +57,11 @@ async function loadDealerCatalog(category) {
   if (status) status.textContent = "Loading dealer pricing…";
   grid.innerHTML = "";
   try {
-    var q = category ? ("?category=" + encodeURIComponent(category)) : "";
+    var q = category ? "?category=" + encodeURIComponent(category) : "";
     var r = await fetch(apiBase() + "/api/wholesale/catalog" + q, {
       headers: dealerHeaders(),
-      credentials: "include"
+      mode: "cors",
+      credentials: "omit"
     });
     if (r.status === 401) {
       dealerLogout();
@@ -63,7 +70,7 @@ async function loadDealerCatalog(category) {
     var data = await r.json();
     var items = data.items || [];
     if (!items.length) {
-      if (status) status.textContent = "No products in this category yet.";
+      if (status) status.textContent = "No bulk SKUs in this category yet (50 lb+ / dealer eligible).";
       return;
     }
     if (status) {
@@ -75,7 +82,9 @@ async function loadDealerCatalog(category) {
       var dealer = Number(item.dealerPrice != null ? item.dealerPrice : retail) || 0;
       var avail = item.available != null ? item.available : Math.max(0, (item.qty || 0) - (item.reserved || 0));
       var img = item.image
-        ? (item.image.indexOf("http") === 0 ? item.image : apiBase() + item.image)
+        ? item.image.indexOf("http") === 0
+          ? item.image
+          : apiBase() + item.image
         : "../assets/images/gallery/Logo.png";
       var card = document.createElement("div");
       card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col";
