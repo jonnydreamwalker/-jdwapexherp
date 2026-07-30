@@ -1,4 +1,4 @@
-/** ApexFreePort bridge — live catalog, category filter, up to 6 photos + descriptions */
+/** ApexFreePort bridge — live catalog, photos + expandable product details */
 (function (global) {
   var MAX_PHOTOS = 6;
   var PRIMARY = "https://freeport.jdwapexherp.com";
@@ -54,7 +54,11 @@
   }
 
   function esc(s) {
-    return String(s == null ? "" : s).replace(/&/g, "&").replace(/</g, "<").replace(/"/g, """);
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   function normCat(c) {
@@ -173,23 +177,47 @@
     });
   }
 
+  function descriptionBlock(i) {
+    var raw = String(i.description || i.desc || i.details || "").trim();
+    if (!raw) {
+      return (
+        '<details class="text-left mb-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2">' +
+        '<summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-500/90 select-none">Details</summary>' +
+        '<p class="text-zinc-500 text-sm leading-relaxed mt-2">No description on file yet. Add one in FreePort for this SKU.</p>' +
+        "</details>"
+      );
+    }
+    var short = raw.length > 120 ? raw.slice(0, 120).replace(/\s+\S*$/, "") + "…" : raw;
+    return (
+      '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(short) + "</p>" +
+      (raw.length > 120
+        ? '<details class="text-left mb-3 rounded-lg border border-emerald-900/50 bg-zinc-950/70 px-3 py-2">' +
+          '<summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-400 select-none">Full details</summary>' +
+          '<p class="text-zinc-400 text-sm leading-relaxed mt-2 whitespace-pre-wrap">' + esc(raw) + "</p>" +
+          "</details>"
+        : "")
+    );
+  }
+
   function productCard(i, idx, compact) {
     var parts = productMedia(i);
     var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
-    var nameSafe = String(i.name).replace(/'/g, "\\'");
+    var nameSafe = String(i.name || "").replace(/'/g, "\\'");
     var btn = disabled
       ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
-      : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + i.sku + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
+      : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + String(i.sku || "Standard").replace(/'/g, "\\'") + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
     var catLink = i.category ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>" : "";
-    var desc = i.description
-      ? '<p class="text-zinc-400 text-sm leading-relaxed mb-3 px-1">' + esc(String(i.description).slice(0, 280)) + (String(i.description).length > 280 ? "…" : "") + "</p>"
-      : "";
-    return '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center ' + (compact ? "min-w-[260px] max-w-[280px] snap-start flex-shrink-0" : "") + '">' +
-      mediaBlock(parts, idx) + catLink +
+    return (
+      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center ' +
+      (compact ? "min-w-[260px] max-w-[280px] snap-start flex-shrink-0" : "") +
+      '">' +
+      mediaBlock(parts, idx) +
+      catLink +
       '<h3 class="text-xl font-bold text-emerald-400 mb-2">' + esc(i.name) + "</h3>" +
-      desc +
+      descriptionBlock(i) +
       '<div class="text-2xl font-black text-white mb-1">' + money(i.price) + "</div>" +
-      '<div class="mt-auto pt-4">' + btn + "</div></div>";
+      '<div class="mt-auto pt-4">' + btn + "</div></div>"
+    );
   }
 
   async function renderCatalog(selector, category) {
