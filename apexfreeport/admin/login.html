@@ -51,7 +51,7 @@
         <p class="text-zinc-500 text-sm mt-2">Warehouse inventory · wholesale · fulfillment</p>
       </div>
 
-      <form method="POST" action="/login" class="space-y-4" autocomplete="on">
+      <form method="POST" action="/login" class="space-y-4" autocomplete="on" id="loginForm">
         <div>
           <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1.5" for="username">Username</label>
           <div class="relative">
@@ -60,7 +60,7 @@
               type="text"
               name="username"
               id="username"
-              value="admin"
+              value="Apex"
               required
               autocomplete="username"
               class="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-700/50 transition"
@@ -78,7 +78,7 @@
               required
               autofocus
               autocomplete="current-password"
-              placeholder="••••••••"
+              placeholder="Your FreePort password"
               class="w-full bg-black/50 border border-zinc-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-700/50 transition"
             >
           </div>
@@ -103,7 +103,7 @@
       </form>
 
       <div class="mt-8 pt-6 border-t border-zinc-800/80 text-center space-y-2">
-        <p class="text-[11px] text-zinc-600 uppercase tracking-wider">Same stack as the dealer portal</p>
+        <p class="text-[11px] text-zinc-600 uppercase tracking-wider">Username: Apex · same password as before</p>
         <p class="text-xs text-zinc-500">
           <a href="https://jdwapexherp.com/wholesale/login.html" class="text-emerald-500/90 hover:text-emerald-400 hover:underline">Dealer portal</a>
           <span class="text-zinc-700 mx-2">·</span>
@@ -120,6 +120,18 @@
       var el = document.getElementById("err");
       if (el) el.classList.remove("hidden");
     }
+    try {
+      var saved = localStorage.getItem("fp_user");
+      if (saved) document.getElementById("username").value = saved;
+      else document.getElementById("username").value = "Apex";
+    } catch (e) {
+      document.getElementById("username").value = "Apex";
+    }
+    document.getElementById("loginForm").addEventListener("submit", function () {
+      try {
+        localStorage.setItem("fp_user", document.getElementById("username").value || "Apex");
+      } catch (e) {}
+    });
   </script>
 </body>
 </html>
