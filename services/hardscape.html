@@ -7,15 +7,86 @@
 <meta name="description" content="Premium natural cork hardscape. Florida warehouse. Direct hardscape source. Fast ship FL-TX-CA.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" type="image/png" sizes="32x32" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<link rel="icon" type="image/png" sizes="192x192" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<link rel="shortcut icon" type="image/png" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
 <link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="../assets/apex-bridge.js?v=20260730fix2"></script>
 <script src="nav-shell.js"></script>
 <script src="./checkout-client.js?v=20260730b"></script>
+<script>
+/* Direct FreePort catalog — no external bridge required */
+(function () {
+  var API = "https://freeport.jdwapexherp.com";
+  function esc(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;");
+  }
+  function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+  function card(i) {
+    var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
+    var nameSafe = String(i.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    var skuSafe = String(i.sku || "Standard").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    var desc = String(i.description || "").trim();
+    var descHtml = desc
+      ? '<p class="text-zinc-300 text-sm leading-relaxed mb-2 px-1">' + esc(desc.length > 160 ? desc.slice(0, 160) + "\u2026" : desc) + "</p>" +
+        (desc.length > 160
+          ? '<details class="text-left mb-3 rounded-lg border border-emerald-900/50 bg-zinc-950/70 px-3 py-2"><summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-400">Full details</summary><p class="text-zinc-400 text-sm leading-relaxed mt-2 whitespace-pre-wrap">' + esc(desc) + "</p></details>"
+          : "")
+      : '<details class="text-left mb-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2"><summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-emerald-500/90">Details</summary><p class="text-zinc-500 text-sm mt-2">No description on file yet.</p></details>';
+    var img = (i.images && i.images[0]) || i.image || "";
+    if (img && img.charAt(0) === "/") img = API + img;
+    var media = img
+      ? '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950"><img src="' + esc(img) + '" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.parentNode.innerHTML=\'<span class=text-zinc-600 text-xs>No photo</span>\'"></div>'
+      : '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950 flex items-center justify-center"><span class="text-zinc-600 text-xs uppercase tracking-wide">No photo</span></div>';
+    var btn = disabled
+      ? '<button disabled class="w-full bg-zinc-700 text-zinc-400 font-bold uppercase text-xs py-3 rounded-xl cursor-not-allowed">Unavailable</button>'
+      : '<button type="button" onclick="addToCart(\'' + nameSafe + "','" + skuSafe + "'," + (Number(i.price) || 0) + ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
+    return (
+      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center">' +
+      media +
+      (i.category ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>" : "") +
+      '<h3 class="text-xl font-bold text-emerald-400 mb-2">' + esc(i.name) + "</h3>" +
+      descHtml +
+      '<div class="text-2xl font-black text-white mb-1">' + money(i.price) + "</div>" +
+      '<div class="mt-auto pt-4">' + btn + "</div></div>"
+    );
+  }
+  async function loadCatalog() {
+    var el = document.getElementById("apex-catalog");
+    var status = document.getElementById("apex-bridge-status");
+    if (!el) return;
+    var cat = el.getAttribute("data-category") || "Hardscape";
+    if (status) { status.textContent = "Connecting inventory\u2026"; status.className = "text-zinc-500 text-sm mt-2"; }
+    try {
+      var url = API + "/api/products?store=herp&category=" + encodeURIComponent(cat);
+      var res = await fetch(url, { mode: "cors", cache: "no-store", credentials: "omit" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      var data = await res.json();
+      var items = data.items || [];
+      if (!items.length) {
+        el.innerHTML = '<p class="text-zinc-500 text-center col-span-full py-12">No products in this category yet.</p>';
+        if (status) { status.textContent = "Live \u00b7 " + cat + " \u00b7 empty"; status.className = "text-zinc-500 text-sm mt-2"; }
+        return;
+      }
+      el.innerHTML = items.map(card).join("");
+      if (status) {
+        status.textContent = "Live \u00b7 " + cat + " \u00b7 " + items.length + " item" + (items.length === 1 ? "" : "s");
+        status.className = "text-emerald-400 text-sm mt-2";
+      }
+    } catch (e) {
+      console.warn("Catalog load failed", e);
+      el.innerHTML = '<p class="text-amber-400/90 text-center col-span-full py-12">Inventory bridge offline. FreePort must allow browser access (CORS).</p>';
+      if (status) { status.textContent = "Inventory offline"; status.className = "text-amber-400 text-sm mt-2"; }
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", loadCatalog);
+  else loadCatalog();
+})();
+</script>
 </head>
 <body class="bg-zinc-950 text-white">
 <div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA. SHOP HARDSCAPE</div>
@@ -93,4 +164,5 @@
 <div><h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400"><li><a href="../about.html" class="hover:text-emerald-400">About</a></li><li><a href="deals.html" class="hover:text-emerald-400">Deals</a></li></ul></div>
 <div><h4 class="font-bold text-emerald-400 mb-3">Connect</h4><p class="text-zinc-600 text-xs">© 2026 JDW Apex Herp</p></div>
 </div></footer>
-</body></html>
+</body>
+</html>
