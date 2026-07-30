@@ -53,7 +53,7 @@
 <section class="py-12 px-6 max-w-3xl mx-auto">
 <div class="bg-zinc-900 border border-emerald-900/60 rounded-2xl p-6 md:p-10">
 <h2 class="text-2xl font-black text-emerald-400 mb-2">Dealer Application</h2>
-<p class="text-zinc-400 text-sm mb-8">Complete the form. We review website, social proof, and tax credentials before issuing portal access. You will set your own password after approval.</p>
+<p class="text-zinc-400 text-sm mb-8">Complete the form. We review website, social proof, and <strong class="text-zinc-300">business tax credentials (EIN / Tax ID)</strong> before issuing portal access. A Social Security number is <strong class="text-zinc-300">not</strong> required when you provide a business Tax ID or EIN. You will set your own password after approval.</p>
 <form id="dealer-app-form" class="space-y-5" novalidate>
 <div class="grid md:grid-cols-2 gap-4">
 <div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business name *</label>
@@ -68,10 +68,16 @@
 <input type="tel" name="phone" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
 </div>
 <div class="grid md:grid-cols-2 gap-4">
-<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Tax ID / EIN *</label>
-<input name="tax_id" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
-<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Resale certificate #</label>
-<input name="resale_cert" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div>
+<label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business Tax ID / EIN *</label>
+<input name="tax_id" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="XX-XXXXXXX (EIN)" autocomplete="off">
+<p class="text-[11px] text-zinc-600 mt-1.5 leading-relaxed">Business Employer Identification Number (EIN) or business Tax ID only. <span class="text-zinc-500">Do not enter a Social Security number.</span> SSN is not needed when a Tax ID / EIN is provided.</p>
+</div>
+<div>
+<label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Resale certificate #</label>
+<input name="resale_cert" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="If applicable">
+<p class="text-[11px] text-zinc-600 mt-1.5">Optional state resale / sales-tax exemption number.</p>
+</div>
 </div>
 <div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business type *</label>
 <select name="business_type" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none">
