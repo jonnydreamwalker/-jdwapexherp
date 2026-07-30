@@ -6,9 +6,8 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>Apex FreePort</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='%2322c55e' stroke-width='28'/%3E%3Ctext x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='%2322c55e'%3EAPEX%3C/text%3E%3Cline x1='90' y1='255' x2='422' y2='255' stroke='%2322c55e' stroke-width='14'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='%23fff'%3EFreePort%3C/text%3E%3C/svg%3E">
 <style>
-:root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399}
+:root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column}
 header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid #27272a;padding:12px 16px}
@@ -27,69 +26,51 @@ h1{margin:0;font-size:1.1rem;color:#34d399;text-transform:uppercase;letter-spaci
 .tabs,.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
 .tab,.chip{border:1px solid #27272a;background:#18181b;color:#a1a1aa;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
 .tab.active,.chip.active{background:#34d399;color:#022c22;border-color:transparent}
-button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:8px 12px;font-weight:700;color:#fff;background:#059669}
+button{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-weight:700;background:#34d399;color:#022c22}
 button.secondary{background:#27272a;color:#e4e4e7}
-button.ghost{background:transparent;border:1px solid #27272a;color:#a1a1aa;padding:4px 8px;font-size:12px}
-button.del,button.danger{background:linear-gradient(180deg,#f87171,#b91c1c)!important;color:#fff!important}
+button.danger{background:#7f1d1d;color:#fecaca}
+button.ghost{background:transparent;color:#a1a1aa;padding:4px 8px}
 button.hide-btn{background:#3f3f46;color:#fde68a;font-size:11px;padding:6px 10px}
 button.show-btn{background:#14532d;color:#bbf7d0;font-size:11px;padding:6px 10px}
 .feed-btn{width:100%;max-width:420px;padding:14px;font-size:14px;text-transform:uppercase;margin:8px 0 14px}
-#status{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:10px 12px;font-size:13px;color:#a1a1aa;margin:8px 0;white-space:pre-wrap}
-#status.err{border-color:#7f1d1d;color:#fecaca;background:#450a0a}
-#status.ok{border-color:#14532d;color:#bbf7d0;background:#052e16}
+button.wholesale{background:#fbbf24;color:#000;font-weight:800;border:1px solid #f59e0b}
+button.wholesale.active{background:#f59e0b;box-shadow:0 0 0 2px #fbbf24}
+body.wholesale-mode .wrap{border-top:3px solid #fbbf24}
+th.wh-only,td.wh-only{display:none}
+body.wholesale-mode th.wh-only,body.wholesale-mode td.wh-only{display:table-cell}
 table{width:100%;border-collapse:collapse;margin-top:8px}
-th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #27272a;vertical-align:middle;font-size:13px}
-th{color:#34d399;font-size:11px;text-transform:uppercase}
-.sku{color:#38bdf8;font-family:ui-monospace,monospace;font-size:12px}
-a{color:#38bdf8}
-.ds-badge{font-size:10px;font-weight:800;color:#fdba74;background:#7c2d12;padding:2px 6px;border-radius:999px;margin-left:6px}
-.hid-badge{font-size:10px;font-weight:800;color:#e4e4e7;background:#3f3f46;padding:2px 6px;border-radius:999px;margin-left:6px}
-tr.row-hidden{opacity:.55}
-.thumb{width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #333;background:#111;vertical-align:middle;margin-right:8px}
-.grip{color:#71717a;cursor:grab;user-select:none;font-size:18px;letter-spacing:-2px;padding:4px 8px;line-height:1}
-.grip:active{cursor:grabbing}
-tr[draggable="true"]{cursor:grab}
-tr.dragging{opacity:.4}
-tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-offset:-2px}
-.drag-hint{color:#71717a;font-size:12px;margin:4px 0 0}
-.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:90;align-items:center;justify-content:center;padding:16px}
+th,td{border-bottom:1px solid #27272a;padding:10px 8px;text-align:left;font-size:13px;vertical-align:middle}
+.sku{font-family:ui-monospace,monospace;font-size:11px;color:#34d399}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;margin-right:8px;vertical-align:middle;background:#18181b}
+.ds-badge{font-size:10px;background:#78350f;color:#fde68a;padding:2px 6px;border-radius:4px;margin-left:6px}
+.hid-badge{font-size:10px;background:#3f3f46;color:#a1a1aa;padding:2px 6px;border-radius:4px;margin-left:6px}
+.ok{color:#34d399}.err{color:#f87171}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;align-items:center;justify-content:center;padding:16px}
 .modal-back.open{display:flex}
-.modal.frost{background:rgba(9,9,11,.3)!important;backdrop-filter:blur(8px) saturate(140%);border:1px solid rgba(16,185,129,.35);box-shadow:0 16px 40px -12px rgba(0,0,0,.55);border-radius:16px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto;color:#fafafa}
-.modal.frost h2{margin:0 0 6px;color:#34d399;font-size:1rem;text-transform:uppercase}
-.modal.frost h2.danger{color:#ef4444}
-.modal.frost h2.warn{color:#fbbf24}
-.modal.frost .hint{color:#a1a1aa;font-size:12px;margin:0 0 12px}
+.modal.frost{background:rgba(24,24,27,.95);border:1px solid #3f3f46;border-radius:16px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
+.modal.frost h2{margin:0 0 8px;color:#34d399}
 .modal.frost label{display:block;font-size:11px;color:#a1a1aa;margin:10px 0 4px;text-transform:uppercase}
-.modal.frost input,.modal.frost select,.modal.frost textarea{width:100%;background:rgba(0,0,0,.55)!important;color:#fafafa!important;border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px 12px;font:inherit}
-.modal.frost textarea{min-height:90px;resize:vertical}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:640px){.grid2{grid-template-columns:1fr}}
-.modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid rgba(16,185,129,.2)}
-.modal.frost button.save-btn{background:#059669}
+.modal.frost input,.modal.frost select,.modal.frost textarea{width:100%;background:#09090b;border:1px solid #3f3f46;border-radius:8px;color:#fafafa;padding:10px;font-size:14px}
+.modal.frost .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal.frost .modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal.frost button.save-btn{background:#059669;color:#fff}
 .modal.frost button.cancel-btn{background:transparent;border:1px solid rgba(16,185,129,.35);color:#a1a1aa}
-.ds-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(251,191,36,.35);border-radius:12px;background:rgba(0,0,0,.35)}
-.ds-box label.rowlab,.list-box label.rowlab{display:flex;align-items:center;gap:10px;cursor:pointer;text-transform:none;font-size:13px;color:#fde68a;margin:0}
-.list-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(113,113,122,.5);border-radius:12px;background:rgba(0,0,0,.35)}
-.list-box label.rowlab{color:#e4e4e7}
-.photo-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(16,185,129,.3);border-radius:12px;background:rgba(0,0,0,.35)}
-.photo-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
-.photo-preview{width:120px;height:120px;border:1px dashed rgba(16,185,129,.4);border-radius:12px;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
-.photo-preview img{max-width:100%;max-height:100%;object-fit:cover;display:none}
-.photo-preview .ph{color:#71717a;font-size:11px;text-align:center;padding:8px}
+a{color:#34d399;text-decoration:none}
+#meta{color:#71717a;font-size:12px;margin-top:4px}
 </style>
 </head>
 <body>
 <header>
-  <div class="wrap row" style="justify-content:space-between;max-width:1100px;margin:0 auto;padding:0">
+  <div class="row" style="justify-content:space-between;max-width:1100px;margin:0 auto">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <h1>Apex FreePort</h1>
-        <div class="sub" id="meta">Starting…</div>
+        <div class="sub" id="meta">Loading…</div>
       </div>
     </div>
     <div class="row">
       <a href="/admin/fulfillment">Fulfillment</a>
+      <a href="/admin/dealers">Dealers</a>
       <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
       <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
     </div>
@@ -103,19 +84,20 @@ tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-o
     <button type="button" id="btnAdd">+ Product</button>
     <button type="button" class="secondary" id="btnCat">+ Category</button>
     <button type="button" class="secondary" id="btnReload">Reload</button>
+    <button type="button" class="wholesale" id="btnWholesale" title="Toggle dealer inventory (50 lb and up)">Wholesale</button>
   </div>
+  <p class="sub" id="viewHint">Retail inventory · all SKUs</p>
   <div class="chips" id="catChips"></div>
-  <p class="drag-hint">Grab the ⋮⋮ handle and drag a row to set catalog order on Apex Herp. Order saves when you drop.</p>
+  <p class="sub">Grab the ⋮⋮ handle and drag a row to set catalog order. Order saves when you drop.</p>
   <div id="status">Loading inventory…</div>
   <table>
-    <thead><tr><th style="width:36px"></th><th>SKU / Name</th><th>Category</th><th>Price</th><th>Qty</th><th>Sales page</th><th>Actions</th></tr></thead>
+    <thead><tr><th style="width:36px"></th><th>SKU / Name</th><th>Category</th><th>Price</th><th class="wh-only">Dealer $</th><th class="wh-only">Lb</th><th>Qty</th><th>Sales page</th><th>Actions</th></tr></thead>
     <tbody id="tbody"><tr><td colspan="7" class="sub">Waiting…</td></tr></tbody>
   </table>
 </div>
 <footer>
   <div class="foot-inner">
     <div class="brand">
-      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
         <div class="copy">Inventory bridge · DeFuniak Springs, FL</div>
@@ -124,7 +106,6 @@ tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-o
     <div class="copy">© 2026 JDW Apex · Veteran owned</div>
   </div>
 </footer>
-
 <div class="modal-back" id="productModal">
   <div class="modal frost">
     <h2 id="productTitle">Add product</h2>
@@ -132,54 +113,28 @@ tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-o
     <input type="hidden" id="p_originalSku">
     <input type="hidden" id="p_image">
     <div class="grid2">
-      <div><label>SKU</label><input id="p_sku" placeholder="HS-UFO-FLAT-01" autocomplete="off"></div>
-      <div><label>Name</label><input id="p_name" placeholder="UFO Cork Flats" autocomplete="off"></div>
+      <div><label>SKU</label><input id="p_sku" placeholder="HS-CORK-FLAT-01" autocomplete="off"></div>
+      <div><label>Name</label><input id="p_name" placeholder="Portuguese Cork Bark Flats" autocomplete="off"></div>
       <div><label>Category</label><select id="p_category"></select></div>
       <div><label>Lane</label><select id="p_lane"><option value="direct">direct — FL warehouse</option><option value="external">external — fulfillment</option></select></div>
       <div><label>Price (USD)</label><input id="p_price" type="number" step="0.01" min="0" placeholder="24.99"></div>
+      <div><label>Dealer price (USD)</label><input id="p_dealerPrice" type="number" step="0.01" min="0" placeholder="optional"></div>
+      <div><label>Weight (lb)</label><input id="p_weightLb" type="number" step="1" min="0" placeholder="50 for wholesale"></div>
       <div><label>Qty on hand</label><input id="p_qty" type="number" step="1" min="0" value="0"></div>
       <div><label>Reserved</label><input id="p_reserved" type="number" step="1" min="0" value="0"></div>
       <div><label>Status</label><select id="p_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
       <div style="grid-column:1/-1"><label>Location</label><input id="p_location" placeholder="WH-A1"></div>
-      <div class="photo-box">
-        <label style="margin-top:0">Product photo</label>
-        <div class="photo-row">
-          <div class="photo-preview" id="p_photoPreview">
-            <span class="ph" id="p_photoPlaceholder">No photo</span>
-            <img id="p_photoImg" alt="Preview">
-          </div>
-          <div style="flex:1;min-width:160px">
-            <input type="file" id="p_photoFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
-            <button type="button" class="secondary" id="p_browse">Browse computer…</button>
-            <button type="button" class="cancel-btn" id="p_clearPhoto" style="margin-left:6px">Remove</button>
-            <p class="hint" style="margin:8px 0 0">JPG, PNG, WebP, or GIF. Saved with the product for the sales site.</p>
-          </div>
-        </div>
-      </div>
-      <div class="list-box">
-        <label class="rowlab"><input type="checkbox" id="p_listed" checked style="width:auto;accent-color:#34d399"> <span><strong>SHOW ON SALES PAGE</strong> — uncheck to hide this SKU from the website.</span></label>
-      </div>
-      <div class="ds-box">
-        <label class="rowlab"><input type="checkbox" id="p_dropShip" style="width:auto;accent-color:#f59e0b"> <span><strong>DROP SHIP</strong> — backend only; customers never see this.</span></label>
-        <label>Supplier name (optional)</label>
-        <input id="p_supplier" placeholder="Apparel printer / external vendor">
-        <label>Supplier shipping terms (optional)</label>
-        <input id="p_shippingTerms" placeholder="Supplier ships — rate on their terms">
-      </div>
+      <div style="grid-column:1/-1"><label>Description</label><textarea id="p_description" rows="3" placeholder="Product description…"></textarea></div>
     </div>
-    <label>Description</label>
-    <textarea id="p_description" placeholder="Product description…"></textarea>
     <div class="modal-actions">
       <button type="button" class="save-btn" id="p_save">Save product</button>
       <button type="button" class="cancel-btn" id="p_cancel">Cancel</button>
     </div>
   </div>
 </div>
-
 <div class="modal-back" id="catModal">
   <div class="modal frost">
     <h2>New category</h2>
-    <p class="hint">Adds a category chip for this store.</p>
     <label>Name</label><input id="cat_name" placeholder="Hardscape">
     <div class="modal-actions">
       <button type="button" class="save-btn" id="cat_save">Create</button>
@@ -187,7 +142,6 @@ tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-o
     </div>
   </div>
 </div>
-
 <div class="modal-back" id="confirmModal">
   <div class="modal frost">
     <h2 id="confirmTitle" class="warn">Confirm</h2>
@@ -198,7 +152,6 @@ tr.drag-over{background:rgba(52,211,153,.12);outline:2px solid #34d399;outline-o
     </div>
   </div>
 </div>
-
-<script src="/admin/app.js?v=2"></script>
+<script src="/admin/app.js?v=3"></script>
 </body>
 </html>
