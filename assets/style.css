@@ -78,3 +78,28 @@ body {
 
 .logo-30 { opacity: 0.3; }
 .logo-placeholder { opacity: 0.3; filter: grayscale(20%); }
+
+
+/* PRODUCT DETAILS PANEL — same frost / 30% / magnification as nav dropdown */
+.apex-detail-panel {
+  background: rgba(9, 9, 11, 0.30) !important;
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(16, 185, 129, 0.08);
+  transform-origin: top center;
+  color: #fafafa;
+}
+.apex-detail-panel:not(.hidden) {
+  animation: frostIn 0.18s ease forwards;
+}
+.apex-detail-wrap button {
+  background: rgba(9, 9, 11, 0.35) !important;
+  backdrop-filter: blur(6px) saturate(130%);
+  -webkit-backdrop-filter: blur(6px) saturate(130%);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.apex-detail-wrap button:hover {
+  background: rgba(16, 185, 129, 0.14) !important;
+  transform: scale(1.02);
+}
