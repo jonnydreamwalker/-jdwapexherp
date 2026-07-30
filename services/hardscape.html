@@ -10,26 +10,12 @@
 <link rel="icon" type="image/png" sizes="192x192" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
 <link rel="shortcut icon" type="image/png" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
 <link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
-<script>
-(function () {
-  var href = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo";
-  document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
-    if (n.parentNode) n.parentNode.removeChild(n);
-  });
-  ["icon", "shortcut icon", "apple-touch-icon"].forEach(function (rel) {
-    var el = document.createElement("link");
-    el.rel = rel;
-    el.type = "image/png";
-    el.href = href;
-    document.head.appendChild(el);
-  });
-})();
-</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/apex-bridge.js"></script>
 <script src="nav-shell.js"></script>
+<script src="./checkout-client.js?v=20260730b"></script>
 </head>
 <body class="bg-zinc-950 text-white">
 <div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA. SHOP HARDSCAPE</div>
@@ -97,13 +83,8 @@
 <div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl text-zinc-400">&times;</button></div>
 <div id="cart-items-list" class="space-y-3 mb-6"></div>
 <div class="flex justify-between mb-6 border-t border-zinc-800 pt-4"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
-<button type="button" onclick="startSquarePayment()" class="w-full bg-black border border-emerald-700 text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Square</button>
 <button type="button" onclick="startStripePayment()" class="w-full bg-[#635bff] text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return populatePayPalFormFields(this);">
-<input type="hidden" name="cmd" value="_cart"><input type="hidden" name="upload" value="1">
-<input type="hidden" name="business" value="jonnydreamwalker@gmail.com"><input type="hidden" name="currency_code" value="USD">
-<button type="submit" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
-</form>
+<button type="button" onclick="startPayPalPayment()" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
 </div></div>
 <footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20">
 <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
