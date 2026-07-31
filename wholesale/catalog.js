@@ -15,7 +15,7 @@ function dealerHeaders() {
 function dealerLogout() {
   localStorage.removeItem("jdw_dealer_token");
   localStorage.removeItem("jdw_dealer");
-  fetch(apiBase() + "/api/wholesale/logout", { method: "POST", credentials: "include" }).catch(function () {});
+  fetch(apiBase() + "/api/wholesale/logout", { method: "POST" }).catch(function () {});
   location.href = "login.html";
 }
 
@@ -41,8 +41,7 @@ async function requireDealerAuth() {
   }
   try {
     var r = await fetch(apiBase() + "/api/wholesale/me", {
-      headers: dealerHeaders(),
-      credentials: "include"
+      headers: dealerHeaders()
     });
     if (!r.ok) {
       dealerLogout();
@@ -67,8 +66,7 @@ async function loadDealerCatalog(category) {
   try {
     var q = category ? ("?category=" + encodeURIComponent(category)) : "";
     var r = await fetch(apiBase() + "/api/wholesale/catalog" + q, {
-      headers: dealerHeaders(),
-      credentials: "include"
+      headers: dealerHeaders()
     });
     if (r.status === 401) {
       dealerLogout();
