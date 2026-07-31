@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <title>Apex FreePort</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23000'/%3E%3Ccircle cx='256' cy='256' r='220' fill='none' stroke='%2322c55e' stroke-width='28'/%3E%3Ctext x='256' y='230' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='120' font-weight='900' fill='%2322c55e'%3EAPEX%3C/text%3E%3Cline x1='90' y1='255' x2='422' y2='255' stroke='%2322c55e' stroke-width='14'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-family='Arial Black,Helvetica,sans-serif' font-size='72' font-weight='900' fill='%23fff'%3EFreePort%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#09090b;--line:#27272a;--text:#fafafa;--muted:#a1a1aa;--emerald:#34d399;--blue:#38bdf8;--red:#ef4444;--amber:#fbbf24}
 *{box-sizing:border-box}
@@ -57,20 +58,29 @@ th,td{border-bottom:1px solid #27272a;padding:10px 8px;text-align:left;font-size
 .modal.frost button.cancel-btn{background:transparent;border:1px solid rgba(16,185,129,.35);color:#a1a1aa}
 a{color:#34d399;text-decoration:none}
 #meta{color:#71717a;font-size:12px;margin-top:4px}
+.photo-box{grid-column:1/-1;margin-top:8px;padding:12px;border:1px solid rgba(16,185,129,.3);border-radius:12px;background:rgba(0,0,0,.35)}
+.photo-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.photo-preview{width:120px;height:120px;border:1px dashed rgba(16,185,129,.4);border-radius:12px;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.photo-preview img{max-width:100%;max-height:100%;object-fit:cover;display:none}
+.photo-preview .ph{color:#71717a;font-size:11px;text-align:center;padding:8px}
+.list-box,.ds-box{grid-column:1/-1;margin-top:10px}
+.rowlab{display:flex!important;align-items:flex-start;gap:8px;text-transform:none!important;font-size:13px!important;color:#e4e4e7!important;cursor:pointer;margin:8px 0!important}
+.hint{color:#a1a1aa;font-size:12px}
 </style>
 </head>
-<body>
+<body data-dealers="1">
 <header>
   <div class="row" style="justify-content:space-between;max-width:1100px;margin:0 auto">
     <div class="brand">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <h1>Apex FreePort</h1>
         <div class="sub" id="meta">Loading…</div>
       </div>
     </div>
     <div class="row">
+      <a href="/admin/dealers" style="color:#34d399;font-weight:800">Dealers</a>
       <a href="/admin/fulfillment">Fulfillment</a>
-      <a href="/admin/dealers">Dealers</a>
       <a href="https://jdwapexherp.com" target="_blank" rel="noopener">Herp site</a>
       <form method="POST" action="/logout" style="display:inline"><button type="submit" class="secondary">Logout</button></form>
     </div>
@@ -79,25 +89,28 @@ a{color:#34d399;text-decoration:none}
 <div class="wrap">
   <div class="slogan" id="slogan">Flip the switch.</div>
   <div class="tabs" id="storeTabs"></div>
+  <a href="/admin/dealers" id="btnDealersBig" style="display:block;width:100%;max-width:420px;text-align:center;padding:14px 16px;margin:0 0 14px;background:#065f46;color:#6ee7b7;border:2px solid #34d399;border-radius:12px;font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;box-shadow:0 0 24px rgba(52,211,153,.25)">DEALERS - APPROVE / DENY</a>
   <button type="button" class="danger feed-btn" id="btnFeed">DON'T TOUCH · Public feed</button>
   <div class="row">
     <button type="button" id="btnAdd">+ Product</button>
     <button type="button" class="secondary" id="btnCat">+ Category</button>
     <button type="button" class="secondary" id="btnReload">Reload</button>
-    <button type="button" class="wholesale" id="btnWholesale" title="Toggle dealer inventory (50 lb and up)">Wholesale</button>
+    <button type="button" class="wholesale" id="btnWholesale" title="Open wholesale inventory">Wholesale</button>
+    <a href="/admin/dealers" class="btn" id="btnDealers" style="display:inline-block;padding:8px 14px;background:#065f46;color:#a7f3d0;border-radius:10px;font-weight:800;text-decoration:none;font-size:13px">Dealers · Approve</a>
   </div>
-  <p class="sub" id="viewHint">Retail inventory · all SKUs</p>
+  <p class="sub" id="viewHint">Sales inventory</p>
   <div class="chips" id="catChips"></div>
   <p class="sub">Grab the ⋮⋮ handle and drag a row to set catalog order. Order saves when you drop.</p>
   <div id="status">Loading inventory…</div>
   <table>
-    <thead><tr><th style="width:36px"></th><th>SKU / Name</th><th>Category</th><th>Price</th><th class="wh-only">Dealer $</th><th class="wh-only">Lb</th><th>Qty</th><th>Sales page</th><th>Actions</th></tr></thead>
+    <thead><tr><th style="width:36px"></th><th>SKU / Name</th><th>Category</th><th>Price</th><th class="wh-only">Your wholesale $</th><th class="wh-only">Lb</th><th class="wh-only">$/lb</th><th>Qty</th><th>Sales page</th><th>Actions</th></tr></thead>
     <tbody id="tbody"><tr><td colspan="7" class="sub">Waiting…</td></tr></tbody>
   </table>
 </div>
 <footer>
   <div class="foot-inner">
     <div class="brand">
+      <img src="/uploads/apexfreeport-logo.svg" alt="Apex FreePort" onerror="this.style.display='none'">
       <div>
         <div style="color:#34d399;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase">Apex FreePort</div>
         <div class="copy">Inventory bridge · DeFuniak Springs, FL</div>
@@ -106,6 +119,7 @@ a{color:#34d399;text-decoration:none}
     <div class="copy">© 2026 JDW Apex · Veteran owned</div>
   </div>
 </footer>
+
 <div class="modal-back" id="productModal">
   <div class="modal frost">
     <h2 id="productTitle">Add product</h2>
@@ -118,12 +132,68 @@ a{color:#34d399;text-decoration:none}
       <div><label>Category</label><select id="p_category"></select></div>
       <div><label>Lane</label><select id="p_lane"><option value="direct">direct — FL warehouse</option><option value="external">external — fulfillment</option></select></div>
       <div><label>Price (USD)</label><input id="p_price" type="number" step="0.01" min="0" placeholder="24.99"></div>
-      <div><label>Dealer price (USD)</label><input id="p_dealerPrice" type="number" step="0.01" min="0" placeholder="optional"></div>
-      <div><label>Weight (lb)</label><input id="p_weightLb" type="number" step="1" min="0" placeholder="50 for wholesale"></div>
       <div><label>Qty on hand</label><input id="p_qty" type="number" step="1" min="0" value="0"></div>
       <div><label>Reserved</label><input id="p_reserved" type="number" step="1" min="0" value="0"></div>
       <div><label>Status</label><select id="p_status"><option value="active">active</option><option value="coming_soon">coming_soon</option><option value="archived">archived</option></select></div>
       <div style="grid-column:1/-1"><label>Location</label><input id="p_location" placeholder="WH-A1"></div>
+      <div class="photo-box">
+        <label style="margin-top:0">Product photo</label>
+        <div class="photo-row">
+          <div class="photo-preview" id="p_photoPreview">
+            <span class="ph" id="p_photoPlaceholder">No photo</span>
+            <img id="p_photoImg" alt="Preview">
+          </div>
+          <div style="flex:1;min-width:160px">
+            <input type="file" id="p_photoFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+            <button type="button" class="secondary" id="p_browse">Browse computer…</button>
+            <button type="button" class="cancel-btn" id="p_clearPhoto" style="margin-left:6px">Remove</button>
+            <p class="hint" style="margin:8px 0 0">JPG, PNG, WebP, or GIF. Saved with the product for the sales site.</p>
+          </div>
+        </div>
+      </div>
+      <div class="list-box">
+        <label class="rowlab"><input type="checkbox" id="p_listed" checked style="width:auto;accent-color:#34d399"> <span><strong>SHOW ON SALES PAGE</strong> — retail website + sales table. Off when WHOLESALE is on.</span></label>
+      </div>
+      <div class="ds-box">
+        <label class="rowlab"><input type="checkbox" id="p_wholesale" style="width:auto;accent-color:#fbbf24"> <span><strong>WHOLESALE</strong> — dealer portal + Wholesale tab only. Not on the sales list (Master still shows everything).</span></label>
+        <div id="wholesalePriceSheet" style="display:none;margin-top:10px;padding:12px;border:1px solid #fbbf2444;border-radius:12px;background:#1c1917">
+          <p class="hint" style="color:#fbbf24;margin:0 0 10px;font-size:12px;font-weight:700">TYPE THE FULL LOT PRICE YOU CHARGE. That exact number is what dealers see. $/lb = this ÷ weight. No discount math.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label>Wholesale price ($)</label>
+              <input id="p_dealerPrice" type="number" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div>
+              <label>Weight (lb)</label>
+              <input id="p_weightLb" type="number" step="0.01" min="0" placeholder="50">
+            </div>
+          </div>
+          <p id="p_perLb" style="margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#422006;border:1px solid #f59e0b;color:#fde68a;font-weight:800;font-size:14px">$/lb: enter price + weight</p>
+          <p class="hint" style="margin:8px 0 0;font-size:11px;color:#a8a29e">Price per pound = wholesale price ÷ weight. You set the dollars — FreePort does the math.</p>
+        </div>
+        <label class="rowlab"><input type="checkbox" id="p_dropShip" style="width:auto;accent-color:#f59e0b"> <span><strong>DROP SHIP</strong> — backend only; customers never see this. Opens supplier info sheet.</span></label>
+      <div id="dropShipSheet" style="display:none;margin-top:10px;padding:12px;border:1px solid #f59e0b55;border-radius:12px;background:#1c1917">
+        <p class="hint" style="color:#fbbf24;margin:0 0 10px;font-size:12px;font-weight:700">DROP SHIP INFO SHEET — where to order & codes (staff only)</p>
+        <label>Supplier / vendor name</label>
+        <input id="p_supplier" placeholder="Printful, local printer, Arcadia distributor…">
+        <label>Supplier order URL</label>
+        <input id="p_supplierUrl" placeholder="https://… order page or portal">
+        <label>Supplier SKU / order code</label>
+        <input id="p_supplierSku" placeholder="Their SKU, style code, or promo code">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+          <div>
+            <label>Your cost ($)</label>
+            <input id="p_supplierCost" type="number" step="0.01" min="0" placeholder="0.00">
+          </div>
+          <div>
+            <label>Shipping terms</label>
+            <input id="p_shippingTerms" placeholder="Ships in 3–5 days…">
+          </div>
+        </div>
+        <label>Staff notes / codes</label>
+        <textarea id="p_supplierNotes" rows="3" placeholder="Account numbers, coupon codes, pack instructions, who to contact…"></textarea>
+      </div>
+      </div>
       <div style="grid-column:1/-1"><label>Description</label><textarea id="p_description" rows="3" placeholder="Product description…"></textarea></div>
     </div>
     <div class="modal-actions">
@@ -132,9 +202,11 @@ a{color:#34d399;text-decoration:none}
     </div>
   </div>
 </div>
+
 <div class="modal-back" id="catModal">
   <div class="modal frost">
     <h2>New category</h2>
+    <p class="hint">Adds a category chip for this store.</p>
     <label>Name</label><input id="cat_name" placeholder="Hardscape">
     <div class="modal-actions">
       <button type="button" class="save-btn" id="cat_save">Create</button>
@@ -142,6 +214,7 @@ a{color:#34d399;text-decoration:none}
     </div>
   </div>
 </div>
+
 <div class="modal-back" id="confirmModal">
   <div class="modal frost">
     <h2 id="confirmTitle" class="warn">Confirm</h2>
@@ -152,6 +225,6 @@ a{color:#34d399;text-decoration:none}
     </div>
   </div>
 </div>
-<script src="/admin/app.js?v=3"></script>
+<script src="/admin/app.js?v=6"></script>
 </body>
 </html>
