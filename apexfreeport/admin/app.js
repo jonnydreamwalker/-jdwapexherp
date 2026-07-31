@@ -71,17 +71,6 @@
       ? ("$/lb = $" + rate.toFixed(2) + "   ·   $" + price.toFixed(2) + " \u00f7 " + lb + " lb")
       : "$/lb: enter wholesale price + weight (no auto discount)";
     if (el) el.textContent = text;
-    else {
-      var w = $("p_weightLb");
-      if (w && !document.getElementById("p_perLb")) {
-        var p = document.createElement("p");
-        p.id = "p_perLb";
-        p.style.cssText = "grid-column:1/-1;margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#422006;border:1px solid #f59e0b;color:#fde68a;font-weight:800;font-size:14px";
-        p.textContent = text;
-        var parent = w.closest(".grid2") || w.parentNode.parentNode;
-        parent.appendChild(p);
-      } else if (document.getElementById("p_perLb")) document.getElementById("p_perLb").textContent = text;
-    }
   }
   function api(url, opts) {
     opts = opts || {}; opts.credentials = "same-origin"; opts.headers = opts.headers || {};
@@ -152,23 +141,33 @@
     $("p_location").value = ""; $("p_description").value = "";
     $("p_lane").value = "direct"; $("p_status").value = "active";
     if ($("p_listed")) $("p_listed").checked = true;
+    if ($("p_wholesale")) $("p_wholesale").checked = false;
+    if ($("p_dropShip")) $("p_dropShip").checked = false;
     if ($("p_dealerPrice")) $("p_dealerPrice").value = "";
     if ($("p_weightLb")) $("p_weightLb").value = "";
+    if ($("p_supplier")) $("p_supplier").value = "";
+    if ($("p_supplierUrl")) $("p_supplierUrl").value = "";
+    if ($("p_supplierSku")) $("p_supplierSku").value = "";
+    if ($("p_supplierCost")) $("p_supplierCost").value = "";
+    if ($("p_shippingTerms")) $("p_shippingTerms").value = "";
+    if ($("p_supplierNotes")) $("p_supplierNotes").value = "";
     if ($("p_photoFile")) $("p_photoFile").value = "";
+    if ($("wholesalePriceSheet")) $("wholesalePriceSheet").style.display = "none";
+    if ($("dropShipSheet")) $("dropShipSheet").style.display = "none";
     setPhotoPreview("");
     fillCats($("p_category"), categories[0] || "Hardscape");
     updatePerLb();
   }
   function openAdd() {
     editMode = false; $("productTitle").textContent = "Add product";
-    $("productHint").textContent = "Enter the wholesale price you charge and the weight. FreePort calculates $/lb. No auto discount.";
+    $("productHint").textContent = "Photo, price, wholesale, drop-ship — all options available. No auto discount on wholesale.";
     clearProductForm(); openModal("productModal"); setTimeout(function () { $("p_sku").focus(); }, 50);
   }
   function openEdit(sku) {
     var it = items.filter(function (x) { return x.sku === sku; })[0];
     if (!it) { setStatus("Product not found: " + sku, "err"); return; }
     editMode = true; $("productTitle").textContent = "Edit product";
-    $("productHint").textContent = "Wholesale price is what you enter. $/lb = price \\u00f7 weight.";
+    $("productHint").textContent = "Wholesale price is exact. $/lb = price \u00f7 weight.";
     $("p_originalSku").value = it.sku; $("p_sku").value = it.sku || ""; $("p_name").value = it.name || "";
     fillCats($("p_category"), it.category || (categories[0] || "Hardscape"));
     $("p_lane").value = it.lane === "external" ? "external" : "direct";
@@ -178,40 +177,72 @@
     $("p_status").value = it.status || "active"; $("p_location").value = it.location || "";
     $("p_description").value = it.description || "";
     if ($("p_listed")) $("p_listed").checked = isListed(it);
-    if ($("p_dealerPrice")) $("p_dealerPrice").value = it.dealerPrice != null ? Number(it.dealerPrice) : "";
+    var pool = itemPool(it);
+    if ($("p_wholesale")) {
+      $("p_wholesale").checked = (pool === "wholesale" || pool === "both" || pool === "dealer" || it.dealerEligible === true || (Number(it.weightLb) || 0) >= 50);
+    }
+    if ($("p_dropShip")) $("p_dropShip").checked = !!(it.dropShip || it.lane === "external");
+    if ($("p_dealerPrice")) {
+      if (it.dealerPrice != null && !isNaN(Number(it.dealerPrice))) $("p_dealerPrice").value = Number(it.dealerPrice);
+      else if (Number(it.price) > 0) $("p_dealerPrice").value = Number(it.price);
+      else $("p_dealerPrice").value = "";
+    }
     if ($("p_weightLb")) $("p_weightLb").value = it.weightLb != null ? Number(it.weightLb) : "";
+    if ($("p_supplier")) $("p_supplier").value = it.supplier || "";
+    if ($("p_supplierUrl")) $("p_supplierUrl").value = it.supplierUrl || "";
+    if ($("p_supplierSku")) $("p_supplierSku").value = it.supplierSku || "";
+    if ($("p_supplierCost")) $("p_supplierCost").value = it.supplierCost != null ? Number(it.supplierCost) : "";
+    if ($("p_shippingTerms")) $("p_shippingTerms").value = it.shippingTerms || "";
+    if ($("p_supplierNotes")) $("p_supplierNotes").value = it.supplierNotes || "";
     if ($("p_photoFile")) $("p_photoFile").value = "";
     setPhotoPreview(itemImage(it));
     updatePerLb();
+    if ($("wholesalePriceSheet") && $("p_wholesale")) $("wholesalePriceSheet").style.display = $("p_wholesale").checked ? "block" : "none";
+    if ($("dropShipSheet") && $("p_dropShip")) $("dropShipSheet").style.display = $("p_dropShip").checked ? "block" : "none";
     openModal("productModal"); setTimeout(function () { $("p_name").focus(); }, 50);
   }
   function saveProduct() {
     var img = $("p_image") ? $("p_image").value.trim() : "";
-    var dealerPrice = ($("p_dealerPrice") && $("p_dealerPrice").value !== "") ? Number($("p_dealerPrice").value) : null;
+    var listPrice = Number($("p_price") && $("p_price").value) || 0;
+    var dealerRaw = ($("p_dealerPrice") && $("p_dealerPrice").value !== "") ? $("p_dealerPrice").value : "";
+    var dealerPrice = dealerRaw !== "" ? Number(dealerRaw) : null;
     var weightLb = ($("p_weightLb") && $("p_weightLb").value !== "") ? Number($("p_weightLb").value) : null;
+    var isWh = ($("p_wholesale") && $("p_wholesale").checked) || (weightLb != null && weightLb >= 50);
+    if (isWh) {
+      if (dealerPrice == null || isNaN(dealerPrice) || dealerPrice <= 0) dealerPrice = listPrice > 0 ? listPrice : null;
+      if (dealerPrice != null && dealerPrice > 0 && listPrice <= 0) listPrice = dealerPrice;
+    }
     var body = {
       store: store, originalSku: $("p_originalSku").value.trim() || undefined,
       sku: $("p_sku").value.trim(), name: $("p_name").value.trim(),
       category: $("p_category").value, lane: $("p_lane").value,
-      price: Number($("p_price").value) || 0, qty: Number($("p_qty").value) || 0,
+      price: listPrice, qty: Number($("p_qty").value) || 0,
       reserved: Number($("p_reserved").value) || 0, status: $("p_status").value,
       location: $("p_location").value.trim(), description: $("p_description").value,
       listed: $("p_listed") ? !!$("p_listed").checked : true,
+      dropShip: $("p_dropShip") ? !!$("p_dropShip").checked : false,
+      supplier: $("p_supplier") ? $("p_supplier").value.trim() : "",
+      supplierUrl: $("p_supplierUrl") ? $("p_supplierUrl").value.trim() : "",
+      supplierSku: $("p_supplierSku") ? $("p_supplierSku").value.trim() : "",
+      supplierCost: $("p_supplierCost") && $("p_supplierCost").value !== "" ? Number($("p_supplierCost").value) : null,
+      supplierNotes: $("p_supplierNotes") ? $("p_supplierNotes").value.trim() : "",
+      shippingTerms: $("p_shippingTerms") ? $("p_shippingTerms").value.trim() : "",
       dealerPrice: dealerPrice, weightLb: weightLb, pricePerLb: pricePerLb(dealerPrice, weightLb),
       image: img, images: img ? [img] : []
     };
-    if (weightLb != null && weightLb >= 50) {
-      body.pool = body.listed ? "both" : "wholesale";
-      body.dealerEligible = true;
+    if (body.dropShip) body.lane = "external";
+    if ($("p_wholesale") && $("p_wholesale").checked) {
+      body.pool = body.listed ? "both" : "wholesale"; body.dealerEligible = true;
+    } else if (weightLb != null && weightLb >= 50) {
+      body.pool = "wholesale"; body.dealerEligible = true;
     } else if (dealerPrice != null && dealerPrice > 0 && weightLb != null && weightLb > 0) {
-      body.pool = body.listed ? "both" : "wholesale";
-      body.dealerEligible = true;
+      body.pool = body.listed ? "both" : "wholesale"; body.dealerEligible = true;
     } else {
       body.pool = "retail"; body.dealerEligible = false;
     }
     if (!body.sku || !body.name) { setStatus("SKU and Name are required.", "err"); return; }
     if (body.dealerEligible && !(body.dealerPrice > 0)) {
-      setStatus("Enter the wholesale price you charge — no auto discount is applied.", "err"); return;
+      setStatus("Enter the wholesale price you charge — no auto discount.", "err"); return;
     }
     if (body.dealerEligible && !(body.weightLb > 0)) {
       setStatus("Enter weight in pounds so $/lb can be calculated.", "err"); return;
@@ -235,6 +266,7 @@
         location: it.location, description: it.description, listed: listed,
         dealerPrice: it.dealerPrice, weightLb: it.weightLb, pricePerLb: it.pricePerLb,
         pool: it.pool, dealerEligible: it.dealerEligible,
+        dropShip: !!it.dropShip, supplier: it.supplier || "", shippingTerms: it.shippingTerms || "",
         image: itemImage(it), images: it.images || (itemImage(it) ? [itemImage(it)] : [])
       }
     }).then(function () {
@@ -324,6 +356,7 @@
     list.forEach(function (it) {
       var listed = isListed(it);
       var wh = (itemPool(it) === "wholesale" || itemPool(it) === "both") ? '<span class="ds-badge" style="background:#78350f;color:#fbbf24">WHOLESALE</span>' : "";
+      var ds = (it.dropShip || it.lane === "external") ? '<span class="ds-badge">DROP SHIP</span>' : "";
       var hid = listed ? "" : '<span class="hid-badge">HIDDEN</span>';
       var img = itemImage(it);
       var thumb = img ? '<img class="thumb" src="' + esc(img) + '" alt="">' : "";
@@ -335,9 +368,9 @@
       var lbNum = it.weightLb != null ? Number(it.weightLb) : null;
       var lb = lbNum != null && !isNaN(lbNum) ? String(lbNum) : "\u2014";
       var per = pricePerLb(dealer, lbNum);
-      html += '<tr data-sku="' + esc(it.sku) + '">' +
+      html += '<tr data-sku="' + esc(it.sku) + '" class="' + (listed ? "" : "row-hidden") + '">' +
         '<td><span class="grip" title="Drag to reorder">\u22ee\u22ee</span></td>' +
-        '<td>' + thumb + '<div style="display:inline-block;vertical-align:middle"><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + "</strong>" + wh + hid + "</div></td>" +
+        '<td>' + thumb + '<div style="display:inline-block;vertical-align:middle"><div class="sku">' + esc(it.sku) + '</div><strong>' + esc(it.name) + "</strong>" + ds + wh + hid + "</div></td>" +
         "<td>" + esc(it.category || "") + "</td>" +
         "<td>$" + retail + "</td>" +
         (wholesaleMode
@@ -389,13 +422,9 @@
     inventoryView = view;
     wholesaleMode = (view === "wholesale");
     document.body.classList.toggle("wholesale-mode", view === "wholesale");
-    if ($("btnWholesale")) {
-      $("btnWholesale").classList.toggle("active", view === "wholesale");
-    }
+    if ($("btnWholesale")) $("btnWholesale").classList.toggle("active", view === "wholesale");
     if ($("viewHint")) {
-      $("viewHint").textContent = view === "wholesale"
-        ? "Wholesale \u00b7 price you enter \u00b7 $/lb calculated"
-        : "Sales inventory";
+      $("viewHint").textContent = view === "wholesale" ? "Wholesale \u00b7 exact price \u00b7 $/lb" : "Sales inventory";
       $("viewHint").style.color = view === "wholesale" ? "#fbbf24" : "";
     }
     filterCat = ""; renderChips(); renderTable();
@@ -404,9 +433,7 @@
   if ($("confirmYes")) $("confirmYes").onclick = function () { var fn = pending; closeModal("confirmModal"); pending = null; if (fn) fn(); };
   if ($("confirmModal")) $("confirmModal").onclick = function (e) { if (e.target === $("confirmModal")) { closeModal("confirmModal"); pending = null; } };
   if ($("btnReload")) $("btnReload").onclick = function () { load(); };
-  if ($("btnWholesale")) $("btnWholesale").onclick = function () {
-    setInventoryView(wholesaleMode ? "main" : "wholesale");
-  };
+  if ($("btnWholesale")) $("btnWholesale").onclick = function () { setInventoryView(wholesaleMode ? "main" : "wholesale"); };
   if ($("btnFeed")) $("btnFeed").onclick = function () {
     var next = !publicFeed;
     openConfirm(next ? "Go LIVE?" : "Turn feed OFF?", next ? "Site goes LIVE." : "Shut public feed?", next ? "Go LIVE" : "Turn OFF", !next, function () {
@@ -425,6 +452,41 @@
   if ($("p_save")) $("p_save").onclick = saveProduct;
   if ($("p_dealerPrice")) $("p_dealerPrice").oninput = updatePerLb;
   if ($("p_weightLb")) $("p_weightLb").oninput = updatePerLb;
+  if ($("p_price")) {
+    $("p_price").addEventListener("input", function () {
+      if ($("p_wholesale") && $("p_wholesale").checked && $("p_dealerPrice")) {
+        $("p_dealerPrice").value = $("p_price").value;
+        updatePerLb();
+      }
+    });
+  }
+  if ($("p_wholesale")) {
+    $("p_wholesale").addEventListener("change", function () {
+      if ($("p_wholesale").checked && $("p_dealerPrice") && $("p_price") && !$("p_dealerPrice").value) {
+        $("p_dealerPrice").value = $("p_price").value || "";
+        updatePerLb();
+      }
+      var sheet = $("wholesalePriceSheet");
+      if (sheet) sheet.style.display = $("p_wholesale").checked ? "block" : "none";
+    });
+  }
+  if ($("p_dropShip")) {
+    $("p_dropShip").addEventListener("change", function () {
+      var sheet = $("dropShipSheet");
+      if (sheet) sheet.style.display = $("p_dropShip").checked ? "block" : "none";
+    });
+  }
+  if ($("p_browse")) $("p_browse").onclick = function () { $("p_photoFile").click(); };
+  if ($("p_clearPhoto")) $("p_clearPhoto").onclick = function () { if ($("p_photoFile")) $("p_photoFile").value = ""; setPhotoPreview(""); };
+  if ($("p_photoFile")) $("p_photoFile").onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { setStatus("Photo too large (max 8 MB).", "err"); this.value = ""; return; }
+    var reader = new FileReader();
+    reader.onload = function () { setPhotoPreview(String(reader.result || "")); };
+    reader.onerror = function () { setStatus("Could not read that file.", "err"); };
+    reader.readAsDataURL(f);
+  };
   if ($("productModal")) $("productModal").onclick = function (e) { if (e.target === $("productModal")) closeModal("productModal"); };
   if ($("catModal")) $("catModal").onclick = function (e) { if (e.target === $("catModal")) closeModal("catModal"); };
   document.addEventListener("keydown", function (e) {
