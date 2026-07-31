@@ -91,7 +91,7 @@ async function loadDealerCatalog(category) {
         : null;
       var lb = item.weightLb != null ? Number(item.weightLb) : null;
       var perLb = pricePerLb(dealer, lb, item.pricePerLb);
-      var avail = item.available != null ? item.available : Math.max(0, (item.qty || 0) - (item.reserved || 0));
+      var avail = item.available === true || item.available === 1 || (typeof item.available === "number" && item.available > 0);
       var img = item.image
         ? (item.image.indexOf("http") === 0 ? item.image : apiBase() + item.image)
         : "../assets/images/gallery/Logo.png";
@@ -141,9 +141,9 @@ async function loadDealerCatalog(category) {
         '<div class="mt-auto flex items-end justify-between gap-3">' +
         "<div>" + priceBlock + "</div>" +
         '<p class="text-xs ' +
-        (avail > 0 ? "text-zinc-400" : "text-amber-500") +
+        (avail ? "text-emerald-500/80" : "text-amber-500") +
         '">' +
-        (avail > 0 ? avail + " avail" : "Contact for stock") +
+        (avail ? "Available" : "Contact for stock") +
         "</p>" +
         "</div></div>";
       grid.appendChild(card);
