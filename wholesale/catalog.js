@@ -321,10 +321,8 @@ async function loadDealerCatalog(category) {
       card.innerHTML =
         '<div class="bg-zinc-950 w-full">' +
         '<img src="' +
-        String(img).replace(/"/g, """) +
-        '" alt="' +
-        String(item.name || item.sku || "Product").replace(/"/g, """) +
-        '" class="w-full h-auto max-h-80 object-contain mx-auto block" loading="lazy" />' +
+        encodeURI(String(img)) +
+        '" alt="" class="w-full h-auto max-h-80 object-contain mx-auto block" loading="lazy" />' +
         "</div>" +
         '<div class="p-4 flex-1 flex flex-col gap-2">' +
         '<p class="text-[10px] uppercase tracking-wider text-zinc-500">' +
