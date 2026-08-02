@@ -1,12 +1,27 @@
 /**
- * Homepage section carousels — photos from live FreePort inventory.
- * data-category filters inventory by category tag.
- * Weekly stable random pick (5 slides). Pads with Apex logo when short.
+ * Homepage category carousels — STRICT FreePort category pools.
+ * Each carousel data-category maps to FreePort product.category only.
+ * Weekly shuffle of up to 5 true category photos. Logo pad when empty.
  */
 (function () {
   var API = "https://freeport.jdwapexherp.com";
   var MAX = 5;
   var LOGO = "assets/images/gallery/Logo.png";
+  var CACHE_VER = "v3";
+
+  var SKU_PREFIX = {
+    "HS-": "Hardscape",
+    "LT-": "Lighting",
+    "SB-": "Substrates",
+    "AP-": "Apparel",
+    "NT-": "Nutrition",
+    "NU-": "Nutrition",
+    "HT-": "Heating",
+    "HE-": "Heating",
+    "EN-": "Enclosures",
+    "HW-": "Hardware",
+    "PL-": "Plants"
+  };
 
   function weekKey() {
     var d = new Date();
@@ -37,8 +52,44 @@
     return h >>> 0;
   }
 
+  function normCat(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  function exactCat(itemCat, want) {
+    return normCat(itemCat) === normCat(want) && !!normCat(want);
+  }
+
+  function skuBelongs(sku, want) {
+    var s = String(sku || "").toUpperCase();
+    var wantN = normCat(want);
+    for (var prefix in SKU_PREFIX) {
+      if (s.indexOf(prefix) === 0) {
+        return normCat(SKU_PREFIX[prefix]) === wantN;
+      }
+    }
+    return null;
+  }
+
+  function itemBelongs(it, want) {
+    if (!exactCat(it.category, want)) return false;
+    var skuOk = skuBelongs(it.sku, want);
+    if (skuOk === false) return false;
+    return true;
+  }
+
+  function padTo(list, n) {
+    var out = (list || []).slice();
+    while (out.length < n) out.push(LOGO);
+    return out.slice(0, n);
+  }
+
   function pickWeekly(urls, n, cat) {
-    var key = "apex_car_" + cat + "_" + weekKey();
+    var key = "apex_car_" + CACHE_VER + "_" + cat + "_" + weekKey();
     try {
       var cached = localStorage.getItem(key);
       if (cached) {
@@ -62,39 +113,14 @@
     return chosen;
   }
 
-  function padTo(list, n) {
-    var out = (list || []).slice();
-    while (out.length < n) out.push(LOGO);
-    return out.slice(0, n);
-  }
-
   function absUrl(u) {
     if (!u) return "";
     u = String(u).trim();
     if (!u) return "";
+    if (u.indexOf("undefined") >= 0) return "";
     if (u.indexOf("http") === 0) return u;
     if (u.charAt(0) === "/") return API + u;
     return u;
-  }
-
-  function normCat(s) {
-    return String(s || "")
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim();
-  }
-
-  function catMatch(itemCat, want) {
-    var a = normCat(itemCat);
-    var b = normCat(want);
-    if (!b) return true;
-    if (a === b) return true;
-    if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
-    if (b === "plants" && (a.indexOf("plant") >= 0 || a.indexOf("live") >= 0)) return true;
-    if (b === "heating" && a.indexOf("bask") >= 0) return true;
-    if (b === "enclosures" && (a.indexOf("enclosure") >= 0 || a.indexOf("vivarium") >= 0)) return true;
-    return false;
   }
 
   function collectImages(items, cat) {
@@ -103,31 +129,18 @@
     function add(u) {
       u = absUrl(u);
       if (!u || seen[u]) return;
-      if (u.indexOf("undefined") >= 0) return;
+      if (u.indexOf("Logo.png") >= 0 || u.indexOf("logo.png") >= 0) return;
       seen[u] = 1;
       out.push(u);
     }
     (items || []).forEach(function (it) {
-      if (!catMatch(it.category, cat) && !catMatch(it.tag, cat) && !catMatch(it.tags, cat)) return;
+      if (!itemBelongs(it, cat)) return;
       if (Array.isArray(it.images)) it.images.forEach(add);
       if (it.image) add(it.image);
       if (it.photo) add(it.photo);
       if (Array.isArray(it.photos)) it.photos.forEach(add);
     });
     return out;
-  }
-
-  function fallbackUrls(root) {
-    var urls = [];
-    root.querySelectorAll("[data-fallback]").forEach(function (el) {
-      var u = el.getAttribute("data-fallback");
-      if (u) urls.push(u);
-    });
-    root.querySelectorAll("img[data-slide]").forEach(function (el) {
-      var s = el.getAttribute("src");
-      if (s) urls.push(s);
-    });
-    return urls;
   }
 
   function initCarousel(root) {
@@ -191,9 +204,8 @@
 
   async function loadCategory(root) {
     var cat = (root.getAttribute("data-category") || "").trim();
-    var staticFallback = fallbackUrls(root);
     if (!cat) {
-      render(root, staticFallback, "Product");
+      render(root, [], "Product");
       return;
     }
     try {
@@ -203,24 +215,23 @@
       );
       if (!res.ok) throw new Error("http " + res.status);
       var data = await res.json();
-      var imgs = collectImages(data.items || data.products || [], cat);
-      if (!imgs.length) {
-        var res2 = await fetch(API + "/api/products?store=herp", {
-          mode: "cors", cache: "no-store", credentials: "omit"
-        });
-        if (res2.ok) {
-          var data2 = await res2.json();
-          imgs = collectImages(data2.items || data2.products || [], cat);
-        }
-      }
-      if (!imgs.length) imgs = staticFallback;
+      var items = data.items || data.products || [];
+      var imgs = collectImages(items, cat);
       var chosen = pickWeekly(imgs, MAX, cat);
       render(root, chosen, cat);
     } catch (e) {
       console.warn("carousel " + cat, e);
-      render(root, staticFallback, cat);
+      render(root, [], cat);
     }
   }
+
+  try {
+    Object.keys(localStorage).forEach(function (k) {
+      if (k.indexOf("apex_car_") === 0 && k.indexOf("apex_car_" + CACHE_VER + "_") !== 0) {
+        localStorage.removeItem(k);
+      }
+    });
+  } catch (e) {}
 
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("[data-carousel]").forEach(function (root) {
