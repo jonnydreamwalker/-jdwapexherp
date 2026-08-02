@@ -2,9 +2,9 @@
  * Shared nav/cart shell for service pages + force Apex HERP tab icons only
  */
 (function ensureTabLogo() {
-  var iconSvg = "https://jdwapexherp.com/assets/images/favicon.svg?v=herp20260802";
-  var iconPng = "https://jdwapexherp.com/assets/images/favicon.svg?v=herp20260802";
-  var apple = "https://jdwapexherp.com/assets/images/gallery/Logo.png";
+  var iconSvg = "https://jdwapexherp.com/assets/images/apex-herp-favicon.svg?v=herpseal20260802";
+  var iconPng = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=herpseal20260802";
+  var apple = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=herpseal20260802";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
     if (n.parentNode) n.parentNode.removeChild(n);
   });
