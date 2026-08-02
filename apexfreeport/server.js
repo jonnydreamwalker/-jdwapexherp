@@ -6,8 +6,8 @@ const EventEmitter = require("events");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PASS = process.env.ADMIN_PASSWORD || "change-me-apex";
-const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const PASS = process.env.ADMIN_PASSWORD || "Funky@$$777";
+const ADMIN_USER = process.env.ADMIN_USER || "Apex";
 const DATA = path.join(__dirname, "data", "inventory.json");
 const ORDERS = path.join(__dirname, "data", "orders.json");
 const UPLOADS = path.join(__dirname, "data", "uploads");
