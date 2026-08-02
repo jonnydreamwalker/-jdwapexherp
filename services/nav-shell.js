@@ -7,15 +7,10 @@ try {
 
 if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.stringify([]));
 
-/** Tab icons — match index favicon.png / apple-touch-icon.png (not full Logo) */
+/** Tab icons — Herp site only (never FreePort) */
 (function ensureTabLogo() {
-  var base = (function () {
-    var path = (location.pathname || "").replace(/\\/g, "/");
-    if (path.indexOf("/services/") !== -1) return "../assets/images/";
-    return "assets/images/";
-  })();
-  var icon = base + "favicon.png";
-  var apple = base + "apple-touch-icon.png";
+  var icon = "https://jdwapexherp.com/assets/images/favicon.svg";
+  var apple = "https://jdwapexherp.com/assets/images/gallery/Logo.png";
   document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
     if (n.parentNode) n.parentNode.removeChild(n);
   });
@@ -27,8 +22,8 @@ if (!localStorage.getItem("jdw_cart")) localStorage.setItem("jdw_cart", JSON.str
     el.setAttribute("href", href);
     document.head.appendChild(el);
   }
-  add("icon", icon, "image/png");
-  add("shortcut icon", icon, "image/png");
+  add("icon", icon, "image/svg+xml");
+  add("shortcut icon", icon, "image/svg+xml");
   add("apple-touch-icon", apple, "image/png", "180x180");
   var theme = document.querySelector('meta[name="theme-color"]');
   if (!theme) {
@@ -47,7 +42,7 @@ function updateCartCount() {
 }
 document.addEventListener("DOMContentLoaded", function () {
   updateCartCount();
-  polishServiceFooter();
+  if (typeof polishServiceFooter === "function") polishServiceFooter();
 });
 function toggleMobileMenu() {
   var m = document.getElementById("mobile-menu");
@@ -139,13 +134,7 @@ function addToCart(name, sku, price) {
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
 }
-function populatePayPalFormFields(form) {
-  startCheckout("/api/checkout/paypal", "PayPal");
-  return false;
-}
-function startPayPalPayment() {
-  startCheckout("/api/checkout/paypal", "PayPal");
-}
+function startPayPalPayment() { startCheckout("/api/checkout/paypal", "PayPal"); }
 function cartPayload() {
   var cart = JSON.parse(localStorage.getItem("jdw_cart")) || [];
   return cart.map(function (i) {
@@ -168,48 +157,19 @@ function startCheckout(path, label) {
     })
   })
     .then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
     })
     .then(function (x) {
       if (x.ok && x.j && x.j.url) { window.location.href = x.j.url; return; }
-      var msg = (x.j && (x.j.message || x.j.error)) || (label + " is not available right now. Try again in a moment.");
-      alert(msg);
-      console.error(label, x);
+      alert((x.j && (x.j.message || x.j.error)) || (label + " is not available right now."));
     })
-    .catch(function (e) {
-      alert(label + " could not reach FreePort. Check the inventory bridge.");
-      console.error(e);
+    .catch(function () {
+      alert(label + " could not reach FreePort.");
     });
 }
 function startSquarePayment() { startCheckout("/api/checkout/square", "Square"); }
 function startStripePayment() { startCheckout("/api/checkout/stripe", "Stripe"); }
-function polishServiceFooter() {
-  var foot = document.querySelector("footer");
-  if (!foot) return;
-  if (!foot.querySelector(".fa-instagram")) {
-    var cols = foot.querySelectorAll(".grid > div");
-    if (cols.length >= 4) {
-      cols[2].innerHTML =
-        '<h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400">' +
-        '<li><a href="../about.html" class="hover:text-emerald-400">About</a></li>' +
-        '<li><a href="https://jonnydreamwalker.github.io/-jdwapexk9/" class="hover:text-emerald-400">Apex K9</a></li>' +
-        '<li><a href="https://jonnydreamwalker.github.io/-jdwapexfeline/" class="hover:text-emerald-400">Apex Feline</a></li>' +
-        '<li><a href="deals.html" class="hover:text-emerald-400">Deals</a></li></ul>';
-      cols[3].innerHTML =
-        '<h4 class="font-bold text-emerald-400 mb-3">Connect</h4>' +
-        '<div class="flex flex-wrap gap-4 text-xl">' +
-        '<a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Instagram"><i class="fab fa-instagram"></i></a>' +
-        '<a href="https://www.tiktok.com/@jdwapexherp" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>' +
-        '<a href="https://x.com/JonnyDreamWalk" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="X"><i class="fab fa-x-twitter"></i></a>' +
-        '<a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Facebook"><i class="fab fa-facebook"></i></a>' +
-        '<a href="https://www.youtube.com/@JDWAHS" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="YouTube"><i class="fab fa-youtube"></i></a>' +
-        '<a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" rel="noopener" class="text-zinc-400 hover:text-emerald-400" aria-label="Linktree"><i class="fas fa-link"></i></a>' +
-        '</div><p class="text-zinc-600 mt-4 text-xs">© 2026 JonnyDreamwalker Apex Herp Supply</p>';
-    }
-  }
-}
 
-/** Ensure Live Plants appears in category menus */
 document.addEventListener("DOMContentLoaded", function ensureLivePlantsNav() {
   function addLink(container, href, label, className) {
     if (!container) return;
