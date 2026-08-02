@@ -10,10 +10,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="catalog.js"></script>
+<script src="catalog.js?v=dealer-cart-20260802"></script>
 </head>
 <body class="bg-zinc-950 text-white">
-<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] py-2 text-emerald-300/90">Dealer Portal · Exclusive Pricing · Not for public retail</div>
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] py-2 text-emerald-300/90">Dealer Portal · Exclusive Pricing · Stripe & PayPal · Not for public retail</div>
 <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
 <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
 <div class="flex items-center gap-3 min-w-0">
@@ -25,13 +25,17 @@
 </div>
 <div class="flex items-center gap-3 text-sm">
 <span class="hidden sm:inline text-zinc-500 text-xs" id="dealer-email"></span>
+<button type="button" onclick="openDealerCartModal();return false;" class="relative hover:text-emerald-400 p-2" title="Dealer cart">
+<i class="fas fa-shopping-cart text-xl"></i>
+<span class="dealer-cart-count absolute top-0 right-0 bg-emerald-600 text-black font-bold text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+</button>
 <button type="button" onclick="dealerLogout()" class="text-xs uppercase tracking-wider border border-zinc-700 px-3 py-1.5 rounded-lg hover:border-red-800 hover:text-red-400">Log out</button>
 </div>
 </div>
 </nav>
 <header class="py-10 px-6 text-center border-b border-zinc-900">
 <h1 class="text-3xl md:text-4xl font-black tracking-tighter">Dealer Catalog</h1>
-<p class="text-zinc-500 text-sm mt-2">Same products as the public store — dealer pricing only. One login covers every category.</p>
+<p class="text-zinc-500 text-sm mt-2">Wholesale pricing · Add to cart · Same Stripe & PayPal checkout as the public store</p>
 </header>
 <section class="max-w-7xl mx-auto px-4 py-8">
 <div class="flex flex-wrap gap-2 justify-center mb-10" id="cat-tabs">
@@ -51,6 +55,21 @@
 <footer class="border-t border-zinc-900 py-8 text-center text-xs text-zinc-600">
 <a href="../index.html" class="hover:text-emerald-400">Public store</a> · © 2026 JDW Apex Herp Wholesale
 </footer>
+
+<!-- Dealer cart modal -->
+<div id="dealer-cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
+<div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 relative">
+<button type="button" onclick="closeDealerCartModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white"><i class="fas fa-times"></i></button>
+<h2 class="text-xl font-black mb-1">Dealer Cart</h2>
+<p class="text-[11px] text-emerald-500/80 uppercase tracking-wider mb-4">Wholesale pricing · Same payment rails</p>
+<div id="dealer-cart-items" class="space-y-3 mb-6"></div>
+<div class="flex justify-between mb-6"><span class="font-bold">Total</span><span id="dealer-cart-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
+<button type="button" onclick="dealerCheckoutStripe()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
+<button type="button" onclick="dealerCheckoutPayPal()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with PayPal</button>
+<button type="button" onclick="closeDealerCartModal()" class="w-full text-zinc-500 text-xs uppercase py-2">Continue shopping</button>
+</div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   requireDealerAuth().then(function (ok) {
@@ -58,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var d = JSON.parse(localStorage.getItem("jdw_dealer") || "{}");
     if (d.business_name) document.getElementById("dealer-label").textContent = d.business_name;
     if (d.email) document.getElementById("dealer-email").textContent = d.email;
+    updateDealerCartCount();
     loadDealerCatalog("");
     document.querySelectorAll(".cat-tab").forEach(function (btn) {
       btn.addEventListener("click", function () {
