@@ -48,6 +48,9 @@ function startCheckout(path, label) {
 function startStripePayment() {
   startCheckout("/api/checkout/stripe", "Stripe");
 }
+function checkoutStripe() {
+  startStripePayment();
+}
 function startPayPalPayment() {
   startCheckout("/api/checkout/paypal", "PayPal");
 }
@@ -58,3 +61,7 @@ function populatePayPalFormFields() {
   startPayPalPayment();
   return false;
 }
+window.startStripePayment = startStripePayment;
+window.checkoutStripe = checkoutStripe;
+window.startPayPalPayment = startPayPalPayment;
+window.startSquarePayment = startSquarePayment;
