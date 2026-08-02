@@ -274,64 +274,81 @@ async function loadDealerCatalog(category) {
           : apiBase() + item.image
         : "../assets/images/gallery/Logo.png";
 
-      var priceBlock = "";
+      var mainPrice = "";
       if (dealer != null && dealer > 0) {
-        priceBlock =
-          '<p class="text-emerald-400 text-xl font-black">' +
+        mainPrice =
+          '<p class="text-emerald-400 text-xl font-black leading-tight">' +
           money(dealer) +
           ' <span class="text-[10px] font-semibold text-emerald-600/80">WHOLESALE</span></p>';
-        if (perLb != null) {
-          priceBlock +=
-            '<p class="text-amber-400 text-sm font-bold mt-1">' +
-            money(perLb) +
-            ' <span class="text-[10px] font-semibold text-amber-500/90">/ lb</span></p>';
-        }
-        if (lb != null && lb > 0) {
-          priceBlock +=
-            '<p class="text-[11px] text-zinc-500 mt-0.5">' +
-            lb +
-            " lb lot" +
-            (perLb != null ? " · " + money(dealer) + " ÷ " + lb + " lb" : "") +
-            "</p>";
-        }
-        if (retail > 0 && retail !== dealer) {
-          priceBlock += '<p class="text-xs text-zinc-600 line-through mt-1">List $' + retail.toFixed(2) + "</p>";
-        }
       } else {
-        priceBlock =
-          '<p class="text-zinc-400 text-sm font-bold">Wholesale price not set</p>' +
-          (retail > 0 ? '<p class="text-xs text-zinc-600">List $' + retail.toFixed(2) + "</p>" : "");
+        mainPrice = '<p class="text-zinc-400 text-sm font-bold">Wholesale price not set</p>';
+      }
+
+      var detailRows = "";
+      if (item.description) {
+        detailRows +=
+          '<p class="text-xs text-zinc-400 mb-2">' +
+          String(item.description).replace(/</g, "<") +
+          "</p>";
+      }
+      if (perLb != null) {
+        detailRows +=
+          '<p class="text-amber-400 text-sm font-bold">' +
+          money(perLb) +
+          ' <span class="text-[10px] font-semibold text-amber-500/90">/ lb</span></p>';
+      }
+      if (lb != null && lb > 0) {
+        detailRows +=
+          '<p class="text-[11px] text-zinc-500 mt-0.5">' +
+          lb +
+          " lb lot" +
+          (perLb != null && dealer ? " · " + money(dealer) + " ÷ " + lb + " lb" : "") +
+          "</p>";
+      }
+      if (retail > 0 && (dealer == null || retail !== dealer)) {
+        detailRows +=
+          '<p class="text-xs text-zinc-600 line-through mt-1">List $' +
+          retail.toFixed(2) +
+          "</p>";
+      }
+      if (!detailRows) {
+        detailRows = '<p class="text-xs text-zinc-600">No extra details</p>';
       }
 
       var canBuy = dealer != null && dealer > 0;
       var card = document.createElement("div");
       card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col";
       card.innerHTML =
-        '<div class="h-40 bg-zinc-950 bg-cover bg-center" style="background-image:url(\'' +
+        '<div class="h-28 bg-zinc-950 bg-cover bg-center" style="background-image:url(\'' +
         img.replace(/'/g, "%27") +
         "')\"></div>" +
-        '<div class="p-5 flex-1 flex flex-col">' +
+        '<div class="p-4 flex-1 flex flex-col gap-2">' +
         '<p class="text-[10px] uppercase tracking-wider text-zinc-500">' +
         (item.category || "") +
         " · " +
         (item.sku || "") +
         "</p>" +
-        '<h3 class="font-bold text-lg mt-1 mb-2">' +
+        '<h3 class="font-bold text-base leading-snug">' +
         (item.name || "Product") +
         "</h3>" +
-        '<p class="text-xs text-zinc-500 mb-4 line-clamp-2">' +
-        (item.description || "") +
-        "</p>" +
-        '<div class="mt-auto space-y-3">' +
-        '<div class="flex items-end justify-between gap-3">' +
+        '<div class="flex items-center justify-between gap-2">' +
         "<div>" +
-        priceBlock +
+        mainPrice +
         "</div>" +
-        '<p class="text-xs ' +
+        '<p class="text-[11px] shrink-0 ' +
         (avail ? "text-emerald-500/80" : "text-amber-500") +
         '">' +
-        (avail ? "Available" : "Contact for stock") +
+        (avail ? "In stock" : "Contact") +
         "</p></div>" +
+        '<details class="group rounded-xl border border-zinc-800 bg-zinc-950/80">' +
+        '<summary class="cursor-pointer list-none px-3 py-2 text-[11px] uppercase tracking-wider text-zinc-400 flex items-center justify-between select-none">' +
+        "<span>Details</span>" +
+        '<i class="fas fa-chevron-down text-[10px] text-zinc-600 group-open:rotate-180 transition-transform"></i>' +
+        "</summary>" +
+        '<div class="px-3 pb-3 border-t border-zinc-800/80 pt-2">' +
+        detailRows +
+        "</div></details>" +
+        '<div class="mt-auto pt-1">' +
         (canBuy
           ? '<button type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl dealer-add-btn">Add to dealer cart</button>'
           : '<button type="button" disabled class="w-full bg-zinc-800 text-zinc-500 font-bold text-xs uppercase tracking-wider py-2.5 rounded-xl cursor-not-allowed">Price required</button>') +
