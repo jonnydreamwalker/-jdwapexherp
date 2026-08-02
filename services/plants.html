@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Plants | JDW Apex Herp</title>
+<meta name="description" content="Live plants for bioactive vivariums and terrariums. Florida warehouse. Care-ready stock.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=apexherp-logo">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/style.css?v=20260730frost">
+<script src="nav-shell.js"></script>
+<script src="./checkout-client.js?v=20260730b"></script>
+<script>
+/* Direct FreePort catalog — Live Plants category */
+(function () {
+  var API = "https://freeport.jdwapexherp.com";
+  function esc(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;");
+  }
+  function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+  function closeAllDetails() {
+    document.querySelectorAll(".apex-detail-panel").forEach(function (p) {
+      p.classList.add("hidden");
+    });
+    document.querySelectorAll(".apex-detail-arrow").forEach(function (a) {
+      a.textContent = "\u25bc";
+    });
+  }
+  window.toggleApexDetails = function (btn) {
+    var wrap = btn.closest(".apex-detail-wrap");
+    if (!wrap) return;
+    var panel = wrap.querySelector(".apex-detail-panel");
+    var arrow = wrap.querySelector(".apex-detail-arrow");
+    if (!panel) return;
+    var opening = panel.classList.contains("hidden");
+    closeAllDetails();
+    if (opening) {
+      panel.classList.remove("hidden");
+      if (arrow) arrow.textContent = "\u25b2";
+    }
+  };
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".apex-detail-wrap")) closeAllDetails();
+  });
+  function card(i) {
+    var disabled = i.status === "coming_soon" || (i.available !== undefined && i.available <= 0);
+    var nameSafe = String(i.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    var skuSafe = String(i.sku || "Standard").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    var desc = String(i.description || "").trim();
+    var img = i.image
+      ? (String(i.image).indexOf("http") === 0 ? i.image : API + i.image)
+      : "../assets/images/gallery/Logo.png";
+    var price = Number(i.price) || 0;
+    var btn = disabled
+      ? '<button type="button" disabled class="w-full mt-4 bg-zinc-700 text-zinc-400 font-bold py-3 rounded-xl text-xs uppercase cursor-not-allowed">Unavailable</button>'
+      : "<button type=\"button\" onclick=\"addToCart('" + nameSafe + "'," + price + ",'" + skuSafe + "')\" class=\"w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-black font-bold py-3 rounded-xl text-xs uppercase\">Add to Cart</button>";
+    var detail = desc
+      ? '<div class="apex-detail-wrap mt-3 relative">' +
+        '<button type="button" onclick="toggleApexDetails(this)" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1">Details <span class="apex-detail-arrow">\u25bc</span></button>' +
+        '<div class="apex-detail-panel hidden absolute left-0 right-0 z-20 mt-2 p-3 rounded-xl bg-zinc-950 border border-emerald-900/50 text-xs text-zinc-300 shadow-xl">' +
+        esc(desc) +
+        "</div></div>"
+      : "";
+    return (
+      '<div class="bg-zinc-800 border border-emerald-900/40 rounded-3xl overflow-hidden flex flex-col">' +
+      '<div class="h-56 bg-cover bg-center border-b border-emerald-900/50" style="background-image:url(\'' +
+      esc(img).replace(/'/g, "%27") +
+      "')\"></div>" +
+      '<div class="p-6 flex-1 flex flex-col">' +
+      '<p class="text-[10px] uppercase tracking-wider text-zinc-500">' + esc(i.category || "Live Plants") + " · " + esc(i.sku || "") + "</p>" +
+      '<h3 class="text-xl font-bold mt-1 mb-2 text-white">' + esc(i.name || "Plant") + "</h3>" +
+      '<p class="text-2xl font-black text-emerald-400">' + money(price) + "</p>" +
+      detail +
+      '<div class="mt-auto">' + btn + "</div>" +
+      "</div></div>"
+    );
+  }
+  function normCat(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+  async function load() {
+    var el = document.getElementById("apex-catalog");
+    var status = document.getElementById("apex-bridge-status");
+    if (!el) return;
+    var cat = el.getAttribute("data-category") || "Live Plants";
+    if (status) status.textContent = "Connecting inventory\u2026";
+    try {
+      var r = await fetch(API + "/api/products?category=" + encodeURIComponent(cat));
+      if (!r.ok) throw new Error("bridge " + r.status);
+      var data = await r.json();
+      var items = data.items || [];
+      var want = normCat(cat);
+      items = items.filter(function (i) {
+        return !want || normCat(i.category) === want;
+      });
+      if (!items.length) {
+        el.innerHTML =
+          '<p class="text-zinc-500 text-center col-span-full py-12">No live plants listed yet. Add SKUs in FreePort under category <strong class="text-emerald-400">Live Plants</strong>.</p>';
+        if (status) status.textContent = "Live · Live Plants · empty";
+        return;
+      }
+      el.innerHTML = items.map(card).join("");
+      if (status) status.textContent = "Live · Live Plants · " + items.length + " SKU(s)";
+    } catch (e) {
+      if (status) status.textContent = "Inventory offline. Check ApexFreePort node.";
+      el.innerHTML =
+        '<p class="text-amber-500/90 text-center col-span-full py-12">Inventory bridge offline. Check ApexFreePort node.</p>';
+    }
+  }
+  document.addEventListener("DOMContentLoaded", load);
+})();
+</script>
+</head>
+<body class="bg-zinc-950 text-white">
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape · UVB Lighting · Bioactive Substrates · Live Plants. Florida Warehouse. Fast Ship FL-TX-CA.</div>
+<nav class="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+<a href="../index.html" class="flex items-center gap-3 min-w-0">
+<img src="../assets/images/gallery/Logo.png" alt="Apex Herp" class="h-10 w-10 object-contain">
+<div class="min-w-0"><h1 class="text-lg sm:text-2xl font-black tracking-tighter text-emerald-400 truncate">JONNYDREAMWALKER</h1><p class="text-[10px] text-zinc-500 -mt-1">APEX HERP SUPPLY</p></div></a>
+<div class="hidden md:flex items-center gap-6 text-sm font-medium">
+<a href="../index.html" class="hover:text-emerald-400">Home</a>
+<div class="relative">
+<button type="button" onclick="toggleDropdown(event)" class="hover:text-emerald-400 flex items-center gap-1">Categories <span id="dropdown-arrow">▼</span></button>
+<div id="category-dropdown" class="absolute hidden rounded-xl py-4 px-6 w-72 mt-2 z-50 dropdown-menu left-1/2 -translate-x-1/2">
+<a href="hardscape.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardscape</a>
+<a href="lighting.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Explore Lighting</a>
+<a href="substrates.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Browse Substrates</a>
+<a href="plants.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Live Plants</a>
+<a href="nutrition.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Fuel Your Herps</a>
+<a href="apparel.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Gear Up</a>
+<a href="enclosures.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Enclosures</a>
+<a href="heating.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Heating and Basking</a>
+<a href="hardware.html" class="block py-2 text-emerald-400 hover:text-emerald-300 font-semibold">Shop Hardware</a>
+<a href="deals.html" class="block py-2 text-amber-400 hover:text-amber-300 font-semibold">Deals and Specials</a>
+<a href="wholesale.html" class="block py-2 text-amber-400 hover:text-amber-300 font-semibold">Wholesale / Dealers</a>
+</div></div>
+<a href="deals.html" class="hover:text-emerald-400">Deals</a>
+<a href="../about.html" class="hover:text-emerald-400">About</a>
+<button type="button" onclick="openCartModal()" class="hover:text-emerald-400">Cart (<span class="cart-count">0</span>)</button>
+</div>
+<button type="button" onclick="toggleMobileMenu()" class="md:hidden text-2xl p-2" aria-label="Open menu"><i class="fas fa-bars" id="hamburger-icon"></i></button>
+</div></nav>
+<div id="mobile-menu" class="md:hidden fixed inset-0 bg-zinc-950 z-[60] hidden flex-col pt-20 px-6 overflow-y-auto">
+<div class="flex flex-col text-lg font-medium">
+<a href="../index.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Home</a>
+<button type="button" onclick="toggleMobileCats()" class="py-4 border-b border-zinc-800 hover:text-emerald-400 flex justify-between items-center w-full text-left">Categories <span id="mobile-cat-arrow">▼</span></button>
+<div id="mobile-cats" class="hidden bg-zinc-900 rounded-xl my-2 overflow-hidden">
+<a href="hardscape.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardscape</a>
+<a href="lighting.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Explore Lighting</a>
+<a href="substrates.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Browse Substrates</a>
+<a href="plants.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Live Plants</a>
+<a href="nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Fuel Your Herps</a>
+<a href="apparel.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Gear Up</a>
+<a href="enclosures.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Enclosures</a>
+<a href="heating.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Heating and Basking</a>
+<a href="hardware.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardware</a>
+<a href="deals.html" class="block py-3 px-5 text-amber-400 border-b border-zinc-800" onclick="closeMobileMenu()">Deals and Specials</a>
+<a href="wholesale.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenu()">Wholesale / Dealers</a>
+</div>
+<a href="deals.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">Deals</a>
+<a href="../about.html" class="py-4 border-b border-zinc-800 hover:text-emerald-400" onclick="closeMobileMenu()">About</a>
+</div></div>
+<header class="h-[40vh] flex items-center justify-center relative overflow-hidden">
+<video autoplay loop muted playsinline class="w-full h-full object-cover absolute opacity-40"><source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4"></video>
+<div class="relative z-10 text-center px-6">
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Live Plants</h1>
+<p class="text-zinc-400 text-sm md:text-base mt-3 max-w-2xl mx-auto">Live plants for bioactive setups and vivariums. Florida warehouse. Select carefully — living stock ships with care notes.</p>
+<p id="apex-bridge-status" class="text-zinc-500 text-sm mt-2">Connecting inventory…</p>
+</div></header>
+<section class="py-16 bg-zinc-900"><div class="max-w-7xl mx-auto px-6">
+<h2 class="text-3xl font-black text-center mb-10 text-emerald-400">Live Plant Catalog</h2>
+<div id="apex-catalog" data-category="Live Plants" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"></div>
+</div></section>
+<div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
+<div class="bg-zinc-900 border border-emerald-900 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+<div class="flex justify-between mb-6"><h3 class="text-xl font-bold text-emerald-400">Your Cart</h3><button type="button" onclick="closeCartModal()" class="text-2xl text-zinc-400">&times;</button></div>
+<div id="cart-items-list" class="space-y-3 mb-6"></div>
+<div class="flex justify-between mb-6 border-t border-zinc-800 pt-4"><span class="font-bold">Total</span><span id="cart-grand-total" class="text-2xl font-black text-emerald-400">$0.00</span></div>
+<button type="button" onclick="startStripePayment()" class="w-full bg-[#635bff] text-white font-bold py-3 rounded-xl text-xs uppercase mb-2">Pay with Stripe</button>
+<button type="button" onclick="startPayPalPayment()" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
+</div></div>
+<footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20">
+<div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
+<div><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 mb-4 opacity-80"><p class="text-zinc-500">Veteran Owned and Operated<br>DeFuniak Springs, Florida Warehouse</p></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Shop</h4><ul class="space-y-2 text-zinc-400"><li><a href="hardscape.html" class="hover:text-emerald-400">Hardscape</a></li><li><a href="lighting.html" class="hover:text-emerald-400">Lighting</a></li><li><a href="substrates.html" class="hover:text-emerald-400">Substrates</a></li><li><a href="plants.html" class="hover:text-emerald-400">Live Plants</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400"><li><a href="../about.html" class="hover:text-emerald-400">About</a></li><li><a href="deals.html" class="hover:text-emerald-400">Deals</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Connect</h4><p class="text-zinc-600 text-xs">© 2026 JDW Apex Herp</p></div>
+</div></footer>
+<script>
+function toggleDropdown(e){if(e)e.stopPropagation();const d=document.getElementById("category-dropdown");const a=document.getElementById("dropdown-arrow");if(!d)return;const isHidden=d.classList.contains("hidden");if(isHidden){d.classList.remove("hidden");if(a)a.innerText="▲";}else{d.classList.add("hidden");if(a)a.innerText="▼";}}
+document.addEventListener("click",function(e){const d=document.getElementById("category-dropdown");const a=document.getElementById("dropdown-arrow");if(!d)return;if(!d.contains(e.target)&&!e.target.closest("[onclick*=toggleDropdown]")){d.classList.add("hidden");if(a)a.innerText="▼";}});
+function toggleMobileMenu(){const m=document.getElementById("mobile-menu");if(!m)return;const i=document.getElementById("hamburger-icon");const open=m.classList.contains("hidden");if(open){m.classList.remove("hidden");m.classList.add("flex");document.body.style.overflow="hidden";if(i)i.className="fas fa-times";}else{m.classList.add("hidden");m.classList.remove("flex");document.body.style.overflow="";if(i)i.className="fas fa-bars";}}
+function closeMobileMenu(){const m=document.getElementById("mobile-menu");const i=document.getElementById("hamburger-icon");if(m){m.classList.add("hidden");m.classList.remove("flex");}document.body.style.overflow="";if(i)i.className="fas fa-bars";}
+function toggleMobileCats(){const c=document.getElementById("mobile-cats");const a=document.getElementById("mobile-cat-arrow");if(!c)return;c.classList.toggle("hidden");if(a)a.innerText=c.classList.contains("hidden")?"▼":"▲";}
+</script>
+</body>
+</html>
