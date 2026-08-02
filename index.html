@@ -26,6 +26,15 @@ function openCartModal(){closeMobileMenu();let cart=JSON.parse(localStorage.getI
 function closeCartModal(){document.getElementById('cart-modal').classList.add('hidden');document.getElementById('cart-modal').classList.remove('flex');}
 function removeSingleCartItem(i){let cart=JSON.parse(localStorage.getItem('jdw_cart'))||[];cart.splice(i,1);localStorage.setItem('jdw_cart',JSON.stringify(cart));updateCartCount();openCartModal();}
 </script>
+<style>
+.pillar-carousel{position:relative;height:14rem;overflow:hidden;background:#09090b}
+.pillar-carousel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease;will-change:opacity;transform:translateZ(0);backface-visibility:hidden}
+.pillar-carousel img.is-active{opacity:1}
+.pillar-carousel .dots{position:absolute;bottom:.5rem;left:0;right:0;display:flex;justify-content:center;gap:.35rem;z-index:2}
+.pillar-carousel .dot{width:.4rem;height:.4rem;border-radius:9999px;background:rgba(255,255,255,.35);border:0;padding:0;cursor:pointer}
+.pillar-carousel .dot.is-active{background:#34d399;width:.7rem}
+@media (prefers-reduced-motion:reduce){.pillar-carousel img{transition:none}}
+</style>
 </head>
 <body class="bg-zinc-950 text-white">
 <div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape • UVB Lighting • Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA. SHOP HARDSCAPE</div>
@@ -96,22 +105,22 @@ function removeSingleCartItem(i){let cart=JSON.parse(localStorage.getItem('jdw_c
 <h2 class="text-3xl md:text-4xl font-black text-center mb-12 text-emerald-400 tracking-tight">SHOP THE CATALOG</h2>
 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-[url('assets/images/gallery/UFO_Cork.JPG')] bg-cover bg-center"></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/UFO_Cork.JPG" alt="Hardscape" decoding="async" fetchpriority="high"><img data-slide src="assets/products/HS-UFO-FLAT-01.jpg" alt="Hardscape" decoding="async" loading="lazy"><img data-slide data-src="assets/products/HS-CORK-HIDE-S.jpg" alt="Hardscape" decoding="async" loading="lazy"><img data-slide data-src="assets/products/HS-CORK-HIDE-M.jpg" alt="Hardscape" decoding="async" loading="lazy"><img data-slide data-src="assets/products/HS-CORK-HIDE-L.jpg" alt="Hardscape" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button><button type="button" class="dot" aria-label="3"></button><button type="button" class="dot" aria-label="4"></button><button type="button" class="dot" aria-label="5"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Hardscape & Enclosures</h3><p class="text-zinc-400 text-sm mb-4">Natural cork, spider wood, UFO hardscape.</p><a href="services/hardscape.html" class="text-emerald-400 font-semibold">Shop Hardscape →</a></div></div>
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-[url('assets/wholesale-arcadia-d3-12-uvb-t5-bulb-22.jpg')] bg-cover bg-center"></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/wholesale-arcadia-d3-12-uvb-t5-bulb-22.jpg" alt="Lighting" decoding="async" fetchpriority="high"><img data-slide src="assets/wholesale-arcadia-d3-12-uvb-t5-bulb-34.jpg" alt="Lighting" decoding="async" loading="lazy"><img data-slide data-src="assets/products/LT-ARC-D3-22-05.jpg" alt="Lighting" decoding="async" loading="lazy"><img data-slide data-src="assets/products/LT-ARC-D3-22-10.jpg" alt="Lighting" decoding="async" loading="lazy"><img data-slide data-src="assets/products/LT-ARC-D3-34-05.jpg" alt="Lighting" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button><button type="button" class="dot" aria-label="3"></button><button type="button" class="dot" aria-label="4"></button><button type="button" class="dot" aria-label="5"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Technical Lighting</h3><p class="text-zinc-400 text-sm mb-4">Arcadia UVB, T5 HO fixtures, precision heating.</p><a href="services/lighting.html" class="text-emerald-400 font-semibold">Explore Lighting →</a></div></div>
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-[url('assets/wholesale-lugarti-premium-coco-peat-block.jpg')] bg-cover bg-center"></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/wholesale-lugarti-premium-coco-peat-block.jpg" alt="Substrates" decoding="async" fetchpriority="high"><img data-slide src="assets/images/gallery/Lugarti_Coco_Peat_Block.jpg" alt="Substrates" decoding="async" loading="lazy"><img data-slide data-src="assets/Coco_1.jpeg" alt="Substrates" decoding="async" loading="lazy"><img data-slide data-src="assets/Coco_2.jpeg" alt="Substrates" decoding="async" loading="lazy"><img data-slide data-src="assets/products/SB-LUG-COCO-06.jpg" alt="Substrates" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button><button type="button" class="dot" aria-label="3"></button><button type="button" class="dot" aria-label="4"></button><button type="button" class="dot" aria-label="5"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Premium Substrates</h3><p class="text-zinc-400 text-sm mb-4">Lugarti coco peat and bioactive mixes.</p><a href="services/substrates.html" class="text-emerald-400 font-semibold">Browse Substrates →</a></div></div>
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-emerald-950/80 bg-cover bg-center flex items-center justify-center border-b border-emerald-900/40"><span class="text-emerald-400/90 text-sm font-bold tracking-wide uppercase">Live Plants</span></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/images/gallery/Logo.png" alt="Live Plants" decoding="async" fetchpriority="high"><img data-slide src="assets/images/gallery/Logo_Bannar.png" alt="Live Plants" decoding="async" loading="lazy"><img data-slide data-src="assets/UFO_Cork.JPG" alt="Live Plants" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button><button type="button" class="dot" aria-label="3"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Live Plants</h3><p class="text-zinc-400 text-sm mb-4">Bioactive and vivarium plants. Care-ready Florida stock.</p><a href="services/plants.html" class="text-emerald-400 font-semibold">Shop Live Plants →</a></div></div>
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-[url('assets/images/gallery/Coming_Soon_Reptile_Nutrition.png')] bg-cover bg-center"></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/images/gallery/Coming_Soon_Reptile_Nutrition.png" alt="Nutrition" decoding="async" fetchpriority="high"><img data-slide src="assets/images/gallery/Logo.png" alt="Nutrition" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Nutrition</h3><p class="text-zinc-400 text-sm mb-4">Calcium, multivitamins, gut-load formulas.</p><a href="services/nutrition.html" class="text-emerald-400 font-semibold">Fuel Your Herps →</a></div></div>
 <div class="shop-product-card-container bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
-<div class="h-56 bg-[url('assets/images/gallery/Apparel_Crick.png')] bg-cover bg-center"></div>
+<div class="pillar-carousel" data-carousel><img data-slide class="is-active" src="assets/images/gallery/Apparel_Crick.png" alt="Apparel" decoding="async" fetchpriority="high"><img data-slide src="assets/images/gallery/Logo.png" alt="Apparel" decoding="async" loading="lazy"><img data-slide data-src="assets/images/gallery/Logo_Bannar.png" alt="Apparel" decoding="async" loading="lazy"><div class="dots"><button type="button" class="dot is-active" aria-label="1"></button><button type="button" class="dot" aria-label="2"></button><button type="button" class="dot" aria-label="3"></button></div></div>
 <div class="p-6"><h3 class="text-2xl font-bold mb-3 text-emerald-400">Apparel</h3><p class="text-zinc-400 text-sm mb-4">Veteran-owned gear. Limited drops.</p><a href="services/apparel.html" class="text-emerald-400 font-semibold">Gear Up →</a></div></div>
 </div></section>
 <div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
@@ -133,12 +142,13 @@ function removeSingleCartItem(i){let cart=JSON.parse(localStorage.getItem('jdw_c
 <div><h4 class="font-bold text-emerald-400 mb-3">Connect</h4>
 <div class="flex flex-wrap gap-4 text-xl">
 <a href="https://www.instagram.com/jonny_dreamwalker/" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fab fa-instagram"></i></a>
-<a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fas fa-tiktok"></i></a>
+<a href="https://www.tiktok.com/@jdwapexherp" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fab fa-tiktok"></i></a>
 <a href="https://x.com/JonnyDreamWalk" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fab fa-x-twitter"></i></a>
 <a href="https://www.facebook.com/profile.php?id=61580875307761" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fab fa-facebook"></i></a>
 <a href="https://www.youtube.com/@JDWAHS" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fab fa-youtube"></i></a>
 <a href="https://linktr.ee/jonnydreamwalkerapexherpsupply" target="_blank" class="text-zinc-400 hover:text-emerald-400"><i class="fas fa-link"></i></a>
 </div>
 <p class="text-zinc-600 mt-4 text-xs">© 2026 JonnyDreamwalker Apex Herp Supply. All rights reserved.</p></div></div></footer>
+<script src="assets/js/pillar-carousel.js" defer></script>
 <script src="checkout-client.js?v=20260730pay"></script>
 </body></html>
