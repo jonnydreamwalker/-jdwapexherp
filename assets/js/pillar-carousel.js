@@ -1,11 +1,12 @@
 /**
- * Homepage section carousels — photos from live FreePort inventory
- * Each carousel uses data-category so Hardscape shows Hardscape, Lighting shows Lighting, etc.
- * Weekly stable random pick (up to 5). Falls back to data-fallback images if offline/empty.
+ * Homepage section carousels — photos from live FreePort inventory.
+ * data-category filters inventory by category tag.
+ * Weekly stable random pick (5 slides). Pads with Apex logo when short.
  */
 (function () {
   var API = "https://freeport.jdwapexherp.com";
   var MAX = 5;
+  var LOGO = "assets/images/gallery/Logo.png";
 
   function weekKey() {
     var d = new Date();
@@ -16,14 +17,17 @@
     var week = Math.ceil((((t - yearStart) / 86400000) + 1) / 7);
     return t.getUTCFullYear() + "-W" + week;
   }
+
   function mulberry32(a) {
     return function () {
-      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
       var t = Math.imul(a ^ (a >>> 15), 1 | a);
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
+
   function hashStr(s) {
     var h = 2166136261 >>> 0;
     for (var i = 0; i < s.length; i++) {
@@ -32,25 +36,38 @@
     }
     return h >>> 0;
   }
+
   function pickWeekly(urls, n, cat) {
     var key = "apex_car_" + cat + "_" + weekKey();
     try {
       var cached = localStorage.getItem(key);
       if (cached) {
         var parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length) return parsed.slice(0, n);
+        if (Array.isArray(parsed) && parsed.length) return padTo(parsed.slice(0, n), n);
       }
     } catch (e) {}
     var pool = urls.slice();
     var rnd = mulberry32(hashStr(key + "|" + pool.join("|")));
     for (var i = pool.length - 1; i > 0; i--) {
       var j = Math.floor(rnd() * (i + 1));
-      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+      var tmp = pool[i];
+      pool[i] = pool[j];
+      pool[j] = tmp;
     }
     var chosen = pool.slice(0, Math.min(n, pool.length));
-    try { localStorage.setItem(key, JSON.stringify(chosen)); } catch (e) {}
+    chosen = padTo(chosen, n);
+    try {
+      localStorage.setItem(key, JSON.stringify(chosen));
+    } catch (e) {}
     return chosen;
   }
+
+  function padTo(list, n) {
+    var out = (list || []).slice();
+    while (out.length < n) out.push(LOGO);
+    return out.slice(0, n);
+  }
+
   function absUrl(u) {
     if (!u) return "";
     u = String(u).trim();
@@ -59,32 +76,60 @@
     if (u.charAt(0) === "/") return API + u;
     return u;
   }
+
+  function normCat(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  function catMatch(itemCat, want) {
+    var a = normCat(itemCat);
+    var b = normCat(want);
+    if (!b) return true;
+    if (a === b) return true;
+    if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) return true;
+    if (b === "plants" && (a.indexOf("plant") >= 0 || a.indexOf("live") >= 0)) return true;
+    if (b === "heating" && a.indexOf("bask") >= 0) return true;
+    if (b === "enclosures" && (a.indexOf("enclosure") >= 0 || a.indexOf("vivarium") >= 0)) return true;
+    return false;
+  }
+
   function collectImages(items, cat) {
     var out = [];
     var seen = {};
-    var catLower = String(cat || "").toLowerCase();
     function add(u) {
       u = absUrl(u);
       if (!u || seen[u]) return;
+      if (u.indexOf("undefined") >= 0) return;
       seen[u] = 1;
       out.push(u);
     }
     (items || []).forEach(function (it) {
-      if (catLower && String(it.category || "").toLowerCase() !== catLower) return;
+      if (!catMatch(it.category, cat) && !catMatch(it.tag, cat) && !catMatch(it.tags, cat)) return;
       if (Array.isArray(it.images)) it.images.forEach(add);
       if (it.image) add(it.image);
       if (it.photo) add(it.photo);
+      if (Array.isArray(it.photos)) it.photos.forEach(add);
     });
     return out;
   }
+
   function fallbackUrls(root) {
     var urls = [];
     root.querySelectorAll("[data-fallback]").forEach(function (el) {
       var u = el.getAttribute("data-fallback");
       if (u) urls.push(u);
     });
+    root.querySelectorAll("img[data-slide]").forEach(function (el) {
+      var s = el.getAttribute("src");
+      if (s) urls.push(s);
+    });
     return urls;
   }
+
   function initCarousel(root) {
     var slides = root.querySelectorAll("img[data-slide]");
     var dots = root.querySelectorAll(".dot");
@@ -110,8 +155,9 @@
     show(0);
     start();
   }
+
   function render(root, urls, cat) {
-    if (!urls.length) return;
+    urls = padTo(urls || [], MAX);
     root.innerHTML = "";
     var dots = document.createElement("div");
     dots.className = "dots";
@@ -131,6 +177,7 @@
         img.setAttribute("data-src", u);
         img.loading = "lazy";
       }
+      img.onerror = function () { this.onerror = null; this.src = LOGO; };
       root.appendChild(img);
       var dot = document.createElement("button");
       dot.type = "button";
@@ -146,7 +193,7 @@
     var cat = (root.getAttribute("data-category") || "").trim();
     var staticFallback = fallbackUrls(root);
     if (!cat) {
-      render(root, staticFallback.slice(0, MAX), "Product");
+      render(root, staticFallback, "Product");
       return;
     }
     try {
@@ -156,14 +203,22 @@
       );
       if (!res.ok) throw new Error("http " + res.status);
       var data = await res.json();
-      var imgs = collectImages(data.items || [], cat);
+      var imgs = collectImages(data.items || data.products || [], cat);
+      if (!imgs.length) {
+        var res2 = await fetch(API + "/api/products?store=herp", {
+          mode: "cors", cache: "no-store", credentials: "omit"
+        });
+        if (res2.ok) {
+          var data2 = await res2.json();
+          imgs = collectImages(data2.items || data2.products || [], cat);
+        }
+      }
       if (!imgs.length) imgs = staticFallback;
       var chosen = pickWeekly(imgs, MAX, cat);
-      if (!chosen.length) chosen = staticFallback.slice(0, MAX);
       render(root, chosen, cat);
     } catch (e) {
       console.warn("carousel " + cat, e);
-      render(root, staticFallback.slice(0, MAX), cat);
+      render(root, staticFallback, cat);
     }
   }
 
