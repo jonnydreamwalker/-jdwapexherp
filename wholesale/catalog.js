@@ -319,9 +319,13 @@ async function loadDealerCatalog(category) {
       var card = document.createElement("div");
       card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col";
       card.innerHTML =
-        '<div class="h-28 bg-zinc-950 bg-cover bg-center" style="background-image:url(\'' +
-        img.replace(/'/g, "%27") +
-        "')\"></div>" +
+        '<div class="bg-zinc-950 w-full">' +
+        '<img src="' +
+        String(img).replace(/"/g, """) +
+        '" alt="' +
+        String(item.name || item.sku || "Product").replace(/"/g, """) +
+        '" class="w-full h-auto max-h-80 object-contain mx-auto block" loading="lazy" />' +
+        "</div>" +
         '<div class="p-4 flex-1 flex flex-col gap-2">' +
         '<p class="text-[10px] uppercase tracking-wider text-zinc-500">' +
         (item.category || "") +
