@@ -1,5 +1,6 @@
 /** Apex cart checkout — Stripe + PayPal via FreePort */
 window.APEX_API_BASE = window.APEX_API_BASE || "https://freeport.jdwapexherp.com";
+
 function apexCartPayload() {
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
   return cart.map(function (i) {
@@ -11,6 +12,43 @@ function apexCartPayload() {
     };
   });
 }
+
+function clearApexCart() {
+  try {
+    localStorage.setItem("jdw_cart", JSON.stringify([]));
+  } catch (e) {}
+  if (typeof updateCartCount === "function") {
+    try { updateCartCount(); } catch (e2) {}
+  }
+  document.querySelectorAll(".cart-count").forEach(function (b) {
+    b.innerText = "0";
+  });
+}
+
+/** After Stripe/PayPal success redirect (?paid=1) empty cart once and clean the URL */
+function handlePaidReturn() {
+  try {
+    var q = new URLSearchParams(window.location.search || "");
+    var paid = q.get("paid");
+    if (!paid) return;
+    clearApexCart();
+    if (window.history && window.history.replaceState) {
+      var clean = window.location.pathname + (window.location.hash || "");
+      window.history.replaceState({}, document.title, clean);
+    }
+    if (!window.__apexPaidToast) {
+      window.__apexPaidToast = true;
+      setTimeout(function () {
+        try {
+          alert("Payment received — thank you. Your cart has been cleared.");
+        } catch (e) {}
+      }, 200);
+    }
+  } catch (e) {
+    console.error("paid return", e);
+  }
+}
+
 function startCheckout(path, label) {
   var items = apexCartPayload();
   if (!items.length) {
@@ -45,6 +83,7 @@ function startCheckout(path, label) {
       console.error(e);
     });
 }
+
 function startStripePayment() {
   startCheckout("/api/checkout/stripe", "Stripe");
 }
@@ -61,7 +100,15 @@ function populatePayPalFormFields() {
   startPayPalPayment();
   return false;
 }
+
 window.startStripePayment = startStripePayment;
 window.checkoutStripe = checkoutStripe;
 window.startPayPalPayment = startPayPalPayment;
 window.startSquarePayment = startSquarePayment;
+window.clearApexCart = clearApexCart;
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", handlePaidReturn);
+} else {
+  handlePaidReturn();
+}
