@@ -6,18 +6,21 @@
 <title>Substrates | JDW Apex Herp</title>
 <meta name="theme-color" content="#000000">
 <link rel="icon" type="image/svg+xml" href="https://jdwapexherp.com/assets/images/favicon.svg">
-<link rel="shortcut icon" type="image/svg+xml" href="https://jdwapexherp.com/assets/images/favicon.svg">
 <link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body class="bg-zinc-950 text-white">
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape · UVB Lighting · Bioactive Substrates · Live Plants. Florida Warehouse.</div>
 <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative z-10">
 <div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0 flex-1">
 <a href="../index.html"><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 sm:h-12"></a>
-<div class="hidden md:flex absolute left-1/2 -translate-x-1/2 gap-5 text-sm font-medium">
+<div class="min-w-0"><h1 class="text-lg sm:text-2xl font-black tracking-tighter text-emerald-400 truncate">JONNYDREAMWALKER</h1><p class="text-[10px] text-zinc-500 -mt-1">APEX HERP SUPPLY</p></div>
+</div>
+<div class="hidden md:flex absolute left-1/2 -translate-x-1/2 gap-5 text-sm font-medium items-center">
 <a href="../index.html" class="hover:text-emerald-400">Home</a>
 <div class="relative">
 <button type="button" data-dropdown-toggle onclick="toggleDropdown(event)" class="hover:text-emerald-400 flex items-center gap-1">Categories <span id="dropdown-arrow">▼</span></button>
@@ -25,18 +28,40 @@
 <a href="hardscape.html" class="block py-2 text-emerald-400 font-semibold">Shop Hardscape</a>
 <a href="lighting.html" class="block py-2 text-emerald-400 font-semibold">Explore Lighting</a>
 <a href="substrates.html" class="block py-2 text-emerald-400 font-semibold">Browse Substrates</a>
+<a href="nutrition.html" class="block py-2 text-emerald-400 font-semibold">Fuel Your Herps</a>
+<a href="apparel.html" class="block py-2 text-emerald-400 font-semibold">Gear Up</a>
+<a href="enclosures.html" class="block py-2 text-emerald-400 font-semibold">Shop Enclosures</a>
+<a href="heating.html" class="block py-2 text-emerald-400 font-semibold">Heating and Basking</a>
+<a href="hardware.html" class="block py-2 text-emerald-400 font-semibold">Shop Hardware</a>
 <a href="plants.html" class="block py-2 text-emerald-400 font-semibold">Live Plants</a>
-<a href="deals.html" class="block py-2 text-amber-400 font-semibold border-t border-zinc-700 mt-2 pt-2">Deals</a>
+<a href="deals.html" class="block py-2 text-amber-400 font-semibold border-t border-zinc-700 mt-2 pt-2">Deals and Specials</a>
+<a href="wholesale.html" class="block py-2 text-amber-400 font-semibold">Wholesale / Dealers</a>
 </div></div>
+<a href="deals.html" class="hover:text-emerald-400">Deals</a>
 <a href="../about.html" class="hover:text-emerald-400">About</a>
 </div>
 <a href="#" onclick="openCartModal();return false;" class="relative p-2"><i class="fas fa-shopping-cart text-xl"></i><span class="cart-count absolute top-0 right-0 bg-emerald-600 text-white text-[10px] px-1.5 rounded-full">0</span></a>
+<button type="button" onclick="toggleMobileMenu()" class="md:hidden text-emerald-400 text-2xl p-2"><i class="fas fa-bars" id="hamburger-icon"></i></button>
 </div></div></nav>
+<div id="mobile-menu" class="md:hidden fixed inset-0 bg-zinc-950 z-[60] hidden flex-col pt-20 px-6 overflow-y-auto">
+<div class="flex flex-col text-lg font-medium">
+<a href="../index.html" class="py-4 border-b border-zinc-800" onclick="closeMobileMenu()">Home</a>
+<button type="button" onclick="toggleMobileCats()" class="py-4 border-b border-zinc-800 flex justify-between w-full text-left">Categories <span id="mobile-cat-arrow">▼</span></button>
+<div id="mobile-cats" class="hidden bg-zinc-900 rounded-xl my-2 overflow-hidden">
+<a href="hardscape.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardscape</a>
+<a href="lighting.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Explore Lighting</a>
+<a href="substrates.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Browse Substrates</a>
+<a href="nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Fuel Your Herps</a>
+<a href="plants.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Live Plants</a>
+<a href="deals.html" class="block py-3 px-5 text-amber-400" onclick="closeMobileMenu()">Deals</a>
+</div>
+<a href="../about.html" class="py-4 border-b border-zinc-800" onclick="closeMobileMenu()">About</a>
+</div></div>
 <header class="h-[40vh] flex items-center justify-center relative overflow-hidden">
 <video autoplay loop muted playsinline class="w-full h-full object-cover absolute opacity-40"><source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4"></video>
 <div class="relative z-10 text-center px-6">
-<h1 class="text-4xl font-black text-white">Substrates</h1>
-<p id="apex-bridge-status" class="text-zinc-500 text-sm mt-2">Connecting inventory…</p>
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Substrates</h1>
+<p id="apex-bridge-status" class="text-zinc-500 text-sm mt-2">Connecting inventory...</p>
 </div></header>
 <section class="py-16 bg-zinc-900"><div class="max-w-7xl mx-auto px-6">
 <h2 class="text-3xl font-black text-center mb-10 text-emerald-400">Live Catalog</h2>
@@ -51,7 +76,7 @@
 <button type="button" onclick="startPayPalPayment()" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
 </div></div>
 <script src="nav-shell.js"></script>
-<script src="catalog-loader.js"></script>
+<script src="catalog-loader.js?v=20260802c"></script>
 <script src="./checkout-client.js?v=20260730pay"></script>
 </body>
 </html>
