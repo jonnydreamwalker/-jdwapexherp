@@ -80,7 +80,7 @@ app.get("/favicon.ico", function (req, res) {
   res.setHeader("Cache-Control", "no-cache, max-age=0");
   var svgPath = path.join(UPLOADS, "apexfreeport-logo.svg");
   if (fs.existsSync(svgPath) && fs.statSync(svgPath).size > 50) {
-    return res.type("image/svg+xml").sendFile(svgPath);
+    return res.sendFile(svgPath);
   }
   return res.type("image/svg+xml").send(FREEPORT_FAVICON_SVG);
 });
@@ -751,6 +751,18 @@ app.get("/api/fulfillment/orders/:id/label", auth, function (req, res) {
 });
 
 app.get("/", function (req, res) { res.redirect("/admin"); });
+
+try {
+  require("./wholesale-routes")(app, {
+    auth: auth,
+    dataDir: path.join(__dirname, "data"),
+    readInventory: read,
+    writeInventory: write
+  });
+  console.log("Wholesale routes: mounted (/admin/dealers)");
+} catch (e) {
+  console.error("Wholesale routes failed:", e.message);
+}
 
 app.listen(PORT, function () {
   console.log("ApexFreePort on " + PORT);
