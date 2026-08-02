@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const fs = require("fs");
 const path = require("path");
+const EventEmitter = require("events");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,7 +25,11 @@ const FREEPORT_FAVICON_SVG =
 if (!fs.existsSync(UPLOADS)) fs.mkdirSync(UPLOADS, { recursive: true });
 if (!fs.existsSync(SESSIONS)) fs.mkdirSync(SESSIONS, { recursive: true });
 
-function FileStore() {}
+function FileStore() {
+  EventEmitter.call(this);
+}
+FileStore.prototype = Object.create(EventEmitter.prototype);
+FileStore.prototype.constructor = FileStore;
 FileStore.prototype.get = function (sid, cb) {
   try {
     const f = path.join(SESSIONS, String(sid).replace(/[^a-zA-Z0-9_-]/g, "") + ".json");
