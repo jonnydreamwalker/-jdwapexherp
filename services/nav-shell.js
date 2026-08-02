@@ -17,7 +17,8 @@
     document.head.appendChild(el);
   }
   add("icon", iconSvg, "image/svg+xml");
-  add("shortcut icon", iconSvg, "image/svg+xml");
+  add("icon", iconPng, "image/png", "32x32");
+  add("shortcut icon", iconPng, "image/png");
   add("apple-touch-icon", apple, "image/png", "180x180");
   var theme = document.querySelector('meta[name="theme-color"]');
   if (!theme) {
@@ -87,7 +88,7 @@ document.addEventListener("click", function (e) {
   var d = document.getElementById("category-dropdown");
   var a = document.getElementById("dropdown-arrow");
   if (!d) return;
-  if (!d.contains(e.target) && !e.target.closest("[data-dropdown-toggle]") && !e.target.closest('[onclick*="toggleDropdown"]')) {
+  if (!d.contains(e.target) && !e.target.closest('[onclick*="toggleDropdown"]')) {
     d.classList.add("hidden");
     if (a) a.innerText = "▼";
   }
@@ -155,3 +156,11 @@ window.closeCartModal = closeCartModal;
 window.removeSingleCartItem = removeSingleCartItem;
 window.addToCart = addToCart;
 window.updateCartCount = updateCartCount;
+
+(function loadCookieConsent() {
+  if (document.querySelector('script[src*="cookie-consent.js"]')) return;
+  var s = document.createElement("script");
+  s.src = "../assets/js/cookie-consent.js?v=20260802b";
+  s.defer = true;
+  document.head.appendChild(s);
+})();
