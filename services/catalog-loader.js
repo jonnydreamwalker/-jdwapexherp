@@ -7,10 +7,10 @@
   function esc(s) {
     if (s == null) return "";
     return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
   function money(n) {
     return "$" + (Number(n) || 0).toFixed(2);
@@ -61,6 +61,23 @@
     if (!e.target.closest(".apex-detail-wrap")) closeAllDetails();
   });
 
+  // Delegated Add to Cart — survives quotes/slashes in product names & SKUs
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".apex-add-to-cart");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var name = btn.getAttribute("data-name") || "";
+    var sku = btn.getAttribute("data-sku") || "Standard";
+    var price = Number(btn.getAttribute("data-price")) || 0;
+    if (typeof window.addToCart === "function") {
+      window.addToCart(name, sku, price);
+    } else {
+      console.error("addToCart missing — check nav-shell.js");
+      alert("Cart is loading. Please refresh and try again.");
+    }
+  });
+
   function card(i) {
     var avail = i.available;
     if (avail === undefined || avail === null) {
@@ -71,8 +88,15 @@
     avail = Number(avail);
     var soldOut = i.status === "active" && (avail <= 0 || i.available === false);
     var disabled = i.status === "coming_soon" || i.status === "hidden" || soldOut;
-    var nameSafe = String(i.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    var skuSafe = String(i.sku || "Standard").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    // HTML-safe attrs so names like 12" x 8" do not break Add to Cart
+    var nameSafe = String(i.name || "")
+      .replace(/&/g, "&")
+      .replace(/"/g, """)
+      .replace(/'/g, "&#39;");
+    var skuSafe = String(i.sku || "Standard")
+      .replace(/&/g, "&")
+      .replace(/"/g, """)
+      .replace(/'/g, "&#39;");
     var desc = String(i.description || "").trim();
     var short = desc.length > 100 ? desc.slice(0, 100).replace(/\s+\S*$/, "") + "..." : desc;
     var detailBlock;
@@ -111,13 +135,13 @@
         "</button>";
     } else {
       btn =
-        '<button type="button" onclick="addToCart(\'' +
+        '<button type="button" class="apex-add-to-cart w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl" data-name="' +
         nameSafe +
-        "','" +
+        '" data-sku="' +
         skuSafe +
-        "'," +
+        '" data-price="' +
         (Number(i.price) || 0) +
-        ')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl">Add to Cart</button>';
+        '">Add to Cart</button>';
     }
     return (
       '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center relative overflow-visible">' +
