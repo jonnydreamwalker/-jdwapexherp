@@ -1,7 +1,8 @@
 /**
  * JDW Apex FreePort — SKU shipping rule engine
  * SKU: [PREFIX]-[WEIGHT]-[BOX|UNS]-[QTY]-[MAT]-[SUFFIX]
- * Examples: HS-050-361617-001-CK-B | HS-050-UNS-001-CK-B
+ * Examples: HS-050-361617-001-CK-B | HS-050-UNS-001-CK-B | AP-001-UNS-001-XX-A
+ * -B = Bulk FOB Origin | -A = accessory flat $7.95 per 35 units (ceil)
  * Require: const ship = require("./ship-sku-engine");
  */
 const https = require("https");
@@ -12,6 +13,7 @@ const https = require("https");
  *  seg3 = 6-digit W×L×H inches → dimensional weight, or UNS → actual weight only
  *  seg4 = package qty multiplier on rate
  *  ends with -B = Bulk FOB Origin (separate freight invoice)
+ *  ends with -A = accessory buckets Math.ceil(qty/35)*7.95
  */
 var UPS_DIM_DIVISOR = 139;
 
@@ -34,7 +36,8 @@ function parseSku(sku) {
     packQty: 1,
     material: segs[4] || "",
     bulk: false,
-    fobOrigin: false
+    fobOrigin: false,
+    accessoryA: false
   };
   if (segs.length >= 2) {
     var w = parseFloat(segs[1]);
@@ -61,6 +64,10 @@ function parseSku(sku) {
     out.bulk = true;
     out.fobOrigin = true;
   }
+  // -A = accessory flat-rate buckets: ceil(qty/35)*7.95
+  if (segs.length && segs[segs.length - 1] === "A") {
+    out.accessoryA = true;
+  }
   return out;
 }
 
@@ -80,12 +87,8 @@ function unitBillableLbs(it) {
   if (!(actual > 0)) {
     var sku = String((it && it.sku) || "").toUpperCase();
     var name = String((it && it.name) || "").toLowerCase();
-    if (sku.indexOf("HS-") === 0 || name.indexOf("cork") >= 0 || name.indexOf("hardscape") >= 0) actual = 2.5;
-    else if (sku.indexOf("SB-") === 0 || name.indexOf("substrate") >= 0 || name.indexOf("coco") >= 0) actual = 3.0;
-    else if (sku.indexOf("LT-") === 0 || name.indexOf("uvb") >= 0 || name.indexOf("bulb") >= 0) actual = 0.8;
-    else if (sku.indexOf("AP-") === 0 || name.indexOf("tee") >= 0 || name.indexOf("apparel") >= 0) actual = 0.5;
-    else if (sku.indexOf("NT-") === 0 || name.indexOf("diet") >= 0 || name.indexOf("calcium") >= 0) actual = 0.6;
-    else actual = 1.0;
+    if (sku.indexOf("HS-") === 0 || name.indexOf("cork") >= 0 || name.indexOf("hardscape") >= 0) actual = 5;
+    else actual = 1;
   }
   if (meta.unspec || !meta.dims) {
     return { lbs: actual, meta: meta, dimLbs: 0, actualLbs: actual };
@@ -185,13 +188,13 @@ function buildUpsPackages(items) {
       var pkg = {
         PackagingType: { Code: "02", Description: "Package" },
         PackageWeight: {
-          UnitOfMeasurement: { Code: "LBS" },
+          UnitOfMeasurement: { Code: "LBS", Description: "Pounds" },
           Weight: String(wEach)
         }
       };
-      if (u.meta.dims && !u.meta.unspec) {
+      if (u.meta.dims) {
         pkg.Dimensions = {
-          UnitOfMeasurement: { Code: "IN" },
+          UnitOfMeasurement: { Code: "IN", Description: "Inches" },
           Length: String(u.meta.dims.l),
           Width: String(u.meta.dims.w),
           Height: String(u.meta.dims.h)
@@ -203,7 +206,10 @@ function buildUpsPackages(items) {
   if (!packages.length) {
     packages.push({
       PackagingType: { Code: "02", Description: "Package" },
-      PackageWeight: { UnitOfMeasurement: { Code: "LBS" }, Weight: "1" }
+      PackageWeight: {
+        UnitOfMeasurement: { Code: "LBS", Description: "Pounds" },
+        Weight: "1"
+      }
     });
   }
   return packages;
@@ -211,34 +217,28 @@ function buildUpsPackages(items) {
 
 function fetchUpsGroundRate(weightLbs, destZip, items) {
   return upsToken().then(function (tok) {
-    if (!tok || !tok.access_token) return Promise.reject(new Error("ups_auth"));
-    var access = tok.access_token;
-    var shipperZip = process.env.UPS_SHIPPER_ZIP || "32433";
+    if (!tok || !tok.access_token) throw new Error("UPS token failed");
     var host = process.env.UPS_API_HOST || "onlinetools.ups.com";
-    var packages = items && items.length ? buildUpsPackages(items) : null;
-    if (!packages) {
-      var w = Math.max(1, Math.ceil(Number(weightLbs) || 1));
-      packages = [{
-        PackagingType: { Code: "02", Description: "Package" },
-        PackageWeight: { UnitOfMeasurement: { Code: "LBS" }, Weight: String(w) }
-      }];
-    }
+    var shipper = process.env.UPS_SHIPPER_NUMBER || process.env.UPS_ACCOUNT_NUMBER;
+    var fromZip = process.env.UPS_ORIGIN_ZIP || "32433";
+    var packages = buildUpsPackages(items);
     var body = JSON.stringify({
       RateRequest: {
-        Request: { RequestOption: "Rate" },
+        Request: { TransactionReference: { CustomerContext: "ApexFreePort" } },
         Shipment: {
           Shipper: {
             Name: "JDW Apex FreePort",
-            ShipperNumber: process.env.UPS_ACCOUNT_NUMBER,
-            Address: { PostalCode: shipperZip, CountryCode: "US" }
+            ShipperNumber: shipper,
+            Address: { PostalCode: fromZip, CountryCode: "US" }
           },
           ShipTo: {
-            Address: {
-              PostalCode: String(destZip).replace(/\D/g, "").slice(0, 5),
-              CountryCode: "US"
-            }
+            Name: "Customer",
+            Address: { PostalCode: String(destZip).slice(0, 5), CountryCode: "US" }
           },
-          ShipFrom: { Address: { PostalCode: shipperZip, CountryCode: "US" } },
+          ShipFrom: {
+            Name: "JDW Apex FreePort",
+            Address: { PostalCode: fromZip, CountryCode: "US" }
+          },
           Service: { Code: "03", Description: "UPS Ground" },
           Package: packages
         }
@@ -251,10 +251,10 @@ function fetchUpsGroundRate(weightLbs, destZip, items) {
           path: "/api/rating/v1/Rate",
           method: "POST",
           headers: {
-            Authorization: "Bearer " + access,
+            Authorization: "Bearer " + tok.access_token,
             "Content-Type": "application/json",
             "Content-Length": Buffer.byteLength(body),
-            transId: "fp-" + Date.now(),
+            transId: "apex-" + Date.now(),
             transactionSrc: "ApexFreePort"
           }
         },
@@ -265,6 +265,7 @@ function fetchUpsGroundRate(weightLbs, destZip, items) {
             try {
               var j = JSON.parse(raw);
               var rated =
+                j &&
                 j.RateResponse &&
                 j.RateResponse.RatedShipment &&
                 j.RateResponse.RatedShipment[0];
@@ -272,8 +273,8 @@ function fetchUpsGroundRate(weightLbs, destZip, items) {
                 rated &&
                 rated.TotalCharges &&
                 rated.TotalCharges.MonetaryValue;
-              if (total) resolve(Math.round(parseFloat(total) * 100) / 100);
-              else reject(new Error("ups_no_rate"));
+              if (total != null) resolve(parseFloat(total));
+              else reject(new Error("No UPS rate in response"));
             } catch (e) {
               reject(e);
             }
@@ -287,19 +288,64 @@ function fetchUpsGroundRate(weightLbs, destZip, items) {
   });
 }
 
+/** -A SKU accessory shipping: $7.95 per 35 units (ceil) */
+function isAccessoryA(it) {
+  var sku = String((it && it.sku) || "").toUpperCase();
+  return sku.endsWith("-A") || parseSku(sku).accessoryA === true;
+}
+
+function accessoryAQuantity(items) {
+  return (items || []).reduce(function (s, it) {
+    if (!isAccessoryA(it)) return s;
+    return s + (Number(it.quantity) || 1);
+  }, 0);
+}
+
+function accessoryAShippingCost(items) {
+  var totalQuantity = accessoryAQuantity(items);
+  if (totalQuantity <= 0) return 0;
+  // 1–35 → $7.95; 36–70 → $15.90; every 35 after that another $7.95
+  return Math.ceil(totalQuantity / 35) * 7.95;
+}
+
 async function quoteShipping(items, destZip) {
-  var subtotal = Math.round(cartSubtotal(items) * 100) / 100;
-  var weight = Math.round(cartWeightLbs(items) * 100) / 100;
+  var allItems = items || [];
+  // -A accessory lines: separate $7.95 / 35-unit buckets
+  var aLines = allItems.filter(isAccessoryA);
+  var nonA = allItems.filter(function (it) { return !isAccessoryA(it); });
+  var aShipCost = Math.round(accessoryAShippingCost(allItems) * 100) / 100;
+  var aQty = accessoryAQuantity(allItems);
+
+  var subtotal = Math.round(cartSubtotal(allItems) * 100) / 100;
   var HANDLING = 5.0;
   var under40 = 6.5;
   var mid = 7.95;
-  var packFactor = rateMultiplierFromSkus(items);
-  var bulkLines = (items || []).filter(function (it) {
+
+  // Rate main shipping on non-A lines only (bulk / weight / UPS)
+  var weight = Math.round(cartWeightLbs(nonA) * 100) / 100;
+  var packFactor = rateMultiplierFromSkus(nonA);
+  var bulkLines = nonA.filter(function (it) {
     return parseSku(it.sku).fobOrigin;
   });
   var hasBulk = bulkLines.length > 0;
 
-  if (hasBulk && bulkLines.length === (items || []).length) {
+  // Cart is only -A accessories
+  if (nonA.length === 0 && aLines.length > 0) {
+    return {
+      amount: aShipCost,
+      method: "accessory_a_flat",
+      label: "Accessory shipping ($7.95 per 35 units)",
+      tier: "accessory_a",
+      weightLbs: 0,
+      subtotal: subtotal,
+      handling: 0,
+      accessoryAShipping: aShipCost,
+      accessoryAQty: aQty,
+      packQtyTotal: aQty
+    };
+  }
+
+  if (hasBulk && bulkLines.length === nonA.length && aLines.length === 0) {
     return {
       amount: 0,
       method: "fob_origin",
@@ -310,66 +356,93 @@ async function quoteShipping(items, destZip) {
       handling: 0,
       bulk: true,
       fobOrigin: true,
+      accessoryAShipping: 0,
+      accessoryAQty: 0,
       packQtyTotal: packFactor
     };
   }
 
-  if (subtotal < 40 && weight <= 10 && !hasBulk) {
+  // Bulk-only non-A + any -A: FOB 0 for bulk + accessory buckets
+  if (hasBulk && bulkLines.length === nonA.length && aLines.length > 0) {
     return {
-      amount: under40,
-      method: "flat",
-      label: "Standard shipping",
-      tier: "under40",
+      amount: aShipCost,
+      method: "fob_plus_accessory_a",
+      label: "FOB bulk + accessory shipping ($7.95 per 35)",
+      tier: "bulk_fob_accessory_a",
       weightLbs: weight,
       subtotal: subtotal,
       handling: 0,
-      packQtyTotal: packFactor
-    };
-  }
-  if (subtotal < 75 && weight <= 10 && !hasBulk) {
-    return {
-      amount: mid,
-      method: "flat",
-      label: "Standard shipping",
-      tier: "mid40to75",
-      weightLbs: weight,
-      subtotal: subtotal,
-      handling: 0,
+      bulk: true,
+      fobOrigin: true,
+      accessoryAShipping: aShipCost,
+      accessoryAQty: aQty,
       packQtyTotal: packFactor
     };
   }
 
-  var upsRate = null;
-  var source = "estimated_ups";
-  var zip = destZip && String(destZip).replace(/\D/g, "").slice(0, 5);
-  if (zip && zip.length >= 5 && upsConfigured()) {
-    try {
-      upsRate = await fetchUpsGroundRate(weight, zip, items);
-      source = "ups_ground";
-    } catch (e) {
-      console.error("UPS rate error:", e.message);
+  var mainAmount = 0;
+  var method = "flat";
+  var label = "Standard shipping";
+  var tier = "under40";
+  var upsGround = null;
+
+  var nonASub = Math.round(cartSubtotal(nonA) * 100) / 100;
+  if (nonASub < 40 && weight <= 10 && !hasBulk) {
+    mainAmount = under40;
+    method = "flat";
+    label = "Standard shipping";
+    tier = "under40";
+  } else if (nonASub < 75 && weight <= 10 && !hasBulk) {
+    mainAmount = mid;
+    method = "flat";
+    label = "Standard shipping";
+    tier = "mid40to75";
+  } else {
+    var upsRate = null;
+    var source = "estimated_ups";
+    var zip = destZip && String(destZip).replace(/\D/g, "").slice(0, 5);
+    if (zip && zip.length >= 5 && upsConfigured()) {
+      try {
+        upsRate = await fetchUpsGroundRate(weight, zip, nonA);
+        source = "ups_ground";
+      } catch (e) {
+        console.error("UPS rate error:", e.message);
+      }
     }
+    if (upsRate == null) {
+      upsRate = fallbackUpsGround(weight, zip);
+      source = "estimated_ups";
+    }
+    mainAmount = Math.round((Number(upsRate) + HANDLING) * 100) / 100;
+    method = source;
+    label = hasBulk
+      ? "UPS Ground + handling (non-bulk; bulk FOB separate)"
+      : "UPS Ground + handling";
+    tier = "heavy_or_over75";
+    upsGround = Math.round(Number(upsRate) * 100) / 100;
   }
-  if (upsRate == null) {
-    upsRate = fallbackUpsGround(weight, zip);
-    source = "estimated_ups";
+
+  // Final: main shipping + -A accessory buckets
+  var amount = Math.round((mainAmount + aShipCost) * 100) / 100;
+  if (aShipCost > 0) {
+    label = label + " + accessory ($7.95/35)";
   }
-  var amount = Math.round((Number(upsRate) + HANDLING) * 100) / 100;
-  return {
+  var out = {
     amount: amount,
-    method: source,
-    label: hasBulk
-      ? "UPS Ground + handling (non-bulk lines; bulk FOB separate)"
-      : "UPS Ground + handling",
-    tier: "heavy_or_over75",
-    upsGround: Math.round(Number(upsRate) * 100) / 100,
-    handling: HANDLING,
+    method: method,
+    label: label,
+    tier: tier,
     weightLbs: weight,
     subtotal: subtotal,
+    handling: tier === "heavy_or_over75" ? HANDLING : 0,
     bulk: hasBulk,
     fobOrigin: hasBulk,
+    accessoryAShipping: aShipCost,
+    accessoryAQty: aQty,
     packQtyTotal: packFactor
   };
+  if (upsGround != null) out.upsGround = upsGround;
+  return out;
 }
 
 module.exports = {
@@ -380,5 +453,8 @@ module.exports = {
   cartSubtotal,
   quoteShipping,
   cartHasBulkFob,
-  upsConfigured
+  upsConfigured,
+  isAccessoryA,
+  accessoryAQuantity,
+  accessoryAShippingCost
 };
