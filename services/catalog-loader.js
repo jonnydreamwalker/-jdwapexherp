@@ -61,7 +61,6 @@
     if (!e.target.closest(".apex-detail-wrap")) closeAllDetails();
   });
 
-  // Delegated Add to Cart — survives quotes/slashes in product names and SKUs
   document.addEventListener("click", function (e) {
     var btn = e.target.closest(".apex-add-to-cart");
     if (!btn) return;
@@ -86,8 +85,9 @@
       avail = isNaN(qty) ? 1 : Math.max(0, qty - reserved);
     }
     avail = Number(avail);
-    var soldOut = i.status === "active" && (avail <= 0 || i.available === false);
-    var disabled = i.status === "coming_soon" || i.status === "hidden" || soldOut;
+    var isPreorder = i.preorder === true || i.preorder === "true" || i.preorder === 1;
+    var soldOut = i.status === "active" && (avail <= 0 || i.available === false) && !isPreorder;
+    var disabled = (i.status === "coming_soon" && !isPreorder) || i.status === "hidden" || soldOut;
     var nameSafe = String(i.name || "")
       .replace(/&/g, "\x26amp;")
       .replace(/"/g, "\x26quot;")
@@ -133,14 +133,18 @@
         (soldOut ? "Out of Stock" : "Unavailable") +
         "</button>";
     } else {
+      var cartLabel = isPreorder && avail <= 0 ? "Preorder" : "Add to Cart";
+      var cartClass = isPreorder && avail <= 0
+        ? "apex-add-to-cart w-full bg-sky-600 hover:bg-sky-500 text-white font-bold uppercase text-xs py-3 rounded-xl"
+        : "apex-add-to-cart w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl";
       btn =
-        '<button type="button" class="apex-add-to-cart w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl" data-name="' +
+        '<button type="button" class="' + cartClass + '" data-name="' +
         nameSafe +
         '" data-sku="' +
         skuSafe +
         '" data-price="' +
         (Number(i.price) || 0) +
-        '">Add to Cart</button>';
+        '">' + cartLabel + '</button>';
     }
     return (
       '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center relative overflow-visible">' +
@@ -151,6 +155,9 @@
       '<h3 class="text-xl font-bold text-emerald-400 mb-2">' +
       esc(i.name) +
       "</h3>" +
+      (isPreorder
+        ? '<p class="text-[10px] font-bold uppercase tracking-wide text-sky-400 mb-2">Preorder — ships when stock arrives</p>'
+        : "") +
       detailBlock +
       '<div class="text-2xl font-black text-white mb-1">' +
       money(i.price) +
