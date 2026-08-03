@@ -69,8 +69,9 @@
     var name = btn.getAttribute("data-name") || "";
     var sku = btn.getAttribute("data-sku") || "Standard";
     var price = Number(btn.getAttribute("data-price")) || 0;
+    var preorder = btn.getAttribute("data-preorder") === "1";
     if (typeof window.addToCart === "function") {
-      window.addToCart(name, sku, price);
+      window.addToCart(name, sku, price, preorder);
     } else {
       console.error("addToCart missing — check nav-shell.js");
       alert("Cart is loading. Please refresh and try again.");
@@ -133,8 +134,8 @@
         (soldOut ? "Out of Stock" : "Unavailable") +
         "</button>";
     } else {
-      var cartLabel = isPreorder && avail <= 0 ? "Preorder" : "Add to Cart";
-      var cartClass = isPreorder && avail <= 0
+      var cartLabel = isPreorder ? "Preorder" : "Add to Cart";
+      var cartClass = isPreorder
         ? "apex-add-to-cart w-full bg-sky-600 hover:bg-sky-500 text-white font-bold uppercase text-xs py-3 rounded-xl"
         : "apex-add-to-cart w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase text-xs py-3 rounded-xl";
       btn =
@@ -144,6 +145,7 @@
         skuSafe +
         '" data-price="' +
         (Number(i.price) || 0) +
+        '" data-preorder="' + (isPreorder ? "1" : "0") +
         '">' + cartLabel + '</button>';
     }
     return (
