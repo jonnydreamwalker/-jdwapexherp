@@ -106,10 +106,11 @@ function openCartModal() {
   } else {
     var total = 0;
     cart.forEach(function (item, i) {
+      var preTag = item.preorder ? ' <span style="color:#38bdf8;font-size:10px;font-weight:800">PREORDER</span>' : '';
       total += item.price * item.quantity;
       list.innerHTML +=
         '<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold">' +
-        item.name +
+        item.name + preTag +
         '</h4><p class="text-xs text-emerald-400">$' +
         item.price.toFixed(2) +
         " × " +
@@ -139,11 +140,15 @@ function removeSingleCartItem(i) {
   updateCartCount();
   openCartModal();
 }
-function addToCart(name, sku, price) {
+function addToCart(name, sku, price, preorder) {
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
   var found = cart.find(function (x) { return x.sku === sku; });
-  if (found) found.quantity += 1;
-  else cart.push({ name: name, sku: sku, price: Number(price) || 0, quantity: 1 });
+  if (found) {
+    found.quantity += 1;
+    if (preorder) found.preorder = true;
+  } else {
+    cart.push({ name: name, sku: sku, price: Number(price) || 0, quantity: 1, preorder: !!preorder });
+  }
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
 }
