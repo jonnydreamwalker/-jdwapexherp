@@ -7,7 +7,8 @@ function apexCartPayload() {
       name: i.name,
       sku: i.sku,
       price: Number(i.price) || 0,
-      quantity: Number(i.quantity) || 1
+      quantity: Number(i.quantity) || 1,
+      preorder: !!i.preorder
     };
   });
 }
