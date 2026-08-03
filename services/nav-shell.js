@@ -169,3 +169,13 @@ window.updateCartCount = updateCartCount;
   s.defer = true;
   document.head.appendChild(s);
 })();
+
+(function loadParticleGrid() {
+  if (window.__apexParticleGrid) return;
+  if (document.querySelector('script[src*="particle-grid-bg"]')) return;
+  var s = document.createElement("script");
+  // service pages live under /services/ → go up one level
+  s.src = "../assets/js/particle-grid-bg.js?v=20260803grid";
+  s.defer = true;
+  document.head.appendChild(s);
+})();
