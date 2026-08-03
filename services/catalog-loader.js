@@ -7,10 +7,10 @@
   function esc(s) {
     if (s == null) return "";
     return String(s)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+      .replace(/&/g, "\x26amp;")
+      .replace(/</g, "\x26lt;")
+      .replace(/>/g, "\x26gt;")
+      .replace(/"/g, "\x26quot;");
   }
   function money(n) {
     return "$" + (Number(n) || 0).toFixed(2);
@@ -61,7 +61,7 @@
     if (!e.target.closest(".apex-detail-wrap")) closeAllDetails();
   });
 
-  // Delegated Add to Cart — survives quotes/slashes in product names & SKUs
+  // Delegated Add to Cart — survives quotes/slashes in product names and SKUs
   document.addEventListener("click", function (e) {
     var btn = e.target.closest(".apex-add-to-cart");
     if (!btn) return;
@@ -88,15 +88,14 @@
     avail = Number(avail);
     var soldOut = i.status === "active" && (avail <= 0 || i.available === false);
     var disabled = i.status === "coming_soon" || i.status === "hidden" || soldOut;
-    // HTML-safe attrs so names like 12" x 8" do not break Add to Cart
     var nameSafe = String(i.name || "")
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "\x26amp;")
+      .replace(/"/g, "\x26quot;")
+      .replace(/'/g, "\x26#39;");
     var skuSafe = String(i.sku || "Standard")
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "\x26amp;")
+      .replace(/"/g, "\x26quot;")
+      .replace(/'/g, "\x26#39;");
     var desc = String(i.description || "").trim();
     var short = desc.length > 100 ? desc.slice(0, 100).replace(/\s+\S*$/, "") + "..." : desc;
     var detailBlock;
