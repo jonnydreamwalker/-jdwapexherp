@@ -1,7 +1,7 @@
 /**
  * JDW Apex Herp — Lizard grid (extra-smooth)
  * Sprite drawImage, sparse grid, soft ease, idle sleep.
- * pointer-events:none + z-index:-1 — never blocks checkout.
+ * pointer-events:none + z-index:0 under content — never blocks checkout.
  */
 (function () {
   "use strict";
@@ -36,7 +36,7 @@
     c.id = "apex-particle-grid";
     c.setAttribute("aria-hidden", "true");
     c.style.cssText =
-      "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
+      "position:fixed;inset:0;width:100%;height:100%;z-index:0;" +
       "pointer-events:none;display:block;background:transparent;transform:translateZ(0);";
     function paintStatic() {
       if (!document.body) return;
@@ -86,7 +86,7 @@
   canvas.id = "apex-particle-grid";
   canvas.setAttribute("aria-hidden", "true");
   canvas.style.cssText =
-    "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
+    "position:fixed;inset:0;width:100%;height:100%;z-index:0;" +
     "pointer-events:none;display:block;background:transparent;" +
     "transform:translateZ(0);will-change:transform;contain:strict;";
 
