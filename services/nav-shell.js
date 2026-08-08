@@ -165,7 +165,7 @@ window.updateCartCount = updateCartCount;
 (function loadCookieConsent() {
   if (document.querySelector('script[src*="cookie-consent.js"]')) return;
   var s = document.createElement("script");
-  s.src = "../assets/js/cookie-consent.js?v=20260802b";
+  s.src = "https://jdwapexherp.com/assets/js/cookie-consent.js?v=20260802b";
   s.defer = true;
   document.head.appendChild(s);
 })();
@@ -174,8 +174,7 @@ window.updateCartCount = updateCartCount;
   if (window.__apexParticleGrid) return;
   if (document.querySelector('script[src*="particle-grid-bg"]')) return;
   var s = document.createElement("script");
-  // service pages live under /services/ → go up one level
-  s.src = "../assets/js/particle-grid-bg.js?v=20260803grid";
+  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards1";
   s.defer = true;
   document.head.appendChild(s);
 })();
