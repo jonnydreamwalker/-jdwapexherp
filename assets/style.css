@@ -35,6 +35,20 @@ body {
   color: var(--brand-white-color);
 }
 
+/*
+ * Lizard grid play room — one soft page of extra scroll on every page.
+ * Transparent spacer only; does not block clicks (pointer-events: none).
+ * Buy buttons, cart, forms stay fully interactive.
+ */
+body::after {
+  content: "";
+  display: block;
+  width: 100%;
+  min-height: 85vh;
+  pointer-events: none;
+  background: transparent;
+}
+
 .trust-bar {
   background-color: #022c22;
   border-bottom: 1px solid #064e3b;
