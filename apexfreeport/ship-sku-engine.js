@@ -4,17 +4,15 @@
  * Examples: HS-050-361617-001-CK-B | HS-050-UNS-001-CK-B | AP-001-UNS-001-XX-A
  * -B = Bulk FOB Origin | -A = accessory flat $7.95 per 35 units (ceil)
  * Require: const ship = require("./ship-sku-engine");
+ *
+ * Rates (2026-08):
+ *  - Light packages (≤10 lb, no bulk): single $7.95 flat — never stack standard+accessory
+ *  - Orders $100+ (≤20 lb, no bulk): FREE standard shipping
+ *  - Bulk -B: FOB $0 on portal (freight separate)
+ *  - Heavy: UPS estimate + handling
  */
 const https = require("https");
 
-/** ----- Shipping logic (JDW Apex) — SKU rule engine -----
- * SKU: [PREFIX]-[WEIGHT]-[BOX|UNS]-[QTY]-[MAT]-[SUFFIX…]
- *  seg2 = weightLbs (float)
- *  seg3 = 6-digit W×L×H inches → dimensional weight, or UNS → actual weight only
- *  seg4 = package qty multiplier on rate
- *  ends with -B = Bulk FOB Origin (separate freight invoice)
- *  ends with -A = accessory buckets Math.ceil(qty/35)*7.95
- */
 var UPS_DIM_DIVISOR = 139;
 
 function cartSubtotal(items) {
@@ -64,7 +62,6 @@ function parseSku(sku) {
     out.bulk = true;
     out.fobOrigin = true;
   }
-  // -A = accessory flat-rate buckets: ceil(qty/35)*7.95
   if (segs.length && segs[segs.length - 1] === "A") {
     out.accessoryA = true;
   }
@@ -288,7 +285,6 @@ function fetchUpsGroundRate(weightLbs, destZip, items) {
   });
 }
 
-/** -A SKU accessory shipping: $7.95 per 35 units (ceil) */
 function isAccessoryA(it) {
   var sku = String((it && it.sku) || "").toUpperCase();
   return sku.endsWith("-A") || parseSku(sku).accessoryA === true;
@@ -304,13 +300,11 @@ function accessoryAQuantity(items) {
 function accessoryAShippingCost(items) {
   var totalQuantity = accessoryAQuantity(items);
   if (totalQuantity <= 0) return 0;
-  // 1–35 → $7.95; 36–70 → $15.90; every 35 after that another $7.95
   return Math.ceil(totalQuantity / 35) * 7.95;
 }
 
 async function quoteShipping(items, destZip) {
   var allItems = items || [];
-  // -A accessory lines: separate $7.95 / 35-unit buckets
   var aLines = allItems.filter(isAccessoryA);
   var nonA = allItems.filter(function (it) { return !isAccessoryA(it); });
   var aShipCost = Math.round(accessoryAShippingCost(allItems) * 100) / 100;
@@ -318,131 +312,103 @@ async function quoteShipping(items, destZip) {
 
   var subtotal = Math.round(cartSubtotal(allItems) * 100) / 100;
   var HANDLING = 5.0;
-  var under40 = 6.5;
-  var mid = 7.95;
+  var LIGHT_FLAT = 7.95;
+  var FREE_MIN = 100;
+  var FREE_MAX_WEIGHT = 20;
 
-  // Rate main shipping on non-A lines only (bulk / weight / UPS)
-  var weight = Math.round(cartWeightLbs(nonA) * 100) / 100;
-  var packFactor = rateMultiplierFromSkus(nonA);
-  var bulkLines = nonA.filter(function (it) {
+  var weightAll = Math.round(cartWeightLbs(allItems) * 100) / 100;
+  var packFactor = rateMultiplierFromSkus(nonA.length ? nonA : allItems);
+  var bulkLines = allItems.filter(function (it) {
     return parseSku(it.sku).fobOrigin;
   });
   var hasBulk = bulkLines.length > 0;
+  var onlyBulk = hasBulk && bulkLines.length === allItems.length;
 
-  // Cart is only -A accessories
+  if (onlyBulk) {
+    return {
+      amount: 0, method: "fob_origin",
+      label: "FOB Origin — freight invoiced separately (Bulk)",
+      tier: "bulk_fob", weightLbs: weightAll, subtotal: subtotal, handling: 0,
+      bulk: true, fobOrigin: true, freeShipping: false, packQtyTotal: packFactor
+    };
+  }
+
+  if (subtotal >= FREE_MIN && !hasBulk && weightAll <= FREE_MAX_WEIGHT) {
+    return {
+      amount: 0, method: "free_over_100",
+      label: "FREE standard shipping ($100+ order)",
+      tier: "free_over_100", weightLbs: weightAll, subtotal: subtotal, handling: 0,
+      bulk: false, fobOrigin: false, freeShipping: true,
+      accessoryAShipping: 0, accessoryAQty: aQty, packQtyTotal: packFactor
+    };
+  }
+
   if (nonA.length === 0 && aLines.length > 0) {
     return {
-      amount: aShipCost,
-      method: "accessory_a_flat",
-      label: "Accessory shipping ($7.95 per 35 units)",
-      tier: "accessory_a",
-      weightLbs: 0,
-      subtotal: subtotal,
-      handling: 0,
-      accessoryAShipping: aShipCost,
-      accessoryAQty: aQty,
-      packQtyTotal: aQty
+      amount: aShipCost, method: "accessory_a_flat",
+      label: "Flat shipping (light package)",
+      tier: "accessory_a", weightLbs: weightAll, subtotal: subtotal, handling: 0,
+      freeShipping: false, accessoryAShipping: aShipCost, accessoryAQty: aQty, packQtyTotal: aQty
     };
   }
 
-  if (hasBulk && bulkLines.length === nonA.length && aLines.length === 0) {
-    return {
-      amount: 0,
-      method: "fob_origin",
-      label: "FOB Origin — freight invoiced separately (Bulk)",
-      tier: "bulk_fob",
-      weightLbs: weight,
-      subtotal: subtotal,
-      handling: 0,
-      bulk: true,
-      fobOrigin: true,
-      accessoryAShipping: 0,
-      accessoryAQty: 0,
-      packQtyTotal: packFactor
-    };
-  }
+  var retailItems = allItems.filter(function (it) { return !parseSku(it.sku).fobOrigin; });
+  var retailWeight = Math.round(cartWeightLbs(retailItems) * 100) / 100;
+  var retailSub = Math.round(cartSubtotal(retailItems) * 100) / 100;
 
-  // Bulk-only non-A + any -A: FOB 0 for bulk + accessory buckets
-  if (hasBulk && bulkLines.length === nonA.length && aLines.length > 0) {
-    return {
-      amount: aShipCost,
-      method: "fob_plus_accessory_a",
-      label: "FOB bulk + accessory shipping ($7.95 per 35)",
-      tier: "bulk_fob_accessory_a",
-      weightLbs: weight,
-      subtotal: subtotal,
-      handling: 0,
-      bulk: true,
-      fobOrigin: true,
-      accessoryAShipping: aShipCost,
-      accessoryAQty: aQty,
-      packQtyTotal: packFactor
-    };
-  }
-
-  var mainAmount = 0;
-  var method = "flat";
-  var label = "Standard shipping";
-  var tier = "under40";
-  var upsGround = null;
-
-  var nonASub = Math.round(cartSubtotal(nonA) * 100) / 100;
-  if (nonASub < 40 && weight <= 10 && !hasBulk) {
-    mainAmount = under40;
-    method = "flat";
-    label = "Standard shipping";
-    tier = "under40";
-  } else if (nonASub < 75 && weight <= 10 && !hasBulk) {
-    mainAmount = mid;
-    method = "flat";
-    label = "Standard shipping";
-    tier = "mid40to75";
-  } else {
-    var upsRate = null;
-    var source = "estimated_ups";
-    var zip = destZip && String(destZip).replace(/\D/g, "").slice(0, 5);
-    if (zip && zip.length >= 5 && upsConfigured()) {
-      try {
-        upsRate = await fetchUpsGroundRate(weight, zip, nonA);
-        source = "ups_ground";
-      } catch (e) {
-        console.error("UPS rate error:", e.message);
-      }
+  if (hasBulk && retailItems.length) {
+    if (retailSub >= FREE_MIN && retailWeight <= FREE_MAX_WEIGHT) {
+      return {
+        amount: 0, method: "free_over_100_plus_fob",
+        label: "FREE standard on retail lines — bulk FOB separate",
+        tier: "free_over_100", weightLbs: retailWeight, subtotal: subtotal, handling: 0,
+        bulk: true, fobOrigin: true, freeShipping: true, packQtyTotal: packFactor
+      };
     }
-    if (upsRate == null) {
-      upsRate = fallbackUpsGround(weight, zip);
-      source = "estimated_ups";
+    if (retailWeight <= 10) {
+      return {
+        amount: LIGHT_FLAT, method: "flat_plus_fob",
+        label: "Flat shipping (retail) — bulk freight invoiced separate",
+        tier: "light_flat", weightLbs: retailWeight, subtotal: subtotal, handling: 0,
+        bulk: true, fobOrigin: true, freeShipping: false, packQtyTotal: packFactor
+      };
     }
-    mainAmount = Math.round((Number(upsRate) + HANDLING) * 100) / 100;
-    method = source;
-    label = hasBulk
-      ? "UPS Ground + handling (non-bulk; bulk FOB separate)"
-      : "UPS Ground + handling";
-    tier = "heavy_or_over75";
-    upsGround = Math.round(Number(upsRate) * 100) / 100;
   }
 
-  // Final: main shipping + -A accessory buckets
-  var amount = Math.round((mainAmount + aShipCost) * 100) / 100;
-  if (aShipCost > 0) {
-    label = label + " + accessory ($7.95/35)";
+  if (!hasBulk && weightAll <= 10) {
+    return {
+      amount: LIGHT_FLAT, method: "flat",
+      label: "Flat shipping (light package)",
+      tier: "light_flat", weightLbs: weightAll, subtotal: subtotal, handling: 0,
+      freeShipping: false, accessoryAShipping: aShipCost, accessoryAQty: aQty, packQtyTotal: packFactor
+    };
   }
-  var out = {
-    amount: amount,
-    method: method,
-    label: label,
-    tier: tier,
-    weightLbs: weight,
-    subtotal: subtotal,
-    handling: tier === "heavy_or_over75" ? HANDLING : 0,
-    bulk: hasBulk,
-    fobOrigin: hasBulk,
-    accessoryAShipping: aShipCost,
-    accessoryAQty: aQty,
-    packQtyTotal: packFactor
+
+  var upsRate = null;
+  var source = "estimated_ups";
+  var zip = destZip && String(destZip).replace(/\D/g, "").slice(0, 5);
+  var rateItems = retailItems.length ? retailItems : nonA;
+  var rateWeight = Math.round(cartWeightLbs(rateItems) * 100) / 100;
+  if (zip && zip.length >= 5 && upsConfigured()) {
+    try {
+      upsRate = await fetchUpsGroundRate(rateWeight, zip, rateItems);
+      source = "ups_ground";
+    } catch (e) {
+      console.error("UPS rate error:", e.message);
+    }
+  }
+  if (upsRate == null) {
+    upsRate = fallbackUpsGround(rateWeight, zip);
+    source = "estimated_ups";
+  }
+  var amount = Math.round((Number(upsRate) + HANDLING) * 100) / 100;
+  return {
+    amount: amount, method: source,
+    label: hasBulk ? "UPS Ground + handling (bulk FOB separate)" : "UPS Ground + handling",
+    tier: "heavy", upsGround: Math.round(Number(upsRate) * 100) / 100, handling: HANDLING,
+    weightLbs: rateWeight, subtotal: subtotal, bulk: hasBulk, fobOrigin: hasBulk,
+    freeShipping: false, accessoryAShipping: 0, accessoryAQty: aQty, packQtyTotal: packFactor
   };
-  if (upsGround != null) out.upsGround = upsGround;
-  return out;
 }
 
 module.exports = {
