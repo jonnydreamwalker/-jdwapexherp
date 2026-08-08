@@ -1,13 +1,13 @@
 /**
- * Homepage category carousels — STRICT FreePort category pools.
- * Each carousel data-category maps to FreePort product.category only.
- * Weekly shuffle of up to 5 true category photos. Logo pad when empty.
+ * Homepage category carousels — FreePort category photo pools.
+ * Weekly shuffle of up to 5 category product photos. Logo pad when empty.
+ * Aliases: Plants ↔ Live Plants, etc. Does not touch checkout.
  */
 (function () {
   var API = "https://freeport.jdwapexherp.com";
   var MAX = 5;
   var LOGO = "assets/images/gallery/Logo.png";
-  var CACHE_VER = "v3";
+  var CACHE_VER = "v4";
 
   var SKU_PREFIX = {
     "HS-": "Hardscape",
@@ -60,16 +60,37 @@
       .trim();
   }
 
+  var CAT_ALIASES = {
+    plants: ["plants", "live plants", "live plant", "plant"],
+    "live plants": ["plants", "live plants", "live plant", "plant"],
+    heating: ["heating", "heating and basking", "heating basking", "basking"],
+    "heating and basking": ["heating", "heating and basking", "basking"],
+    hardware: ["hardware", "fixtures", "equipment"],
+    enclosures: ["enclosures", "enclosure", "vivarium", "vivariums"],
+    apparel: ["apparel", "gear", "clothing"],
+    nutrition: ["nutrition", "supplements", "vitamins"],
+    hardscape: ["hardscape", "cork", "wood"],
+    lighting: ["lighting", "uvb", "lights"],
+    substrates: ["substrates", "substrate", "bedding"]
+  };
+
   function exactCat(itemCat, want) {
-    return normCat(itemCat) === normCat(want) && !!normCat(want);
+    var a = normCat(itemCat);
+    var b = normCat(want);
+    if (!b) return false;
+    if (a === b) return true;
+    var aliases = CAT_ALIASES[b] || CAT_ALIASES[a];
+    if (aliases && aliases.indexOf(a) >= 0 && aliases.indexOf(b) >= 0) return true;
+    if (aliases && aliases.indexOf(a) >= 0) return true;
+    if (a && b && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) && Math.min(a.length, b.length) >= 5) return true;
+    return false;
   }
 
   function skuBelongs(sku, want) {
     var s = String(sku || "").toUpperCase();
-    var wantN = normCat(want);
     for (var prefix in SKU_PREFIX) {
       if (s.indexOf(prefix) === 0) {
-        return normCat(SKU_PREFIX[prefix]) === wantN;
+        return exactCat(SKU_PREFIX[prefix], want);
       }
     }
     return null;
@@ -216,6 +237,17 @@
       if (!res.ok) throw new Error("http " + res.status);
       var data = await res.json();
       var items = data.items || data.products || [];
+      if (!items.length) {
+        var res2 = await fetch(API + "/api/products?store=herp", {
+          mode: "cors",
+          cache: "no-store",
+          credentials: "omit"
+        });
+        if (res2.ok) {
+          var data2 = await res2.json();
+          items = data2.items || data2.products || [];
+        }
+      }
       var imgs = collectImages(items, cat);
       var chosen = pickWeekly(imgs, MAX, cat);
       render(root, chosen, cat);
