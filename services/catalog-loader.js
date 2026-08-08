@@ -88,7 +88,6 @@
     avail = Number(avail);
     var isPreorder = i.preorder === true || i.preorder === "true" || i.preorder === 1;
     var isDropShip = i.dropShip === true || i.dropShip === "true" || i.dropShip === 1 || i.lane === "external";
-    // Dropship: ignore local warehouse qty (supplier holds stock). Preorder always buyable.
     if ((isDropShip || isPreorder) && !(avail > 0)) avail = 1;
     var soldOut = i.status === "active" && (avail <= 0 || i.available === false) && !isPreorder && !isDropShip;
     var disabled = (i.status === "coming_soon" && !isPreorder) || i.status === "hidden" || soldOut;
@@ -123,11 +122,11 @@
     var media;
     if (img) {
       media =
-        '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950">' +
+        '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950/40">' +
         '<img src="' + esc(img) + '" alt="" class="w-full h-full object-cover" loading="lazy"></div>';
     } else {
       media =
-        '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950 flex items-center justify-center">' +
+        '<div class="h-52 rounded-xl overflow-hidden mb-4 border border-emerald-900/40 bg-zinc-950/40 flex items-center justify-center">' +
         '<span class="text-zinc-600 text-xs uppercase">No photo</span></div>';
     }
     var btn;
@@ -152,7 +151,7 @@
         '">' + cartLabel + '</button>';
     }
     return (
-      '<div class="bg-zinc-900/80 border border-emerald-900/60 rounded-2xl p-5 flex flex-col text-center relative overflow-visible">' +
+      '<div class="apex-product-card rounded-2xl p-5 flex flex-col text-center relative overflow-visible">' +
       media +
       (i.category
         ? '<p class="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">' + esc(i.category) + "</p>"
