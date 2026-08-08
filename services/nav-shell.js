@@ -68,7 +68,7 @@ function toggleMobileCats() {
   var a = document.getElementById("mobile-cat-arrow");
   if (!c) return;
   c.classList.toggle("hidden");
-  if (a) a.innerText = c.classList.contains("hidden") ? "▼" : "▲";
+  if (a) a.innerText = c.classList.contains("hidden") ? "\u25BC" : "\u25B2";
 }
 function toggleDropdown(e) {
   if (e) e.stopPropagation();
@@ -78,10 +78,10 @@ function toggleDropdown(e) {
   var isHidden = d.classList.contains("hidden");
   if (isHidden) {
     d.classList.remove("hidden");
-    if (a) a.innerText = "▲";
+    if (a) a.innerText = "\u25B2";
   } else {
     d.classList.add("hidden");
-    if (a) a.innerText = "▼";
+    if (a) a.innerText = "\u25BC";
   }
 }
 document.addEventListener("click", function (e) {
@@ -90,7 +90,7 @@ document.addEventListener("click", function (e) {
   if (!d) return;
   if (!d.contains(e.target) && !e.target.closest('[onclick*="toggleDropdown"]')) {
     d.classList.add("hidden");
-    if (a) a.innerText = "▼";
+    if (a) a.innerText = "\u25BC";
   }
 });
 function openCartModal() {
@@ -113,7 +113,7 @@ function openCartModal() {
         item.name + preTag +
         '</h4><p class="text-xs text-emerald-400">$' +
         item.price.toFixed(2) +
-        " × " +
+        " \u00d7 " +
         item.quantity +
         '</p></div><button type="button" onclick="removeSingleCartItem(' +
         i +
@@ -174,7 +174,7 @@ window.updateCartCount = updateCartCount;
   if (window.__apexParticleGrid) return;
   if (document.querySelector('script[src*="particle-grid-bg"]')) return;
   var s = document.createElement("script");
-  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards1";
+  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards3";
   s.defer = true;
   document.head.appendChild(s);
 })();
