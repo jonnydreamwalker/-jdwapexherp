@@ -1,9 +1,7 @@
 /**
- * JDW Apex Herp — Lizard grid (smooth / low-CPU)
- * - Pre-renders lizard once → drawImage (not fillText every frame)
- * - requestAnimationFrame only; stops when idle
- * - Mobile: static light grid, no animation loop
- * - pointer-events:none + z-index:-1 — never blocks checkout
+ * JDW Apex Herp — Lizard grid (extra-smooth)
+ * Sprite drawImage, sparse grid, soft ease, idle sleep.
+ * pointer-events:none + z-index:-1 — never blocks checkout.
  */
 (function () {
   "use strict";
@@ -20,7 +18,7 @@
 
   function makeSprite(size) {
     var s = document.createElement("canvas");
-    var pad = 4;
+    var pad = 2;
     s.width = size + pad * 2;
     s.height = size + pad * 2;
     var c = s.getContext("2d");
@@ -39,8 +37,7 @@
     c.setAttribute("aria-hidden", "true");
     c.style.cssText =
       "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
-      "pointer-events:none;display:block;background:transparent;" +
-      "transform:translate3d(0,0,0);";
+      "pointer-events:none;display:block;background:transparent;transform:translateZ(0);";
     function paintStatic() {
       if (!document.body) return;
       if (!c.parentNode) document.body.insertBefore(c, document.body.firstChild);
@@ -54,12 +51,12 @@
       var ctx = c.getContext("2d", { alpha: true });
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var sprite = makeSprite(12);
+      var sprite = makeSprite(11);
       if (!sprite) return;
-      var gap = 64;
+      var gap = 68;
       var hw = sprite.width / 2;
       var hh = sprite.height / 2;
-      ctx.globalAlpha = 0.32;
+      ctx.globalAlpha = 0.28;
       for (var y = gap * 0.5; y < h; y += gap) {
         for (var x = gap * 0.5; x < w; x += gap) {
           ctx.drawImage(sprite, x - hw, y - hh);
@@ -74,16 +71,16 @@
   }
 
   var SPOT_RGB = "16, 185, 129";
-  var SPOT_ALPHA = 0.06;
-  var BASE_ALPHA = 0.48;
-  var NEAR_ALPHA = 0.85;
-  var GAP = 48;
-  var RADIUS = 100;
+  var SPOT_ALPHA = 0.05;
+  var BASE_ALPHA = 0.42;
+  var NEAR_ALPHA = 0.78;
+  var GAP = 56;
+  var RADIUS = 90;
   var RADIUS_SQ = RADIUS * RADIUS;
-  var STRENGTH = 36;
-  var EASE = 0.16;
-  var FONT_PX = 12;
-  var MAX_PARTICLES = 280;
+  var STRENGTH = 28;
+  var EASE = 0.18;
+  var FONT_PX = 11;
+  var MAX_PARTICLES = 160;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
@@ -91,7 +88,7 @@
   canvas.style.cssText =
     "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
     "pointer-events:none;display:block;background:transparent;" +
-    "transform:translate3d(0,0,0);will-change:transform;contain:strict;";
+    "transform:translateZ(0);will-change:transform;contain:strict;";
 
   function mountCanvas() {
     if (canvas.parentNode) return;
@@ -104,12 +101,11 @@
 
   var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return;
+  ctx.imageSmoothingEnabled = true;
 
   var sprite = makeSprite(FONT_PX);
-  var sprW = sprite ? sprite.width : 16;
-  var sprH = sprite ? sprite.height : 16;
-  var sprHW = sprW / 2;
-  var sprHH = sprH / 2;
+  var sprHW = sprite ? sprite.width / 2 : 8;
+  var sprHH = sprite ? sprite.height / 2 : 8;
 
   var dpr = 1;
   var w = 0;
@@ -121,7 +117,7 @@
   var dirty = true;
 
   function rebuildGrid() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.25);
     w = window.innerWidth;
     h = window.innerHeight;
     canvas.width = Math.floor(w * dpr);
@@ -130,7 +126,7 @@
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    var gap = w < 1100 ? 54 : GAP;
+    var gap = w < 1200 ? 60 : GAP;
     var cols = Math.ceil(w / gap) + 1;
     var rows = Math.ceil(h / gap) + 1;
     particles = [];
@@ -169,7 +165,6 @@
   window.addEventListener("mousemove", onMove, { passive: true });
   window.addEventListener("mouseleave", onLeave, { passive: true });
   window.addEventListener("resize", function () { rebuildGrid(); kick(); }, { passive: true });
-
   document.addEventListener("visibilitychange", function () {
     running = !document.hidden;
     if (running) kick();
@@ -205,7 +200,7 @@
       }
       nx = p.x + (tx - p.x) * EASE;
       ny = p.y + (ty - p.y) * EASE;
-      if ((nx - p.x) * (nx - p.x) + (ny - p.y) * (ny - p.y) > 0.0004) moving = true;
+      if ((nx - p.x) * (nx - p.x) + (ny - p.y) * (ny - p.y) > 0.00025) moving = true;
       p.x = nx;
       p.y = ny;
     }
@@ -223,17 +218,27 @@
       ctx.fillRect(mx - RADIUS, my - RADIUS, RADIUS * 2, RADIUS * 2);
     }
 
-    if (sprite) {
+    if (!sprite) {
+      if (dirty) raf = requestAnimationFrame(frame);
+      return;
+    }
+
+    if (!active) {
+      ctx.globalAlpha = BASE_ALPHA;
+      for (i = 0; i < n; i++) {
+        p = list[i];
+        ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
+      }
+      ctx.globalAlpha = 1;
+    } else {
       for (i = 0; i < n; i++) {
         p = list[i];
         var a = BASE_ALPHA;
-        if (active) {
-          dx = p.x - mx;
-          dy = p.y - my;
-          distSq = dx * dx + dy * dy;
-          if (distSq < RADIUS_SQ) {
-            a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
-          }
+        dx = p.x - mx;
+        dy = p.y - my;
+        distSq = dx * dx + dy * dy;
+        if (distSq < RADIUS_SQ) {
+          a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
         }
         ctx.globalAlpha = a;
         ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
