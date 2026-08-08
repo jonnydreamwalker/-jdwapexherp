@@ -1,7 +1,9 @@
 /**
- * JDW Apex Herp — Lizard grid (performance build)
- * GPU-friendly canvas, rAF only, mobile static/off.
- * pointer-events:none + z-index:-1 — never blocks checkout.
+ * JDW Apex Herp — Lizard grid (smooth / low-CPU)
+ * - Pre-renders lizard once → drawImage (not fillText every frame)
+ * - requestAnimationFrame only; stops when idle
+ * - Mobile: static light grid, no animation loop
+ * - pointer-events:none + z-index:-1 — never blocks checkout
  */
 (function () {
   "use strict";
@@ -16,6 +18,21 @@
     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
     (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
+  function makeSprite(size) {
+    var s = document.createElement("canvas");
+    var pad = 4;
+    s.width = size + pad * 2;
+    s.height = size + pad * 2;
+    var c = s.getContext("2d");
+    if (!c) return null;
+    c.font = size + "px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.clearRect(0, 0, s.width, s.height);
+    c.fillText(LIZARD, s.width / 2, s.height / 2);
+    return s;
+  }
+
   if (isMobile) {
     var c = document.createElement("canvas");
     c.id = "apex-particle-grid";
@@ -23,11 +40,11 @@
     c.style.cssText =
       "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
       "pointer-events:none;display:block;background:transparent;" +
-      "transform:translate3d(0,0,0);will-change:auto;";
+      "transform:translate3d(0,0,0);";
     function paintStatic() {
       if (!document.body) return;
       if (!c.parentNode) document.body.insertBefore(c, document.body.firstChild);
-      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.25);
       var w = window.innerWidth;
       var h = window.innerHeight;
       c.width = Math.floor(w * dpr);
@@ -37,38 +54,36 @@
       var ctx = c.getContext("2d", { alpha: true });
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.font = "12px system-ui, Apple Color Emoji, Segoe UI Emoji, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.globalAlpha = 0.35;
-      var gap = 56;
+      var sprite = makeSprite(12);
+      if (!sprite) return;
+      var gap = 64;
+      var hw = sprite.width / 2;
+      var hh = sprite.height / 2;
+      ctx.globalAlpha = 0.32;
       for (var y = gap * 0.5; y < h; y += gap) {
         for (var x = gap * 0.5; x < w; x += gap) {
-          ctx.fillText(LIZARD, x, y);
+          ctx.drawImage(sprite, x - hw, y - hh);
         }
       }
       ctx.globalAlpha = 1;
     }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", paintStatic);
-    } else {
-      paintStatic();
-    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paintStatic);
+    else paintStatic();
     window.addEventListener("resize", function () { paintStatic(); }, { passive: true });
     return;
   }
 
   var SPOT_RGB = "16, 185, 129";
-  var SPOT_ALPHA = 0.07;
-  var BASE_ALPHA = 0.5;
-  var NEAR_ALPHA = 0.88;
-  var GAP = 44;
-  var RADIUS = 110;
+  var SPOT_ALPHA = 0.06;
+  var BASE_ALPHA = 0.48;
+  var NEAR_ALPHA = 0.85;
+  var GAP = 48;
+  var RADIUS = 100;
   var RADIUS_SQ = RADIUS * RADIUS;
-  var STRENGTH = 40;
-  var EASE = 0.14;
-  var FONT_PX = 13;
-  var MAX_PARTICLES = 420;
+  var STRENGTH = 36;
+  var EASE = 0.16;
+  var FONT_PX = 12;
+  var MAX_PARTICLES = 280;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
@@ -83,14 +98,18 @@
     if (document.body) {
       if (document.body.firstChild) document.body.insertBefore(canvas, document.body.firstChild);
       else document.body.appendChild(canvas);
-    } else {
-      document.documentElement.appendChild(canvas);
-    }
+    } else document.documentElement.appendChild(canvas);
   }
   mountCanvas();
 
   var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return;
+
+  var sprite = makeSprite(FONT_PX);
+  var sprW = sprite ? sprite.width : 16;
+  var sprH = sprite ? sprite.height : 16;
+  var sprHW = sprW / 2;
+  var sprHH = sprH / 2;
 
   var dpr = 1;
   var w = 0;
@@ -102,7 +121,7 @@
   var dirty = true;
 
   function rebuildGrid() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     w = window.innerWidth;
     h = window.innerHeight;
     canvas.width = Math.floor(w * dpr);
@@ -110,11 +129,8 @@
     canvas.style.width = w + "px";
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.font = FONT_PX + "px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
 
-    var gap = w < 1100 ? 50 : GAP;
+    var gap = w < 1100 ? 54 : GAP;
     var cols = Math.ceil(w / gap) + 1;
     var rows = Math.ceil(h / gap) + 1;
     particles = [];
@@ -132,32 +148,31 @@
     dirty = true;
   }
 
-  function onMove(e) {
-    var t = e.touches && e.touches[0];
-    mouse.x = t ? t.clientX : e.clientX;
-    mouse.y = t ? t.clientY : e.clientY;
-    mouse.active = true;
+  function kick() {
     dirty = true;
     if (!raf && running) raf = requestAnimationFrame(frame);
+  }
+
+  function onMove(e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+    kick();
   }
   function onLeave() {
     mouse.active = false;
     mouse.x = -9999;
     mouse.y = -9999;
-    dirty = true;
-    if (!raf && running) raf = requestAnimationFrame(frame);
+    kick();
   }
 
   window.addEventListener("mousemove", onMove, { passive: true });
   window.addEventListener("mouseleave", onLeave, { passive: true });
-  window.addEventListener("resize", function () { rebuildGrid(); if (!raf && running) raf = requestAnimationFrame(frame); }, { passive: true });
+  window.addEventListener("resize", function () { rebuildGrid(); kick(); }, { passive: true });
 
   document.addEventListener("visibilitychange", function () {
     running = !document.hidden;
-    if (running && !raf) {
-      dirty = true;
-      raf = requestAnimationFrame(frame);
-    }
+    if (running) kick();
   });
 
   function frame() {
@@ -169,7 +184,7 @@
     var mx = mouse.x;
     var my = mouse.y;
     var active = mouse.active;
-    var i, p, dx, dy, distSq, dist, force, ang, tx, ty;
+    var i, p, dx, dy, distSq, dist, force, ang, tx, ty, nx, ny;
     var moving = false;
 
     for (i = 0; i < n; i++) {
@@ -188,9 +203,9 @@
           ty = p.by + Math.sin(ang) * force;
         }
       }
-      var nx = p.x + (tx - p.x) * EASE;
-      var ny = p.y + (ty - p.y) * EASE;
-      if (Math.abs(nx - p.x) > 0.02 || Math.abs(ny - p.y) > 0.02) moving = true;
+      nx = p.x + (tx - p.x) * EASE;
+      ny = p.y + (ty - p.y) * EASE;
+      if ((nx - p.x) * (nx - p.x) + (ny - p.y) * (ny - p.y) > 0.0004) moving = true;
       p.x = nx;
       p.y = ny;
     }
@@ -208,21 +223,23 @@
       ctx.fillRect(mx - RADIUS, my - RADIUS, RADIUS * 2, RADIUS * 2);
     }
 
-    for (i = 0; i < n; i++) {
-      p = list[i];
-      var a = BASE_ALPHA;
-      if (active) {
-        dx = p.x - mx;
-        dy = p.y - my;
-        distSq = dx * dx + dy * dy;
-        if (distSq < RADIUS_SQ) {
-          a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
+    if (sprite) {
+      for (i = 0; i < n; i++) {
+        p = list[i];
+        var a = BASE_ALPHA;
+        if (active) {
+          dx = p.x - mx;
+          dy = p.y - my;
+          distSq = dx * dx + dy * dy;
+          if (distSq < RADIUS_SQ) {
+            a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
+          }
         }
+        ctx.globalAlpha = a;
+        ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
       }
-      ctx.globalAlpha = a;
-      ctx.fillText(LIZARD, p.x, p.y);
+      ctx.globalAlpha = 1;
     }
-    ctx.globalAlpha = 1;
 
     if (dirty) raf = requestAnimationFrame(frame);
   }
@@ -230,13 +247,9 @@
   function start() {
     mountCanvas();
     rebuildGrid();
-    dirty = true;
-    if (!raf) raf = requestAnimationFrame(frame);
+    kick();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start);
-  } else {
-    start();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();
