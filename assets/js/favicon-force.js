@@ -17,11 +17,11 @@
   add("shortcut icon", png, "image/png");
   add("apple-touch-icon", png, "image/png", "180x180");
 
-  // Background particle grid — homepage + any page that loads this file
-  // Canvas uses pointer-events:none + z-index:-1 (does not block cart/checkout)
+  // Little 🦎 grid on every page — absolute URL so /services/ and /wholesale/ work
+  // Canvas: pointer-events none + z-index -1 (never blocks cart/checkout)
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    s.src = "assets/js/particle-grid-bg.js?v=20260803grid";
+    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards1";
     s.defer = true;
     document.head.appendChild(s);
   }
