@@ -26,23 +26,18 @@ function clearApexCart() {
   });
 }
 
-/** After Stripe/PayPal success redirect (?paid=1) empty cart once and clean the URL */
 function handlePaidReturn() {
   try {
     var q = new URLSearchParams(window.location.search || "");
-    var paid = q.get("paid");
-    if (!paid) return;
+    if (!q.get("paid")) return;
     clearApexCart();
     if (window.history && window.history.replaceState) {
-      var clean = window.location.pathname + (window.location.hash || "");
-      window.history.replaceState({}, document.title, clean);
+      window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || ""));
     }
     if (!window.__apexPaidToast) {
       window.__apexPaidToast = true;
       setTimeout(function () {
-        try {
-          alert("Payment received — thank you. Your cart has been cleared.");
-        } catch (e) {}
+        try { alert("Payment received — thank you. Your cart has been cleared."); } catch (e) {}
       }, 200);
     }
   } catch (e) {
@@ -114,7 +109,6 @@ if (document.readyState === "loading") {
   handlePaidReturn();
 }
 
-/** On-brand shipping explainer — under payment buttons in cart modal */
 function ensureShippingExplainer() {
   if (document.getElementById("apex-ship-explain")) return;
   var modal = document.getElementById("cart-modal");
@@ -126,14 +120,14 @@ function ensureShippingExplainer() {
     '<button type="button" id="apex-ship-toggle" class="w-full flex items-center justify-between gap-2 rounded-xl border border-emerald-900/70 bg-zinc-950 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-emerald-400 hover:border-emerald-500/60 transition">' +
     '<span>Shipping — how it works</span><span id="apex-ship-arrow" class="text-emerald-500">▼</span></button>' +
     '<div id="apex-ship-panel" class="hidden mt-2 rounded-xl border border-emerald-900/50 bg-black/60 p-3 text-left backdrop-blur-sm">' +
-    '<p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">Simple rates · Florida warehouse</p>' +
+    '<p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">Ships from our Florida warehouse</p>' +
     '<ul class="space-y-1.5 text-xs text-zinc-400 leading-relaxed">' +
-    '<li><span class="text-white font-semibold">Under $100</span> — light packages: <span class="text-emerald-400 font-bold">$7.95</span> flat (one fee).</li>' +
-    '<li><span class="text-white font-semibold">$100+</span> — <span class="text-emerald-400 font-bold">FREE</span> standard shipping on eligible orders.</li>' +
-    '<li><span class="text-white font-semibold">Heavy hardscape</span> — calculated by weight / size.</li>' +
-    '<li><span class="text-white font-semibold">Bulk / wholesale (-B)</span> — FOB freight, invoiced separate (not free ship).</li>' +
+    '<li><span class="text-white font-semibold">Under $100</span> — most small orders ship for a flat <span class="text-emerald-400 font-bold">$7.95</span>.</li>' +
+    '<li><span class="text-white font-semibold">$100 or more</span> — <span class="text-emerald-400 font-bold">free</span> standard shipping on regular packages.</li>' +
+    '<li><span class="text-white font-semibold">Big or heavy items</span> — shipping is based on size and weight.</li>' +
+    '<li><span class="text-white font-semibold">Wholesale bulk orders</span> — freight is billed separately (not free shipping).</li>' +
     '</ul>' +
-    '<p class="text-[11px] text-zinc-500 mt-2">Final shipping amount appears on Stripe or PayPal checkout.</p>' +
+    '<p class="text-[11px] text-zinc-500 mt-2">You will see the exact shipping total on the payment screen.</p>' +
     '</div>';
   var buttons = modal.querySelectorAll("button");
   var lastPay = null;
@@ -172,9 +166,7 @@ window.ensureShippingExplainer = ensureShippingExplainer;
     if (typeof prev !== "function" || prev.__apexShipHooked) return;
     function hooked() {
       prev.apply(this, arguments);
-      try {
-        setTimeout(ensureShippingExplainer, 0);
-      } catch (e) {}
+      try { setTimeout(ensureShippingExplainer, 0); } catch (e) {}
     }
     hooked.__apexShipHooked = true;
     window.openCartModal = hooked;
