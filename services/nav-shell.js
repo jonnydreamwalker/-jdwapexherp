@@ -174,7 +174,7 @@ window.updateCartCount = updateCartCount;
   if (window.__apexParticleGrid) return;
   if (document.querySelector('script[src*="particle-grid-bg"]')) return;
   var s = document.createElement("script");
-  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards3";
+  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards4";
   s.defer = true;
   document.head.appendChild(s);
 })();
