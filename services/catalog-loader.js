@@ -87,7 +87,10 @@
     }
     avail = Number(avail);
     var isPreorder = i.preorder === true || i.preorder === "true" || i.preorder === 1;
-    var soldOut = i.status === "active" && (avail <= 0 || i.available === false) && !isPreorder;
+    var isDropShip = i.dropShip === true || i.dropShip === "true" || i.dropShip === 1 || i.lane === "external";
+    // Dropship: ignore local warehouse qty (supplier holds stock). Preorder always buyable.
+    if ((isDropShip || isPreorder) && !(avail > 0)) avail = 1;
+    var soldOut = i.status === "active" && (avail <= 0 || i.available === false) && !isPreorder && !isDropShip;
     var disabled = (i.status === "coming_soon" && !isPreorder) || i.status === "hidden" || soldOut;
     var nameSafe = String(i.name || "")
       .replace(/&/g, "\x26amp;")
