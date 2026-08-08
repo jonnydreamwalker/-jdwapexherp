@@ -129,13 +129,19 @@ module.exports = function mountWholesale(app, opts) {
     var pool = itemPool(it);
     if (pool === "wholesale" || pool === "both") return true;
     if (it.dealerEligible === true || it.dealerEligible === "true") return true;
-    if (it.dealerPrice != null && String(it.dealerPrice).trim() !== "") {
-      var dp = Number(it.dealerPrice);
-      if (!isNaN(dp) && dp >= 0) return true;
-    }
     var sku = String(it.sku || "").toUpperCase();
     var segs = sku.split("-").filter(Boolean);
     if (segs.length && segs[segs.length - 1] === "B") return true;
+    if (it.dealerPrice != null && String(it.dealerPrice).trim() !== "") {
+      var dp = Number(it.dealerPrice);
+      if (!isNaN(dp) && dp > 0) {
+        var cat = String(it.category || "").toLowerCase();
+        var nm = String(it.name || "").toLowerCase();
+        if (cat.indexOf("plant") >= 0 || cat.indexOf("moss") >= 0 || nm.indexOf("plant") >= 0) {
+          return true;
+        }
+      }
+    }
     return false;
   }
 
