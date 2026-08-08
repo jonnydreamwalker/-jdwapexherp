@@ -1,11 +1,7 @@
 /**
- * JDW Apex Herp — Interactive lizard grid background
- * Little 🦎 emotes on a grid with mouse repulsion + soft spotlight.
- *
- * LAYER GUARANTEE (do not remove):
- * - Canvas is position:fixed, inset:0, z-index:-1, pointer-events:none
- * - It NEVER captures clicks, hovers, or focus
- * - Buy buttons, dropdowns, cart, Stripe/PayPal, forms stay fully interactive
+ * JDW Apex Herp — Lizard grid (performance build)
+ * GPU-friendly canvas, rAF only, mobile static/off.
+ * pointer-events:none + z-index:-1 — never blocks checkout.
  */
 (function () {
   "use strict";
@@ -15,26 +11,72 @@
 
   window.__apexParticleGrid = true;
 
-  var LIZARD = "\uD83E\uDD8E"; // 🦎
-  var SPOT_RGB = "16, 185, 129";
-  var SPOT_ALPHA = 0.08;
-  var BASE_ALPHA = 0.55;
-  var NEAR_ALPHA = 0.92;
+  var LIZARD = "\uD83E\uDD8E";
+  var isMobile =
+    (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
+    (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
-  var GAP = 36;
-  var RADIUS = 120;
+  if (isMobile) {
+    var c = document.createElement("canvas");
+    c.id = "apex-particle-grid";
+    c.setAttribute("aria-hidden", "true");
+    c.style.cssText =
+      "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
+      "pointer-events:none;display:block;background:transparent;" +
+      "transform:translate3d(0,0,0);will-change:auto;";
+    function paintStatic() {
+      if (!document.body) return;
+      if (!c.parentNode) document.body.insertBefore(c, document.body.firstChild);
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      c.width = Math.floor(w * dpr);
+      c.height = Math.floor(h * dpr);
+      c.style.width = w + "px";
+      c.style.height = h + "px";
+      var ctx = c.getContext("2d", { alpha: true });
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.font = "12px system-ui, Apple Color Emoji, Segoe UI Emoji, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.globalAlpha = 0.35;
+      var gap = 56;
+      for (var y = gap * 0.5; y < h; y += gap) {
+        for (var x = gap * 0.5; x < w; x += gap) {
+          ctx.fillText(LIZARD, x, y);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", paintStatic);
+    } else {
+      paintStatic();
+    }
+    window.addEventListener("resize", function () { paintStatic(); }, { passive: true });
+    return;
+  }
+
+  var SPOT_RGB = "16, 185, 129";
+  var SPOT_ALPHA = 0.07;
+  var BASE_ALPHA = 0.5;
+  var NEAR_ALPHA = 0.88;
+  var GAP = 44;
+  var RADIUS = 110;
   var RADIUS_SQ = RADIUS * RADIUS;
-  var STRENGTH = 48;
-  var EASE = 0.12;
-  var FONT_PX = 14;
+  var STRENGTH = 40;
+  var EASE = 0.14;
+  var FONT_PX = 13;
+  var MAX_PARTICLES = 420;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
   canvas.setAttribute("aria-hidden", "true");
   canvas.style.cssText =
-    "position:fixed;inset:0;width:100%;height:100%;" +
-    "z-index:-1;pointer-events:none;display:block;" +
-    "background:transparent;margin:0;padding:0;";
+    "position:fixed;inset:0;width:100%;height:100%;z-index:-1;" +
+    "pointer-events:none;display:block;background:transparent;" +
+    "transform:translate3d(0,0,0);will-change:transform;contain:strict;";
 
   function mountCanvas() {
     if (canvas.parentNode) return;
@@ -47,7 +89,7 @@
   }
   mountCanvas();
 
-  var ctx = canvas.getContext("2d", { alpha: true });
+  var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return;
 
   var dpr = 1;
@@ -57,9 +99,10 @@
   var mouse = { x: -9999, y: -9999, active: false };
   var raf = 0;
   var running = true;
+  var dirty = true;
 
   function rebuildGrid() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     w = window.innerWidth;
     h = window.innerHeight;
     canvas.width = Math.floor(w * dpr);
@@ -71,7 +114,7 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    var gap = w < 640 ? 42 : GAP;
+    var gap = w < 1100 ? 50 : GAP;
     var cols = Math.ceil(w / gap) + 1;
     var rows = Math.ceil(h / gap) + 1;
     particles = [];
@@ -79,11 +122,14 @@
     var oy = (h - (rows - 1) * gap) * 0.5;
     for (var j = 0; j < rows; j++) {
       for (var i = 0; i < cols; i++) {
+        if (particles.length >= MAX_PARTICLES) break;
         var bx = ox + i * gap;
         var by = oy + j * gap;
         particles.push({ bx: bx, by: by, x: bx, y: by });
       }
+      if (particles.length >= MAX_PARTICLES) break;
     }
+    dirty = true;
   }
 
   function onMove(e) {
@@ -91,34 +137,40 @@
     mouse.x = t ? t.clientX : e.clientX;
     mouse.y = t ? t.clientY : e.clientY;
     mouse.active = true;
+    dirty = true;
+    if (!raf && running) raf = requestAnimationFrame(frame);
   }
   function onLeave() {
     mouse.active = false;
     mouse.x = -9999;
     mouse.y = -9999;
+    dirty = true;
+    if (!raf && running) raf = requestAnimationFrame(frame);
   }
 
   window.addEventListener("mousemove", onMove, { passive: true });
-  window.addEventListener("touchmove", onMove, { passive: true });
   window.addEventListener("mouseleave", onLeave, { passive: true });
-  window.addEventListener("touchend", onLeave, { passive: true });
-  window.addEventListener("resize", function () { rebuildGrid(); }, { passive: true });
+  window.addEventListener("resize", function () { rebuildGrid(); if (!raf && running) raf = requestAnimationFrame(frame); }, { passive: true });
 
   document.addEventListener("visibilitychange", function () {
     running = !document.hidden;
-    if (running && !raf) raf = requestAnimationFrame(frame);
+    if (running && !raf) {
+      dirty = true;
+      raf = requestAnimationFrame(frame);
+    }
   });
 
   function frame() {
     raf = 0;
     if (!running) return;
 
+    var list = particles;
+    var n = list.length;
     var mx = mouse.x;
     var my = mouse.y;
     var active = mouse.active;
-    var list = particles;
-    var n = list.length;
     var i, p, dx, dy, distSq, dist, force, ang, tx, ty;
+    var moving = false;
 
     for (i = 0; i < n; i++) {
       p = list[i];
@@ -136,9 +188,15 @@
           ty = p.by + Math.sin(ang) * force;
         }
       }
-      p.x += (tx - p.x) * EASE;
-      p.y += (ty - p.y) * EASE;
+      var nx = p.x + (tx - p.x) * EASE;
+      var ny = p.y + (ty - p.y) * EASE;
+      if (Math.abs(nx - p.x) > 0.02 || Math.abs(ny - p.y) > 0.02) moving = true;
+      p.x = nx;
+      p.y = ny;
     }
+
+    if (!dirty && !moving && !active) return;
+    dirty = moving || active;
 
     ctx.clearRect(0, 0, w, h);
 
@@ -166,12 +224,13 @@
     }
     ctx.globalAlpha = 1;
 
-    raf = requestAnimationFrame(frame);
+    if (dirty) raf = requestAnimationFrame(frame);
   }
 
   function start() {
     mountCanvas();
     rebuildGrid();
+    dirty = true;
     if (!raf) raf = requestAnimationFrame(frame);
   }
 
