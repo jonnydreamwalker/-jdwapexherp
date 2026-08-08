@@ -54,9 +54,13 @@ body.bg-zinc-950 {
 [id$="-catalog"],
 main,
 main.max-w-7xl,
-section.max-w-7xl {
+section.max-w-7xl,
+/* This was the gray plate sitting over the lizard grid on every category page */
+section.py-16.bg-zinc-900,
+section.bg-zinc-900 {
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
 }
 
 /* Glass sales cards — not solid gray blocks */
