@@ -19,7 +19,7 @@
 
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards5";
+    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards6";
     s.defer = true;
     document.head.appendChild(s);
   }
