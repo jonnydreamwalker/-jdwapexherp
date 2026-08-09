@@ -124,12 +124,32 @@ nav.sticky {
   z-index: 50;
 }
 
-/* Cart + mobile menus must stay fixed overlays or clicks look dead */
+/* Cart + mobile menus: fixed full-viewport overlays, cart centered on screen */
 #cart-modal,
 #dealer-cart-modal,
 #mobile-menu {
   position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100vh !important;
   z-index: 70 !important;
+  margin: 0 !important;
+}
+#cart-modal,
+#dealer-cart-modal {
+  align-items: center !important;
+  justify-content: center !important;
+}
+#cart-modal > div,
+#dealer-cart-modal > div {
+  margin: auto !important;
+  max-height: min(90vh, 40rem);
+  overflow-y: auto;
 }
 
 .dropdown-menu {
