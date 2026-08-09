@@ -1,7 +1,6 @@
 /**
- * JDW Apex Herp — Neon radial dot grid (green → purple)
- * Interactive particle dots with mouse repulsion + soft spotlight.
- * pointer-events:none + z-index:0 under content — never blocks checkout/buttons.
+ * JDW Apex Herp — lizards + emerald spotlight only
+ * No zoom. Lightweight. Full viewport. pointer-events:none (never blocks cart).
  */
 (function () {
   "use strict";
@@ -11,35 +10,77 @@
 
   window.__apexParticleGrid = true;
 
+  var LIZARD = "\uD83E\uDD8E";
   var isMobile =
     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
     (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
-  /* Neon green → neon purple */
-  var GREEN_H = 150;
-  var PURPLE_H = 285;
-  var SAT = 100;
-  var LIGHT = 58;
-
-  function hueAt(t) {
-    t = Math.max(0, Math.min(1, t));
-    return GREEN_H + (PURPLE_H - GREEN_H) * t;
+  function makeSprite(size) {
+    var s = document.createElement("canvas");
+    var pad = 2;
+    s.width = size + pad * 2;
+    s.height = size + pad * 2;
+    var c = s.getContext("2d");
+    if (!c) return null;
+    c.font = size + "px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.clearRect(0, 0, s.width, s.height);
+    c.fillText(LIZARD, s.width / 2, s.height / 2);
+    return s;
   }
 
-  function colorAt(t, alpha) {
-    return "hsla(" + hueAt(t) + "," + SAT + "%," + LIGHT + "%," + alpha + ")";
+  /* Mobile: static full-cover lizards only — zero animation lag */
+  if (isMobile) {
+    var c = document.createElement("canvas");
+    c.id = "apex-particle-grid";
+    c.setAttribute("aria-hidden", "true");
+    c.style.cssText =
+      "position:fixed;inset:0;width:100%;height:100%;z-index:0;" +
+      "pointer-events:none;display:block;background:transparent;transform:translateZ(0);";
+    function paintStatic() {
+      if (!document.body) return;
+      if (!c.parentNode) document.body.insertBefore(c, document.body.firstChild);
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      var w = Math.max(window.innerWidth, 1);
+      var h = Math.max(window.innerHeight, 1);
+      c.width = Math.floor(w * dpr);
+      c.height = Math.floor(h * dpr);
+      c.style.width = w + "px";
+      c.style.height = h + "px";
+      var ctx = c.getContext("2d", { alpha: true });
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var sprite = makeSprite(12);
+      if (!sprite) return;
+      var gap = 52;
+      var hw = sprite.width / 2;
+      var hh = sprite.height / 2;
+      ctx.globalAlpha = 0.55;
+      for (var y = gap * 0.35; y < h + gap; y += gap) {
+        for (var x = gap * 0.35; x < w + gap; x += gap) {
+          ctx.drawImage(sprite, x - hw, y - hh);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paintStatic);
+    else paintStatic();
+    window.addEventListener("resize", paintStatic, { passive: true });
+    return;
   }
 
-  var GAP = isMobile ? 52 : 46;
-  var RADIUS = isMobile ? 0 : 90;
+  /* Desktop: lizards + soft emerald spotlight. No scale/zoom on sprites. */
+  var SPOT_RGB = "16, 185, 129";
+  var SPOT_ALPHA = 0.08;
+  var GAP = 48;
+  var RADIUS = 100;
   var RADIUS_SQ = RADIUS * RADIUS;
-  var STRENGTH = 16;
-  var EASE = 0.14;
-  var DOT_R = isMobile ? 1.6 : 2.1;
-  var BASE_ALPHA = 0.82;
-  var NEAR_ALPHA = 0.95;
-  var SPOT_ALPHA = 0.07;
-  var MAX_PARTICLES = isMobile ? 90 : 180;
+  var STRENGTH = 10;
+  var EASE = 0.18;
+  var MAX_PARTICLES = 420;
+  var SPRITE_SIZE = 13;
+  var BASE_ALPHA = 0.58;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
@@ -47,7 +88,7 @@
   canvas.style.cssText =
     "position:fixed;inset:0;width:100%;height:100%;z-index:0;" +
     "pointer-events:none;display:block;background:transparent;" +
-    "transform:translate3d(0,0,0);will-change:transform;contain:strict;";
+    "transform:translate3d(0,0,0);";
 
   function mountCanvas() {
     if (canvas.parentNode) return;
@@ -61,12 +102,14 @@
   var ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return;
 
+  var sprite = makeSprite(SPRITE_SIZE);
+  if (!sprite) return;
+  var hw = sprite.width / 2;
+  var hh = sprite.height / 2;
+
   var dpr = 1;
   var w = 0;
   var h = 0;
-  var cx = 0;
-  var cy = 0;
-  var maxDist = 1;
   var particles = [];
   var mouse = { x: -9999, y: -9999, active: false };
   var raf = 0;
@@ -75,17 +118,13 @@
 
   function rebuildGrid() {
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    w = window.innerWidth;
-    h = window.innerHeight;
+    w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0, 1);
+    h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 1);
     canvas.width = Math.floor(w * dpr);
     canvas.height = Math.floor(h * dpr);
     canvas.style.width = w + "px";
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    cx = w * 0.5;
-    cy = h * 0.5;
-    maxDist = Math.sqrt(cx * cx + cy * cy) || 1;
 
     var gap = GAP;
     var cols = Math.ceil(w / gap) + 1;
@@ -99,10 +138,7 @@
         if (particles.length >= MAX_PARTICLES) break;
         var bx = ox + i * gap;
         var by = oy + j * gap;
-        var dx = bx - cx;
-        var dy = by - cy;
-        var t = Math.sqrt(dx * dx + dy * dy) / maxDist;
-        particles.push({ bx: bx, by: by, x: bx, y: by, t: t });
+        particles.push({ bx: bx, by: by, x: bx, y: by });
       }
       if (particles.length >= MAX_PARTICLES) break;
     }
@@ -115,7 +151,6 @@
   }
 
   function onMove(e) {
-    if (isMobile) return;
     mouse.x = e.clientX;
     mouse.y = e.clientY;
     mouse.active = true;
@@ -128,18 +163,9 @@
     kick();
   }
 
-  if (!isMobile) {
-    window.addEventListener("mousemove", onMove, { passive: true });
-    window.addEventListener("mouseleave", onLeave, { passive: true });
-  }
-  window.addEventListener(
-    "resize",
-    function () {
-      rebuildGrid();
-      kick();
-    },
-    { passive: true }
-  );
+  window.addEventListener("mousemove", onMove, { passive: true });
+  window.addEventListener("mouseleave", onLeave, { passive: true });
+  window.addEventListener("resize", function () { rebuildGrid(); kick(); }, { passive: true });
   document.addEventListener("visibilitychange", function () {
     running = !document.hidden;
     if (running) kick();
@@ -153,7 +179,7 @@
     var n = list.length;
     var mx = mouse.x;
     var my = mouse.y;
-    var active = mouse.active && !isMobile;
+    var active = mouse.active;
     var i, p, dx, dy, distSq, dist, force, ang, tx, ty, nx, ny;
     var moving = false;
 
@@ -185,31 +211,21 @@
 
     ctx.clearRect(0, 0, w, h);
 
+    /* Spotlight only — no scale/zoom on lizards */
     if (active) {
       var g = ctx.createRadialGradient(mx, my, 0, mx, my, RADIUS);
-      g.addColorStop(0, "rgba(57, 255, 180, " + SPOT_ALPHA + ")");
-      g.addColorStop(0.55, "rgba(180, 80, 255, " + SPOT_ALPHA * 0.45 + ")");
-      g.addColorStop(1, "rgba(180, 80, 255, 0)");
+      g.addColorStop(0, "rgba(" + SPOT_RGB + "," + SPOT_ALPHA + ")");
+      g.addColorStop(1, "rgba(" + SPOT_RGB + ",0)");
       ctx.fillStyle = g;
       ctx.fillRect(mx - RADIUS, my - RADIUS, RADIUS * 2, RADIUS * 2);
     }
 
+    ctx.globalAlpha = BASE_ALPHA;
     for (i = 0; i < n; i++) {
       p = list[i];
-      var a = BASE_ALPHA;
-      if (active) {
-        dx = p.x - mx;
-        dy = p.y - my;
-        distSq = dx * dx + dy * dy;
-        if (distSq < RADIUS_SQ) {
-          a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
-        }
-      }
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, DOT_R, 0, Math.PI * 2);
-      ctx.fillStyle = colorAt(p.t, a);
-      ctx.fill();
+      ctx.drawImage(sprite, p.x - hw, p.y - hh);
     }
+    ctx.globalAlpha = 1;
 
     if (dirty) raf = requestAnimationFrame(frame);
   }
