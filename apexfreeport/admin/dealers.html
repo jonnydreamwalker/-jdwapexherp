@@ -106,6 +106,13 @@ function statusBadge(st) {
 
 function renderApps() {
   var box = document.getElementById("apps");
+  var pendingN = allApps.filter(function (a) { return a.status === "pending"; }).length;
+  var infoN = allApps.filter(function (a) { return a.status === "info_requested"; }).length;
+  var head = document.querySelector('h2.text-lg.font-bold.text-emerald-400');
+  if (head && head.textContent.indexOf('Dealer applications') === 0) {
+    head.innerHTML = 'Dealer applications <span class="text-xs font-normal text-zinc-500 ml-2">' +
+      pendingN + ' pending · ' + infoN + ' needs info · ' + allApps.length + ' total</span>';
+  }
   var list = allApps.filter(function (a) {
     if (filter === "all") return true;
     if (filter === "pending") return a.status === "pending";
@@ -113,7 +120,9 @@ function renderApps() {
     return a.status === filter;
   });
   if (!list.length) {
-    box.innerHTML = '<p class="text-zinc-600">No applications in this view.</p>';
+    box.innerHTML = '<p class="text-zinc-600">No applications in this view.' +
+      (allApps.length ? ' Try the <strong class="text-zinc-400">All</strong> filter.' : ' New applications from the wholesale form land here automatically.') +
+      '</p>';
     return;
   }
   box.innerHTML = list.map(function (a) {
@@ -196,8 +205,14 @@ async function load() {
   var ra = await api("/api/wholesale/applications");
   var rd = await api("/api/wholesale/dealers");
   if (!ra || !rd) return;
-  allApps = (await ra.json()).applications || [];
-  var dealers = (await rd.json()).dealers || [];
+  var ja = await ra.json().catch(function () { return {}; });
+  var jd = await rd.json().catch(function () { return {}; });
+  if (!ra.ok) {
+    document.getElementById("apps").innerHTML = '<p class="text-red-400">Could not load applications (' + ra.status + '). ' + esc(ja.error || '') + '</p>';
+    return;
+  }
+  allApps = ja.applications || [];
+  var dealers = jd.dealers || [];
   renderApps();
   window.__dealersCache = dealers;
   document.getElementById("dealers").innerHTML = dealers.length
