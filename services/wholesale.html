@@ -16,7 +16,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="nav-shell.js"></script>
+<script src="nav-shell.js?v=lizards7"></script>
 </head>
 <body class="bg-zinc-950 text-white">
 <div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Wholesale · Dealer Pricing · Florida Warehouse · Direct Hardscape Source</div>
@@ -49,77 +49,143 @@
 <header class="h-[36vh] flex items-center justify-center relative overflow-hidden">
 <video autoplay loop muted playsinline class="w-full h-full object-cover absolute opacity-40"><source src="../assets/images/gallery/Action_Logo.mp4" type="video/mp4"></video>
 <div class="relative z-10 text-center px-6">
-<p class="text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase mb-2">Dealer Program</p>
-<h1 class="text-4xl md:text-5xl font-black tracking-tighter text-white">Wholesale Access</h1>
-<p class="text-zinc-400 mt-3 max-w-xl mx-auto text-sm">Apply for dealer pricing. Florida warehouse. Direct hardscape source.</p>
-</div></header>
-<section class="py-16 px-6 max-w-3xl mx-auto">
-<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-10">
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter">Wholesale</h1>
+<p class="text-zinc-400 text-sm md:text-base mt-3 max-w-xl mx-auto">Dealer pricing for qualified retailers, breeders, and institutions. Same laboratory-grade catalog — exclusive rates. 50 lb cork and up.</p>
+</div>
+</header>
+<section class="py-12 px-6 max-w-3xl mx-auto">
+<div class="bg-zinc-900 border border-emerald-900/60 rounded-2xl p-6 md:p-10">
 <h2 class="text-2xl font-black text-emerald-400 mb-2">Dealer Application</h2>
-<p class="text-zinc-400 text-sm mb-8">Tell us about your shop. We review applications and follow up with pricing access.</p>
-<form id="wholesale-form" class="space-y-5" onsubmit="return false;">
-<div class="grid md:grid-cols-2 gap-5">
+<p class="text-zinc-400 text-sm mb-8">Complete the form. We review website, social proof, and <strong class="text-zinc-300">business tax credentials (EIN / Tax ID)</strong> before issuing portal access. A Social Security number is <strong class="text-zinc-300">not</strong> required when you provide a business Tax ID or EIN. You will set your own password after approval.</p>
+<form id="dealer-app-form" class="space-y-5" novalidate>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business name *</label>
+<input name="business_name" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="Store or LLC name"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Contact name *</label>
+<input name="contact_name" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="Full name"></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Email *</label>
+<input type="email" name="email" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Phone *</label>
+<input type="tel" name="phone" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
 <div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">Business Name</label>
-<input type="text" name="business" required class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="Shop / company">
-</div>
-<div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">Contact Name</label>
-<input type="text" name="name" required class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="Your name">
-</div>
-</div>
-<div class="grid md:grid-cols-2 gap-5">
-<div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">Email</label>
-<input type="email" name="email" required class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="you@shop.com">
-</div>
-<div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">Phone</label>
-<input type="tel" name="phone" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="Optional">
-</div>
+<label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business Tax ID / EIN *</label>
+<input name="tax_id" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="XX-XXXXXXX (EIN)" autocomplete="off">
+<p class="text-[11px] text-zinc-600 mt-1.5 leading-relaxed">Business Employer Identification Number (EIN) or business Tax ID only. <span class="text-zinc-500">Do not enter a Social Security number.</span> SSN is not needed when a Tax ID / EIN is provided.</p>
 </div>
 <div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">Website / Social</label>
-<input type="text" name="web" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="Instagram, site, etc.">
+<label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Resale certificate #</label>
+<input name="resale_cert" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="If applicable">
+<p class="text-[11px] text-zinc-600 mt-1.5">Optional state resale / sales-tax exemption number.</p>
 </div>
-<div>
-<label class="block text-xs font-bold text-zinc-500 uppercase mb-1">What do you sell?</label>
-<textarea name="notes" rows="4" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:border-emerald-600 outline-none" placeholder="Retail, online, volume, categories…"></textarea>
 </div>
-<button type="button" id="wholesale-submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black py-3 rounded-xl uppercase tracking-wide text-sm">Submit Application</button>
-<p id="wholesale-status" class="text-sm text-zinc-500 text-center"></p>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business type *</label>
+<select name="business_type" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none">
+<option value="">Select…</option>
+<option>Pet / reptile store</option>
+<option>Online retailer</option>
+<option>Breeder</option>
+<option>Zoo / education / rescue</option>
+<option>Distributor</option>
+<option>Other</option>
+</select></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Business address *</label>
+<input name="address" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div class="grid md:grid-cols-3 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">City *</label>
+<input name="city" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">State *</label>
+<input name="state" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" maxlength="2"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">ZIP *</label>
+<input name="zip" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Website *</label>
+<input type="url" name="website" required class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none" placeholder="https://"></div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Instagram</label>
+<input name="instagram" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Facebook / other social</label>
+<input name="social" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></div>
+</div>
+<div><label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Notes</label>
+<textarea name="message" rows="3" class="w-full bg-black/50 border border-zinc-700 rounded-xl px-4 py-3 focus:border-emerald-600 outline-none"></textarea></div>
+<p id="form-status" class="text-sm text-zinc-500 hidden"></p>
+<button type="submit" id="submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase tracking-wider py-4 rounded-xl">Submit Dealer Application</button>
+<p class="text-xs text-zinc-600 text-center">Already approved? <a href="../wholesale/login.html" class="text-emerald-400 hover:underline">Dealer portal login</a></p>
 </form>
-<p class="text-zinc-600 text-xs mt-6 text-center">Already approved? <a href="../wholesale/login.html" class="text-emerald-400 hover:underline">Dealer login</a></p>
 </div>
 </section>
-<footer class="bg-black border-t border-emerald-900 py-10 px-6 mt-8">
-<div class="max-w-7xl mx-auto text-sm text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply · DeFuniak Springs, FL</div>
-</footer>
+<footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-12">
+<div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
+<div><img src="../assets/images/gallery/Logo.png" alt="Logo" class="h-10 mb-4 opacity-80"><p class="text-zinc-500">Veteran Owned and Operated<br>DeFuniak Springs, Florida Warehouse</p></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Shop</h4><ul class="space-y-2 text-zinc-400"><li><a href="hardscape.html" class="hover:text-emerald-400">Hardscape</a></li><li><a href="wholesale.html" class="hover:text-emerald-400">Wholesale</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Company</h4><ul class="space-y-2 text-zinc-400"><li><a href="../about.html" class="hover:text-emerald-400">About</a></li><li><a href="../wholesale/login.html" class="hover:text-emerald-400">Dealer Login</a></li></ul></div>
+<div><h4 class="font-bold text-emerald-400 mb-3">Connect</h4><p class="text-zinc-600 text-xs">© 2026 JDW Apex Herp</p></div>
+</div></footer>
 <script>
 (function () {
-  var btn = document.getElementById('wholesale-submit');
-  var status = document.getElementById('wholesale-status');
-  var form = document.getElementById('wholesale-form');
-  if (!btn || !form) return;
-  btn.addEventListener('click', function () {
+  var API = (window.APEX_API_BASE || localStorage.getItem("APEX_API_BASE") || "https://freeport.jdwapexherp.com").replace(/\/$/, "");
+  var form = document.getElementById("dealer-app-form");
+  var status = document.getElementById("form-status");
+  var btn = document.getElementById("submit-btn");
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    status.classList.remove("hidden");
+    status.className = "text-sm text-zinc-400";
+    status.textContent = "Sending application…";
+    btn.disabled = true;
     var fd = new FormData(form);
-    var business = (fd.get('business') || '').toString().trim();
-    var name = (fd.get('name') || '').toString().trim();
-    var email = (fd.get('email') || '').toString().trim();
-    if (!business || !name || !email) {
-      if (status) status.textContent = 'Please fill business, name, and email.';
-      return;
-    }
-    var body =
-      'Wholesale application%0A' +
-      'Business: ' + encodeURIComponent(business) + '%0A' +
-      'Name: ' + encodeURIComponent(name) + '%0A' +
-      'Email: ' + encodeURIComponent(email) + '%0A' +
-      'Phone: ' + encodeURIComponent((fd.get('phone') || '').toString()) + '%0A' +
-      'Web: ' + encodeURIComponent((fd.get('web') || '').toString()) + '%0A' +
-      'Notes: ' + encodeURIComponent((fd.get('notes') || '').toString());
-    window.location.href = 'mailto:jonnydreamwalker@gmail.com?subject=' + encodeURIComponent('Wholesale Application — ' + business) + '&body=' + body;
-    if (status) status.textContent = 'Opening your email app…';
+    var payload = {
+      business_name: fd.get("business_name"),
+      contact_name: fd.get("contact_name"),
+      email: fd.get("email"),
+      phone: fd.get("phone"),
+      tax_id: fd.get("tax_id"),
+      resale_cert: fd.get("resale_cert") || "",
+      business_type: fd.get("business_type"),
+      address: fd.get("address"),
+      city: fd.get("city"),
+      state: fd.get("state"),
+      zip: fd.get("zip"),
+      website: fd.get("website"),
+      instagram: fd.get("instagram") || "",
+      social: fd.get("social") || "",
+      message: fd.get("message") || "",
+      interests: []
+    };
+    var freeportOk = false;
+    try {
+      var r = await fetch(API + "/api/wholesale/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      freeportOk = r.ok;
+    } catch (err) {}
+    try {
+      var emailBody = new FormData();
+      emailBody.append("_subject", "Dealer application");
+      emailBody.append("_template", "table");
+      emailBody.append("_captcha", "false");
+      Object.keys(payload).forEach(function (k) {
+        var v = payload[k];
+        emailBody.append(k, Array.isArray(v) ? v.join(", ") : String(v || ""));
+      });
+      await fetch("https://formsubmit.co/ajax/a7f7038072556deb37b6b390a76a11a1", {
+        method: "POST",
+        body: emailBody,
+        headers: { Accept: "application/json" }
+      });
+    } catch (err2) {}
+    status.className = "text-sm text-emerald-400";
+    status.textContent = freeportOk
+      ? "Application received. We will review your site and socials and email you if approved."
+      : "Application sent for review. We will follow up after review.";
+    form.reset();
+    btn.disabled = false;
   });
 })();
 </script>
