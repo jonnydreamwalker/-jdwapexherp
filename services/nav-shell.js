@@ -77,7 +77,7 @@ function toggleDropdown(e) {
   if (!d) return;
   var isHidden = d.classList.contains("hidden");
   if (isHidden) {
-    d.classList.remove("hidden");
+    d.classList.add("hidden");
     if (a) a.innerText = "\u25B2";
   } else {
     d.classList.add("hidden");
@@ -174,7 +174,7 @@ window.updateCartCount = updateCartCount;
   if (window.__apexParticleGrid) return;
   if (document.querySelector('script[src*="particle-grid-bg"]')) return;
   var s = document.createElement("script");
-  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards6";
+  s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards7";
   s.defer = true;
   document.head.appendChild(s);
 })();
