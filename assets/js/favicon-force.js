@@ -1,26 +1,29 @@
+/** Force Apex Herp favicons + inject particle background (cache-busted). */
 (function () {
   var svg = "https://jdwapexherp.com/assets/images/apex-herp-favicon.svg?v=herpseal20260802";
   var png = "https://jdwapexherp.com/assets/images/gallery/Logo.png?v=herpseal20260802";
-  document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(function (n) {
-    if (n.parentNode) n.parentNode.removeChild(n);
-  });
-  function add(rel, href, type, sizes) {
-    var el = document.createElement("link");
-    el.rel = rel;
-    if (type) el.type = type;
-    if (sizes) el.sizes = sizes;
-    el.href = href;
-    document.head.appendChild(el);
+
+  function setIcons() {
+    var links = document.querySelectorAll('link[rel*="icon"], link[rel="apple-touch-icon"]');
+    for (var i = 0; i < links.length; i++) links[i].parentNode.removeChild(links[i]);
+    var a = document.createElement("link");
+    a.rel = "icon";
+    a.type = "image/svg+xml";
+    a.href = svg;
+    document.head.appendChild(a);
+    var b = document.createElement("link");
+    b.rel = "apple-touch-icon";
+    b.href = png;
+    document.head.appendChild(b);
   }
-  add("icon", svg, "image/svg+xml");
-  add("icon", png, "image/png", "32x32");
-  add("shortcut icon", png, "image/png");
-  add("apple-touch-icon", png, "image/png", "180x180");
 
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards7";
+    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=neondots1";
     s.defer = true;
     document.head.appendChild(s);
   }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setIcons);
+  else setIcons();
 })();
