@@ -30,8 +30,8 @@
 
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    /* jsDelivr picks up main faster than GitHub Pages edge cache */
-    s.src = "https://cdn.jsdelivr.net/gh/jonnydreamwalker/-jdwapexherp@main/assets/js/particle-grid-bg.js?v=neondots2";
+    /* Load from live origin — jsDelivr was still serving the old lizard build */
+    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=neondots3";
     s.defer = true;
     document.head.appendChild(s);
   }
