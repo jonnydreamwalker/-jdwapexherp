@@ -17,7 +17,6 @@
     document.head.appendChild(b);
   }
 
-  /* Always pull latest shared style (footer clear + centered cart) */
   function bustStyleCss() {
     var sheets = document.querySelectorAll('link[rel="stylesheet"][href*="style.css"]');
     for (var i = 0; i < sheets.length; i++) {
@@ -29,7 +28,7 @@
 
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards1";
+    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards2";
     s.defer = true;
     document.head.appendChild(s);
   }
