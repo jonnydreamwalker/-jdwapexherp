@@ -31,7 +31,7 @@ function removeSingleCartItem(i){var cart=JSON.parse(localStorage.getItem('jdw_c
 </script>
 </head>
 <body class="bg-zinc-950 text-white">
-<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape \u2022 UVB Lighting \u2022 Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</div>
+<div class="trust-bar bg-emerald-950 border-b border-emerald-900 text-center text-[11px] md:text-xs py-2 px-4 tracking-wide text-emerald-300/90">Premium Hardscape · UVB Lighting · Bioactive Substrates. Florida Warehouse. Direct Hardscape Source. Fast Ship FL-TX-CA.</div>
 <nav class="bg-black border-b border-emerald-900 sticky top-0 z-50">
 <div class="absolute inset-0 bg-[url('assets/images/gallery/Logo_Bannar.png')] bg-cover bg-center opacity-30 pointer-events-none"></div>
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative z-10">
@@ -48,7 +48,7 @@ function removeSingleCartItem(i){var cart=JSON.parse(localStorage.getItem('jdw_c
 <a href="services/hardscape.html" class="block py-2 text-emerald-400 font-semibold">Shop Hardscape</a>
 <a href="services/lighting.html" class="block py-2 text-emerald-400 font-semibold">Explore Lighting</a>
 <a href="services/substrates.html" class="block py-2 text-emerald-400 font-semibold">Browse Substrates</a>
-<a href="services/nutrition.html" class="block py-2 text-emerald-400 font-semibold">Fuel Your Herps</a>
+<a href="services/nutrition.html" class="block py-2 text-emerald-400 font-semibold">Nutrition</a>
 <a href="services/apparel.html" class="block py-2 text-emerald-400 font-semibold">Gear Up</a>
 <a href="services/enclosures.html" class="block py-2 text-emerald-400 font-semibold">Shop Enclosures</a>
 <a href="services/heating.html" class="block py-2 text-emerald-400 font-semibold">Heating and Basking</a>
@@ -73,7 +73,7 @@ function removeSingleCartItem(i){var cart=JSON.parse(localStorage.getItem('jdw_c
 <a href="services/hardscape.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Hardscape</a>
 <a href="services/lighting.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Explore Lighting</a>
 <a href="services/substrates.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Browse Substrates</a>
-<a href="services/nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Fuel Your Herps</a>
+<a href="services/nutrition.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Nutrition</a>
 <a href="services/apparel.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Gear Up</a>
 <a href="services/enclosures.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Shop Enclosures</a>
 <a href="services/heating.html" class="block py-3 px-5 text-emerald-400 border-b border-zinc-800" onclick="closeMobileMenu()">Heating and Basking</a>
@@ -92,8 +92,8 @@ function removeSingleCartItem(i){var cart=JSON.parse(localStorage.getItem('jdw_c
 <div class="grid md:grid-cols-2 gap-8">
 <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Direct Hardscape Source</h2><p class="text-zinc-400 text-sm">Bulk Portuguese virgin cork bark from our Florida warehouse. Fast ship FL-TX-CA.</p></div>
 <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Fast Hybrid Logistics</h2><p class="text-zinc-400 text-sm">Hardscape ships direct. Other merch ships from warehouse. Apparel via external fulfillment.</p></div>
-<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Veteran Owned</h2><p class="text-zinc-400 text-sm">11B1P \u2014 disciplined, hard working, and efficient.</p></div>
-<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Contact</h2><p class="text-zinc-400 text-sm"><a href="mailto:jonnydreamwalker@gmail.com" class="text-emerald-400">jonnydreamwalker@gmail.com</a><br>DeFuniak Springs, Florida \u00b7 (850) 320-7113</p></div>
+<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Veteran Owned</h2><p class="text-zinc-400 text-sm">11B1P — disciplined, hard working, and efficient.</p></div>
+<div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8"><h2 class="text-xl font-bold text-emerald-400 mb-3">Contact</h2><p class="text-zinc-400 text-sm"><a href="mailto:jonnydreamwalker@gmail.com" class="text-emerald-400">jonnydreamwalker@gmail.com</a><br>DeFuniak Springs, Florida · (850) 320-7113</p></div>
 </div>
 </main>
 <div id="cart-modal" class="fixed inset-0 bg-black/80 z-[70] hidden flex items-center justify-center p-4">
@@ -105,7 +105,7 @@ function removeSingleCartItem(i){var cart=JSON.parse(localStorage.getItem('jdw_c
 <button type="button" onclick="if(typeof startPayPalPayment==='function')startPayPalPayment();" class="w-full bg-[#0070ba] text-white font-bold py-3 rounded-xl text-xs uppercase">Pay with PayPal</button>
 </div></div>
 <footer class="bg-black border-t border-emerald-900 py-12 px-6 mt-20">
-<div class="max-w-7xl mx-auto text-sm text-zinc-500">\u00a9 2026 JonnyDreamwalker Apex Herp Supply \u00b7 DeFuniak Springs, FL</div>
+<div class="max-w-7xl mx-auto text-sm text-zinc-500">© 2026 JonnyDreamwalker Apex Herp Supply · DeFuniak Springs, FL</div>
 </footer>
 <script src="checkout-client.js?v=shipdrop2"></script>
 </body>
