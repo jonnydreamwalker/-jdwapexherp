@@ -111,22 +111,25 @@ body::after {
   .trust-bar { font-size: 12px; }
 }
 
+/* Nav/header/footer above particle grid; never steal fixed from modals */
 nav,
 header,
-footer,
-#cart-modal,
-#dealer-cart-modal,
-#mobile-menu {
+footer {
   position: relative;
-  z-index: 1;
+  z-index: 40;
 }
 nav.sticky {
+  position: sticky;
+  top: 0;
   z-index: 50;
 }
+
+/* Cart + mobile menus must stay fixed overlays or clicks look dead */
 #cart-modal,
 #dealer-cart-modal,
 #mobile-menu {
-  z-index: 60;
+  position: fixed !important;
+  z-index: 70 !important;
 }
 
 .dropdown-menu {
