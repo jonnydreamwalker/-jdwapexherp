@@ -19,7 +19,8 @@
 
   if (!window.__apexParticleGrid && !document.querySelector('script[src*="particle-grid-bg"]')) {
     var s = document.createElement("script");
-    s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=neondots1";
+    /* jsDelivr picks up main faster than GitHub Pages edge cache */
+    s.src = "https://cdn.jsdelivr.net/gh/jonnydreamwalker/-jdwapexherp@main/assets/js/particle-grid-bg.js?v=neondots2";
     s.defer = true;
     document.head.appendChild(s);
   }
