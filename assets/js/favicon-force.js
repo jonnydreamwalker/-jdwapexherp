@@ -17,14 +17,13 @@
     document.head.appendChild(b);
   }
 
-  /* Pull latest style.css so cart modal center/fixed rules are not stuck on CDN cache */
+  /* Always pull latest shared style (footer clear + centered cart) */
   function bustStyleCss() {
     var sheets = document.querySelectorAll('link[rel="stylesheet"][href*="style.css"]');
     for (var i = 0; i < sheets.length; i++) {
       var href = sheets[i].getAttribute("href") || "";
-      if (href.indexOf("v=cartcenter1") >= 0) continue;
       var base = href.split("?")[0];
-      sheets[i].setAttribute("href", base + "?v=cartcenter1");
+      sheets[i].setAttribute("href", base + "?v=footerclear1");
     }
   }
 
