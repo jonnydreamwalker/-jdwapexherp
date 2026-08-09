@@ -1,5 +1,5 @@
 /**
- * JDW Apex Herp — lizards + emerald spotlight only
+ * JDW Apex Herp — lizards + green→purple spotlight
  * No zoom. Lightweight. Full viewport. pointer-events:none (never blocks cart).
  */
 (function () {
@@ -70,9 +70,8 @@
     return;
   }
 
-  /* Desktop: lizards + soft emerald spotlight. No scale/zoom on sprites. */
-  var SPOT_RGB = "16, 185, 129";
-  var SPOT_ALPHA = 0.08;
+  /* Desktop: lizards + green→purple spotlight. No scale/zoom on sprites. */
+  var SPOT_ALPHA = 0.10;
   var GAP = 48;
   var RADIUS = 100;
   var RADIUS_SQ = RADIUS * RADIUS;
@@ -211,11 +210,13 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    /* Spotlight only — no scale/zoom on lizards */
+    /* Green → purple spotlight (no zoom on lizards) */
     if (active) {
       var g = ctx.createRadialGradient(mx, my, 0, mx, my, RADIUS);
-      g.addColorStop(0, "rgba(" + SPOT_RGB + "," + SPOT_ALPHA + ")");
-      g.addColorStop(1, "rgba(" + SPOT_RGB + ",0)");
+      g.addColorStop(0, "rgba(57, 255, 180, " + SPOT_ALPHA + ")");
+      g.addColorStop(0.45, "rgba(16, 185, 129, " + (SPOT_ALPHA * 0.7) + ")");
+      g.addColorStop(0.75, "rgba(180, 80, 255, " + (SPOT_ALPHA * 0.5) + ")");
+      g.addColorStop(1, "rgba(180, 80, 255, 0)");
       ctx.fillStyle = g;
       ctx.fillRect(mx - RADIUS, my - RADIUS, RADIUS * 2, RADIUS * 2);
     }
