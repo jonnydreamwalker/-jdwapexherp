@@ -1,5 +1,5 @@
 /**
- * JDW Apex Herp — lizards + green→purple spotlight
+ * JDW Apex Herp — lizards in the dark + green→purple light reveal
  * No zoom. Lightweight. Full viewport. pointer-events:none (never blocks cart).
  */
 (function () {
@@ -30,7 +30,7 @@
     return s;
   }
 
-  /* Mobile: static full-cover lizards only — zero animation lag */
+  /* Mobile: faint static lizards — no cursor light */
   if (isMobile) {
     var c = document.createElement("canvas");
     c.id = "apex-particle-grid";
@@ -56,7 +56,7 @@
       var gap = 52;
       var hw = sprite.width / 2;
       var hh = sprite.height / 2;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.12;
       for (var y = gap * 0.35; y < h + gap; y += gap) {
         for (var x = gap * 0.35; x < w + gap; x += gap) {
           ctx.drawImage(sprite, x - hw, y - hh);
@@ -70,8 +70,8 @@
     return;
   }
 
-  /* Desktop: lizards + green→purple spotlight. No scale/zoom on sprites. */
-  var SPOT_ALPHA = 0.10;
+  /* Desktop: lizards hide in dark; green→purple light reveals them */
+  var SPOT_ALPHA = 0.12;
   var GAP = 48;
   var RADIUS = 100;
   var RADIUS_SQ = RADIUS * RADIUS;
@@ -79,7 +79,8 @@
   var EASE = 0.18;
   var MAX_PARTICLES = 420;
   var SPRITE_SIZE = 13;
-  var BASE_ALPHA = 0.58;
+  var BASE_ALPHA = 0.06;
+  var LIT_ALPHA = 0.92;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
@@ -210,7 +211,7 @@
 
     ctx.clearRect(0, 0, w, h);
 
-    /* Green → purple spotlight (no zoom on lizards) */
+    /* Green → purple spotlight */
     if (active) {
       var g = ctx.createRadialGradient(mx, my, 0, mx, my, RADIUS);
       g.addColorStop(0, "rgba(57, 255, 180, " + SPOT_ALPHA + ")");
@@ -221,9 +222,21 @@
       ctx.fillRect(mx - RADIUS, my - RADIUS, RADIUS * 2, RADIUS * 2);
     }
 
-    ctx.globalAlpha = BASE_ALPHA;
+    /* Lizards live in the dark — light reveals them */
     for (i = 0; i < n; i++) {
       p = list[i];
+      var a = BASE_ALPHA;
+      if (active) {
+        dx = p.x - mx;
+        dy = p.y - my;
+        distSq = dx * dx + dy * dy;
+        if (distSq < RADIUS_SQ) {
+          var t = 1 - distSq / RADIUS_SQ;
+          a = BASE_ALPHA + (LIT_ALPHA - BASE_ALPHA) * t * t;
+        }
+      }
+      if (a < 0.02) continue;
+      ctx.globalAlpha = a;
       ctx.drawImage(sprite, p.x - hw, p.y - hh);
     }
     ctx.globalAlpha = 1;
