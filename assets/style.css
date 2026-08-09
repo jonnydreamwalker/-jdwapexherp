@@ -49,6 +49,16 @@ body.bg-zinc-950 {
   color: var(--brand-white-color);
 }
 
+/* Footer clear so lizards show through on every page */
+footer,
+footer.bg-black,
+footer.bg-zinc-950,
+footer.bg-zinc-900 {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 #apex-catalog,
 #dealer-catalog,
 [id$="-catalog"],
