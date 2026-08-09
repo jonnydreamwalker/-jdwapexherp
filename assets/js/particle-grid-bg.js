@@ -1,5 +1,5 @@
 /**
- * JDW Apex Herp — Lizard grid (brighter + smoother)
+ * JDW Apex Herp — Lizard grid (bright + ultra-smooth)
  * Sprite drawImage, soft ease, idle sleep.
  * pointer-events:none + z-index:0 under content — never blocks checkout.
  */
@@ -56,7 +56,7 @@
       var gap = 58;
       var hw = sprite.width / 2;
       var hh = sprite.height / 2;
-      ctx.globalAlpha = 0.45;
+      ctx.globalAlpha = 0.62;
       for (var y = gap * 0.5; y < h; y += gap) {
         for (var x = gap * 0.5; x < w; x += gap) {
           ctx.drawImage(sprite, x - hw, y - hh);
@@ -71,16 +71,16 @@
   }
 
   var SPOT_RGB = "16, 185, 129";
-  var SPOT_ALPHA = 0.08;
-  var BASE_ALPHA = 0.62;
-  var NEAR_ALPHA = 0.92;
-  var GAP = 48;
-  var RADIUS = 100;
+  var SPOT_ALPHA = 0.06;
+  var BASE_ALPHA = 0.78;
+  var NEAR_ALPHA = 0.90;
+  var GAP = 58;
+  var RADIUS = 80;
   var RADIUS_SQ = RADIUS * RADIUS;
-  var STRENGTH = 22;
-  var EASE = 0.14;
+  var STRENGTH = 14;
+  var EASE = 0.12;
   var FONT_PX = 13;
-  var MAX_PARTICLES = 200;
+  var MAX_PARTICLES = 110;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-particle-grid";
@@ -126,7 +126,7 @@
     canvas.style.height = h + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    var gap = w < 1200 ? 52 : GAP;
+    var gap = w < 1200 ? 62 : GAP;
     var cols = Math.ceil(w / gap) + 1;
     var rows = Math.ceil(h / gap) + 1;
     particles = [];
@@ -223,28 +223,13 @@
       return;
     }
 
-    if (!active) {
-      ctx.globalAlpha = BASE_ALPHA;
-      for (i = 0; i < n; i++) {
-        p = list[i];
-        ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
-      }
-      ctx.globalAlpha = 1;
-    } else {
-      for (i = 0; i < n; i++) {
-        p = list[i];
-        var a = BASE_ALPHA;
-        dx = p.x - mx;
-        dy = p.y - my;
-        distSq = dx * dx + dy * dy;
-        if (distSq < RADIUS_SQ) {
-          a = BASE_ALPHA + (NEAR_ALPHA - BASE_ALPHA) * (1 - distSq / RADIUS_SQ);
-        }
-        ctx.globalAlpha = a;
-        ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
-      }
-      ctx.globalAlpha = 1;
+    /* Single alpha — smoother; BASE_ALPHA high for brightness */
+    ctx.globalAlpha = BASE_ALPHA;
+    for (i = 0; i < n; i++) {
+      p = list[i];
+      ctx.drawImage(sprite, p.x - sprHW, p.y - sprHH);
     }
+    ctx.globalAlpha = 1;
 
     if (dirty) raf = requestAnimationFrame(frame);
   }
