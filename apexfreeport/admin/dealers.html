@@ -199,14 +199,58 @@ async function load() {
   allApps = (await ra.json()).applications || [];
   var dealers = (await rd.json()).dealers || [];
   renderApps();
+  window.__dealersCache = dealers;
   document.getElementById("dealers").innerHTML = dealers.length
     ? dealers.map(function (d) {
-        return '<div class="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 flex flex-wrap justify-between gap-2">' +
+        var delBtn = d.owner
+          ? '<span class="text-[10px] text-zinc-600 uppercase tracking-wide self-center">Protected</span>'
+          : '<button type="button" data-del="' + esc(d.id) + '" class="dealer-del bg-zinc-800 border border-red-900/50 hover:border-red-600 text-red-300 font-bold px-3 py-1.5 rounded-lg text-xs"><i class="fa-solid fa-trash mr-1"></i>Delete</button>';
+        return '<div class="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-2">' +
           "<div><strong>" + esc(d.business_name) + "</strong> · " + esc(d.email) +
+          (d.contact_name ? " · " + esc(d.contact_name) : "") +
           '<span class="text-zinc-500"> · ' + esc(d.status) + (d.hasPassword ? " · password set" : " · awaiting password") +
-          (d.owner ? " · OWNER" : "") + "</span></div></div>";
+          (d.owner ? " · OWNER" : "") + "</span></div>" +
+          '<div class="flex gap-2">' +
+          '<button type="button" data-edit="' + esc(d.id) + '" class="dealer-edit bg-zinc-800 border border-emerald-800 hover:border-emerald-500 text-emerald-300 font-bold px-3 py-1.5 rounded-lg text-xs"><i class="fa-solid fa-pen mr-1"></i>Edit</button>' +
+          delBtn +
+          "</div></div>";
       }).join("")
     : '<p class="text-zinc-600">No dealers yet.</p>';
+
+  document.querySelectorAll(".dealer-edit").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-edit");
+      var d = (window.__dealersCache || []).find(function (x) { return x.id === id; });
+      if (!d) return;
+      document.getElementById("editDealerId").value = d.id;
+      document.getElementById("editBiz").value = d.business_name || "";
+      document.getElementById("editContact").value = d.contact_name || "";
+      document.getElementById("editEmail").value = d.email || "";
+      document.getElementById("editPhone").value = d.phone || "";
+      document.getElementById("editWeb").value = d.website || "";
+      document.getElementById("editStatus").value = d.status || "active";
+      document.getElementById("editStatusMsg").textContent = "";
+      var m = document.getElementById("editDealerModal");
+      m.style.display = "flex";
+      m.classList.remove("hidden");
+    });
+  });
+  document.querySelectorAll(".dealer-del").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      var id = btn.getAttribute("data-del");
+      var d = (window.__dealersCache || []).find(function (x) { return x.id === id; });
+      var label = d ? ((d.business_name || d.email) + " (" + d.id + ")") : id;
+      if (!confirm("Delete dealer " + label + "?\n\nThis cannot be undone. They will lose portal access.")) return;
+      var r = await api("/api/wholesale/dealers/" + encodeURIComponent(id), { method: "DELETE" });
+      if (!r) return;
+      var j = await r.json().catch(function () { return {}; });
+      if (!r.ok) {
+        alert(j.error || "Delete failed");
+        return;
+      }
+      load();
+    });
+  });
 }
 
 document.querySelectorAll(".filt").forEach(function (b) {
@@ -266,7 +310,86 @@ document.getElementById("price-form").addEventListener("submit", async function 
   msg.textContent = r.ok ? ("Saved " + j.sku + " dealer $" + j.dealerPrice) : (j.error || "Failed");
 });
 
+document.getElementById("editCancel").onclick = function () {
+  var m = document.getElementById("editDealerModal");
+  m.style.display = "none";
+  m.classList.add("hidden");
+};
+
+document.getElementById("editSave").onclick = async function () {
+  var id = document.getElementById("editDealerId").value;
+  if (!id) return;
+  var body = {
+    business_name: document.getElementById("editBiz").value.trim(),
+    contact_name: document.getElementById("editContact").value.trim(),
+    email: document.getElementById("editEmail").value.trim(),
+    phone: document.getElementById("editPhone").value.trim(),
+    website: document.getElementById("editWeb").value.trim(),
+    status: document.getElementById("editStatus").value
+  };
+  document.getElementById("editStatusMsg").textContent = "Saving…";
+  var r = await api("/api/wholesale/dealers/" + encodeURIComponent(id), {
+    method: "PATCH",
+    body: JSON.stringify(body)
+  });
+  if (!r) return;
+  var j = await r.json().catch(function () { return {}; });
+  if (!r.ok) {
+    document.getElementById("editStatusMsg").textContent = j.error || "Save failed";
+    return;
+  }
+  document.getElementById("editStatusMsg").textContent = "Saved.";
+  setTimeout(function () {
+    document.getElementById("editCancel").click();
+    load();
+  }, 400);
+};
+
 load();
 </script>
+
+<div id="editDealerModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" style="display:none">
+  <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-6">
+    <h3 class="text-lg font-bold text-emerald-400 mb-4">Edit dealer</h3>
+    <input type="hidden" id="editDealerId">
+    <div class="space-y-3 text-sm">
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Business name</label>
+        <input id="editBiz" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Contact name</label>
+        <input id="editContact" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Email</label>
+        <input id="editEmail" type="email" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Phone</label>
+        <input id="editPhone" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Website</label>
+        <input id="editWeb" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-xs text-zinc-500 mb-1">Status</label>
+        <select id="editStatus" class="w-full bg-black border border-zinc-700 rounded-lg px-3 py-2">
+          <option value="active">active</option>
+          <option value="pending_setup">pending_setup</option>
+          <option value="suspended">suspended</option>
+          <option value="disabled">disabled</option>
+        </select>
+      </div>
+      <p id="editStatusMsg" class="text-xs text-zinc-500"></p>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button type="button" id="editCancel" class="px-4 py-2 rounded-lg border border-zinc-600 text-sm">Cancel</button>
+      <button type="button" id="editSave" class="px-4 py-2 rounded-lg bg-emerald-600 text-black font-bold text-sm">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
