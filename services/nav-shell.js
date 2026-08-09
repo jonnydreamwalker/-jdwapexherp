@@ -77,7 +77,7 @@ function toggleDropdown(e) {
   if (!d) return;
   var isHidden = d.classList.contains("hidden");
   if (isHidden) {
-    d.classList.add("hidden");
+    d.classList.remove("hidden");
     if (a) a.innerText = "\u25B2";
   } else {
     d.classList.add("hidden");
@@ -177,4 +177,17 @@ window.updateCartCount = updateCartCount;
   s.src = "https://jdwapexherp.com/assets/js/particle-grid-bg.js?v=lizards7";
   s.defer = true;
   document.head.appendChild(s);
+})();
+
+/* Site-wide label: Fuel Your Herps → Nutrition in every category dropdown */
+(function renameNutritionLabels() {
+  function run() {
+    document.querySelectorAll('a[href*="nutrition.html"]').forEach(function (a) {
+      var t = (a.textContent || "").trim();
+      if (t.indexOf("Fuel Your Herps") >= 0) a.textContent = t.replace(/Fuel Your Herps/g, "Nutrition");
+      if (t.indexOf("Fuel Your Herp") >= 0 && t.indexOf("Nutrition") < 0) a.textContent = t.replace(/Fuel Your Herp/g, "Nutrition");
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
 })();
