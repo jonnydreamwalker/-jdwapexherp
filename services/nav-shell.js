@@ -95,9 +95,12 @@ document.addEventListener("click", function (e) {
 });
 
 function openCartModal() {
+  /* preserved from production nav-shell — cart UI lives on page */
   var m = document.getElementById("cart-modal");
-  if (m) m.classList.remove("hidden");
-  document.body.style.overflow = "hidden";
+  if (m) {
+    m.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
   if (typeof window.renderCart === "function") window.renderCart();
 }
 function closeCartModal() {
