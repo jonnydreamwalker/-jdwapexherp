@@ -122,10 +122,11 @@ function ensureShippingExplainer() {
     '<div id="apex-ship-panel" class="hidden mt-2 rounded-xl border border-emerald-900/50 bg-black/60 p-3 text-left backdrop-blur-sm">' +
     '<p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90 mb-2">Ships from our Florida warehouse</p>' +
     '<ul class="space-y-1.5 text-xs text-zinc-400 leading-relaxed">' +
-    '<li><span class="text-white font-semibold">Under $100</span> — most small orders ship for a flat <span class="text-emerald-400 font-bold">$7.95</span>.</li>' +
-    '<li><span class="text-white font-semibold">$100 or more</span> — <span class="text-emerald-400 font-bold">free</span> standard shipping on regular packages.</li>' +
-    '<li><span class="text-white font-semibold">Big or heavy items</span> — shipping is based on size and weight.</li>' +
-    '<li><span class="text-white font-semibold">Wholesale bulk orders</span> — freight is billed separately (not free shipping).</li>' +
+    '<li><span class="text-white font-semibold">Under $100</span> — most orders ship for a flat <span class="text-emerald-400 font-bold">$7.95</span>.</li>' +
+    '<li><span class="text-white font-semibold">$100 or more with 3 or more items</span> — <span class="text-emerald-400 font-bold">free</span> standard shipping.</li>' +
+    '<li><span class="text-white font-semibold">Only 1 or 2 items</span> — flat <span class="text-emerald-400 font-bold">$7.95</span> (even if the total is over $100).</li>' +
+    '<li><span class="text-white font-semibold">Large 64 oz diets</span> — flat by themselves; free only when the cart has 3+ items and $100+.</li>' +
+    '<li><span class="text-white font-semibold">Wholesale bulk</span> — freight is billed separately.</li>' +
     '</ul>' +
     '<p class="text-[11px] text-zinc-500 mt-2">You will see the exact shipping total on the payment screen.</p>' +
     '</div>';
