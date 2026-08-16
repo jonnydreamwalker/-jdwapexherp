@@ -1,6 +1,6 @@
 /**
  * JDW Apex — emoji particle grid + mouse spotlight
- * data-apex-bg="k9" → dog emojis | data-apex-bg="feline" → cat emojis
+ * data-apex-bg="k9" → dog emojis | data-apex-bg="feline" → yarn 🧶
  * pointer-events:none · z-index:0 · never blocks clicks/checkout
  */
 (function () {
@@ -17,8 +17,9 @@
   ).toLowerCase();
 
   var DOGS = ["🐕", "🐶", "🦮", "🐕‍🦺", "🐩"];
-  var CATS = ["🐈", "🐱", "🐈‍⬛", "😺", "😸"];
-  var EMOJIS = mode.indexOf("fel") >= 0 || mode.indexOf("cat") >= 0 ? CATS : DOGS;
+  /* Feline = yarn (cats + yarn) */
+  var YARN = ["🧶", "🧶", "🧶", "🧵", "🧶"];
+  var EMOJIS = mode.indexOf("fel") >= 0 || mode.indexOf("cat") >= 0 || mode.indexOf("yarn") >= 0 ? YARN : DOGS;
 
   window.__apexEmojiGrid = true;
 
