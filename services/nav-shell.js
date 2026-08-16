@@ -95,7 +95,6 @@ document.addEventListener("click", function (e) {
 });
 
 function openCartModal() {
-  /* preserved from production nav-shell — cart UI lives on page */
   var m = document.getElementById("cart-modal");
   if (m) {
     m.classList.remove("hidden");
@@ -159,59 +158,6 @@ window.updateCartCount = updateCartCount;
       if (t.indexOf("Fuel Your Herps") >= 0) a.textContent = t.replace(/Fuel Your Herps/g, "Nutrition");
       if (t.indexOf("Fuel Your Herp") >= 0 && t.indexOf("Nutrition") < 0) a.textContent = t.replace(/Fuel Your Herp/g, "Nutrition");
     });
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
-  else run();
-})();
-
-/* Connect Apex K9 + Apex Feline in desktop + mobile nav (service pages) */
-(function injectSisterStores() {
-  function pathPrefix() {
-    var p = (location.pathname || "").replace(/\\/g, "/");
-    if (p.indexOf("/services/") >= 0) return "../";
-    return "";
-  }
-  function run() {
-    if (document.querySelector('a[href*="apex-k9.html"]')) return;
-    var pre = pathPrefix();
-    var k9 = pre + "apex-k9.html";
-    var fel = pre + "apex-feline.html";
-
-    var deskAbout = null;
-    document.querySelectorAll("nav a[href]").forEach(function (a) {
-      if (a.closest("#mobile-menu")) return;
-      var h = (a.getAttribute("href") || "").toLowerCase();
-      if (h.indexOf("about.html") >= 0) deskAbout = a;
-    });
-    if (deskAbout && deskAbout.parentNode) {
-      var a1 = document.createElement("a");
-      a1.href = k9;
-      a1.textContent = "Apex K9";
-      a1.className = "hover:text-emerald-400 transition";
-      var a2 = document.createElement("a");
-      a2.href = fel;
-      a2.textContent = "Apex Feline";
-      a2.className = "hover:text-emerald-400 transition";
-      deskAbout.parentNode.insertBefore(a1, deskAbout.nextSibling);
-      deskAbout.parentNode.insertBefore(a2, a1.nextSibling);
-    }
-
-    var mobile = document.getElementById("mobile-menu");
-    if (mobile) {
-      var col = mobile.querySelector(".flex.flex-col") || mobile;
-      if (!col.querySelector('a[href*="apex-k9.html"]')) {
-        function mob(href, label) {
-          var a = document.createElement("a");
-          a.href = href;
-          a.textContent = label;
-          a.className = "py-4 border-b border-zinc-800 hover:text-emerald-400";
-          a.setAttribute("onclick", "closeMobileMenu()");
-          return a;
-        }
-        col.appendChild(mob(k9, "Apex K9"));
-        col.appendChild(mob(fel, "Apex Feline"));
-      }
-    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
   else run();
