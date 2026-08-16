@@ -1,6 +1,6 @@
 /**
  * JDW Apex — emoji particle grid + mouse spotlight
- * data-apex-bg="k9" → dog emojis | data-apex-bg="feline" → yarn 🧶
+ * data-apex-bg="k9" → dog emojis + tennis ball | data-apex-bg="feline" → yarn 🧶
  * pointer-events:none · z-index:0 · never blocks clicks/checkout
  */
 (function () {
@@ -16,7 +16,7 @@
     "k9"
   ).toLowerCase();
 
-  var DOGS = ["🐕", "🐶", "🦮", "🐕‍🦺", "🐩"];
+  var DOGS = ["🐕", "🐶", "🦮", "🐕‍🦺", "🐩", "🎾", "🐕", "🐶"];
   /* Feline = yarn (cats + yarn) */
   var YARN = ["🧶", "🧶", "🧶", "🧵", "🧶"];
   var EMOJIS = mode.indexOf("fel") >= 0 || mode.indexOf("cat") >= 0 || mode.indexOf("yarn") >= 0 ? YARN : DOGS;
@@ -27,22 +27,22 @@
     (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) ||
     (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
 
-  var GAP = isMobile ? 64 : 56;
+  var GAP = isMobile ? 56 : 48;
   var RADIUS = isMobile ? 0 : 110;
   var RADIUS_SQ = RADIUS * RADIUS;
   var STRENGTH = 18;
   var EASE = 0.12;
-  var FONT = isMobile ? 16 : 20;
-  var BASE_ALPHA = 0.55;
-  var NEAR_ALPHA = 0.95;
-  var SPOT_ALPHA = 0.08;
-  var MAX_PARTICLES = isMobile ? 48 : 100;
+  var FONT = isMobile ? 18 : 24;
+  var BASE_ALPHA = 0.88;
+  var NEAR_ALPHA = 1;
+  var SPOT_ALPHA = 0.1;
+  var MAX_PARTICLES = isMobile ? 160 : 450;
 
   var canvas = document.createElement("canvas");
   canvas.id = "apex-emoji-grid";
   canvas.setAttribute("aria-hidden", "true");
   canvas.style.cssText =
-    "position:fixed;inset:0;width:100%;height:100%;z-index:0;" +
+    "position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:0;" +
     "pointer-events:none;display:block;background:transparent;" +
     "transform:translate3d(0,0,0);will-change:transform;contain:strict;";
 
