@@ -88,70 +88,39 @@ document.addEventListener("click", function (e) {
   var d = document.getElementById("category-dropdown");
   var a = document.getElementById("dropdown-arrow");
   if (!d) return;
-  if (!d.contains(e.target) && !e.target.closest('[onclick*="toggleDropdown"]')) {
+  if (!d.contains(e.target) && !e.target.closest("[data-dropdown-toggle], [onclick*='toggleDropdown']")) {
     d.classList.add("hidden");
     if (a) a.innerText = "\u25BC";
   }
 });
+
 function openCartModal() {
-  closeMobileMenu();
-  var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
-  var list = document.getElementById("cart-items-list");
-  var totalEl = document.getElementById("cart-grand-total");
-  if (!list || !totalEl) return;
-  list.innerHTML = "";
-  if (!cart.length) {
-    list.innerHTML = '<p class="text-zinc-500 text-center py-8">Your cart is currently empty.</p>';
-    totalEl.innerText = "$0.00";
-  } else {
-    var total = 0;
-    cart.forEach(function (item, i) {
-      var preTag = item.preorder ? ' <span style="color:#38bdf8;font-size:10px;font-weight:800">PREORDER</span>' : '';
-      total += item.price * item.quantity;
-      list.innerHTML +=
-        '<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl"><div><h4 class="font-bold">' +
-        item.name + preTag +
-        '</h4><p class="text-xs text-emerald-400">$' +
-        item.price.toFixed(2) +
-        " \u00d7 " +
-        item.quantity +
-        '</p></div><button type="button" onclick="removeSingleCartItem(' +
-        i +
-        ')" class="text-red-400"><i class="fas fa-trash-alt"></i></button></div>';
-    });
-    totalEl.innerText = "$" + total.toFixed(2);
-  }
-  var modal = document.getElementById("cart-modal");
-  if (modal) {
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-  }
+  var m = document.getElementById("cart-modal");
+  if (m) m.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  if (typeof window.renderCart === "function") window.renderCart();
 }
 function closeCartModal() {
-  var modal = document.getElementById("cart-modal");
-  if (!modal) return;
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
+  var m = document.getElementById("cart-modal");
+  if (m) m.classList.add("hidden");
+  document.body.style.overflow = "";
 }
-function removeSingleCartItem(i) {
+function removeSingleCartItem(idx) {
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
-  cart.splice(i, 1);
+  cart.splice(idx, 1);
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
-  openCartModal();
+  if (typeof window.renderCart === "function") window.renderCart();
 }
-function addToCart(name, sku, price, preorder) {
+function addToCart(item) {
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
-  var found = cart.find(function (x) { return x.sku === sku; });
-  if (found) {
-    found.quantity += 1;
-    if (preorder) found.preorder = true;
-  } else {
-    cart.push({ name: name, sku: sku, price: Number(price) || 0, quantity: 1, preorder: !!preorder });
-  }
+  var found = cart.find(function (c) { return c.sku === item.sku; });
+  if (found) found.quantity = (found.quantity || 1) + (item.quantity || 1);
+  else cart.push(item);
   localStorage.setItem("jdw_cart", JSON.stringify(cart));
   updateCartCount();
 }
+
 window.toggleDropdown = toggleDropdown;
 window.toggleMobileMenu = toggleMobileMenu;
 window.closeMobileMenu = closeMobileMenu;
@@ -187,6 +156,59 @@ window.updateCartCount = updateCartCount;
       if (t.indexOf("Fuel Your Herps") >= 0) a.textContent = t.replace(/Fuel Your Herps/g, "Nutrition");
       if (t.indexOf("Fuel Your Herp") >= 0 && t.indexOf("Nutrition") < 0) a.textContent = t.replace(/Fuel Your Herp/g, "Nutrition");
     });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+})();
+
+/* Connect Apex K9 + Apex Feline in desktop + mobile nav (service pages) */
+(function injectSisterStores() {
+  function pathPrefix() {
+    var p = (location.pathname || "").replace(/\\/g, "/");
+    if (p.indexOf("/services/") >= 0) return "../";
+    return "";
+  }
+  function run() {
+    if (document.querySelector('a[href*="apex-k9.html"]')) return;
+    var pre = pathPrefix();
+    var k9 = pre + "apex-k9.html";
+    var fel = pre + "apex-feline.html";
+
+    var deskAbout = null;
+    document.querySelectorAll("nav a[href]").forEach(function (a) {
+      if (a.closest("#mobile-menu")) return;
+      var h = (a.getAttribute("href") || "").toLowerCase();
+      if (h.indexOf("about.html") >= 0) deskAbout = a;
+    });
+    if (deskAbout && deskAbout.parentNode) {
+      var a1 = document.createElement("a");
+      a1.href = k9;
+      a1.textContent = "Apex K9";
+      a1.className = "hover:text-emerald-400 transition";
+      var a2 = document.createElement("a");
+      a2.href = fel;
+      a2.textContent = "Apex Feline";
+      a2.className = "hover:text-emerald-400 transition";
+      deskAbout.parentNode.insertBefore(a1, deskAbout.nextSibling);
+      deskAbout.parentNode.insertBefore(a2, a1.nextSibling);
+    }
+
+    var mobile = document.getElementById("mobile-menu");
+    if (mobile) {
+      var col = mobile.querySelector(".flex.flex-col") || mobile;
+      if (!col.querySelector('a[href*="apex-k9.html"]')) {
+        function mob(href, label) {
+          var a = document.createElement("a");
+          a.href = href;
+          a.textContent = label;
+          a.className = "py-4 border-b border-zinc-800 hover:text-emerald-400";
+          a.setAttribute("onclick", "closeMobileMenu()");
+          return a;
+        }
+        col.appendChild(mob(k9, "Apex K9"));
+        col.appendChild(mob(fel, "Apex Feline"));
+      }
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
   else run();
