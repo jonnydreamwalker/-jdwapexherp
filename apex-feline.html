@@ -4,23 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apex Feline | JDW Apex</title>
-<meta name="description" content="Apex Feline — cat gear and supply under the JDW Apex brand. Coming online soon.">
+<meta name="description" content="Apex Feline — cat gear and supply under the JDW Apex brand.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://jdwapexherp.com/apex-feline.html">
 <meta name="theme-color" content="#000000">
 <link rel="icon" type="image/svg+xml" href="https://jdwapexherp.com/assets/images/apex-herp-favicon.svg?v=herpseal20260802">
-<link rel="apple-touch-icon" href="https://jdwapexherp.com/assets/images/gallery/Logo.png?v=herpseal20260802">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 <link rel="stylesheet" href="assets/style.css?v=footerclear1">
 <style>
-  body { background: #000; color: #e4e4e7; }
-  .apex-layer { position: relative; z-index: 1; }
-  footer { background: transparent !important; }
+body{background:#000;color:#e4e4e7}
+.apex-layer{position:relative;z-index:1}
+footer{background:transparent!important}
+.pillar-carousel{position:relative;height:14rem;overflow:hidden;background:#09090b}
+.pillar-carousel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease;will-change:opacity;transform:translateZ(0);backface-visibility:hidden}
+.pillar-carousel img.is-active{opacity:1}
+.pillar-carousel .dots{position:absolute;bottom:.5rem;left:0;right:0;display:flex;justify-content:center;gap:.35rem;z-index:2}
+.pillar-carousel .dot{width:.4rem;height:.4rem;border-radius:9999px;background:rgba(255,255,255,.35);border:0;padding:0;cursor:pointer}
+.pillar-carousel .dot.is-active{background:#34d399;width:.7rem}
+@media (prefers-reduced-motion:reduce){.pillar-carousel img{transition:none}}
 </style>
 </head>
-<body data-apex-bg="feline" class="bg-black text-zinc-100 min-h-screen">
-
+<body data-apex-bg="feline" data-apex-store="feline" class="bg-black text-zinc-100 min-h-screen">
 <nav class="apex-layer sticky top-0 z-50 border-b border-emerald-900/40 bg-black/80 backdrop-blur-md">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
     <a href="index.html" class="flex items-center gap-3 min-w-0">
@@ -36,47 +41,47 @@
     <a href="index.html" class="text-xs font-bold uppercase tracking-wide border border-emerald-700 text-emerald-400 px-3 py-1.5 rounded-lg hover:bg-emerald-950 transition">Shop Herp</a>
   </div>
 </nav>
-
 <main class="apex-layer">
-  <section class="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 py-20">
+  <section class="min-h-[50vh] flex flex-col items-center justify-center text-center px-6 py-14">
     <div class="text-7xl md:text-8xl mb-6 drop-shadow-[0_0_28px_rgba(180,80,255,0.35)]" aria-hidden="true">🧶</div>
     <p class="text-emerald-500 text-xs font-bold tracking-[0.35em] uppercase mb-3">JDW Apex · Feline Division</p>
     <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-4">
       <span class="text-white">APEX</span> <span class="text-emerald-400">FELINE</span>
     </h1>
-    <p class="text-zinc-400 max-w-xl text-base md:text-lg leading-relaxed mb-8">
-      Cat-side gear under the Apex standard — sharp, simple, same house as herp and K9.
-      Catalog lands when inventory is locked. Sweep the cursor and the yarn catches the spotlight.
+    <p class="text-zinc-400 max-w-xl text-base md:text-lg leading-relaxed mb-6">
+      Cat-side gear under the Apex standard. Category carousels load photos from FreePort when the feline store is stocked.
     </p>
-    <div class="flex flex-wrap gap-3 justify-center">
-      <a href="index.html" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-black font-bold px-6 py-3 rounded-xl transition">
-        Shop Herp Supply
-      </a>
-      <a href="apex-k9.html" class="inline-flex items-center gap-2 border border-zinc-700 hover:border-emerald-600 text-zinc-200 font-semibold px-6 py-3 rounded-xl transition">
-        ← Apex K9
-      </a>
-    </div>
   </section>
-
-  <section class="max-w-4xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-4">
-    <div class="rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-sm p-5">
-      <div class="text-2xl mb-2">🧶</div>
-      <h2 class="font-bold text-emerald-400 mb-1">On brand</h2>
-      <p class="text-sm text-zinc-500">Black canvas, emerald type, transparent footers — same visual system as the herp store.</p>
-    </div>
-    <div class="rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-sm p-5">
-      <div class="text-2xl mb-2">🔦</div>
-      <h2 class="font-bold text-emerald-400 mb-1">Spotlight pride</h2>
-      <p class="text-sm text-zinc-500">Yarn field 🧶 with neon green → purple spotlight. Desktop interaction; mobile stays calm.</p>
-    </div>
-    <div class="rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-sm p-5">
-      <div class="text-2xl mb-2">🛒</div>
-      <h2 class="font-bold text-emerald-400 mb-1">Inventory next</h2>
-      <p class="text-sm text-zinc-500">FreePort has a feline store switch. Products and pay rails turn on when you’re ready to stock it.</p>
+  <section class="max-w-7xl mx-auto px-4 pb-20">
+    <p class="text-center text-emerald-500 text-xs font-bold tracking-[0.3em] uppercase mb-6">Shop the den</p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Toys"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Toys</h3><p class="text-zinc-400 text-sm">Play and enrichment.</p></div>
+      </div>
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Scratching"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Scratching</h3><p class="text-zinc-400 text-sm">Posts, pads, and boards.</p></div>
+      </div>
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Beds"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Beds</h3><p class="text-zinc-400 text-sm">Comfort for the den.</p></div>
+      </div>
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Litter"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Litter</h3><p class="text-zinc-400 text-sm">Litter and boxes when stocked.</p></div>
+      </div>
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Nutrition"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Nutrition</h3><p class="text-zinc-400 text-sm">Food and supplements.</p></div>
+      </div>
+      <div class="shop-product-card-container bg-zinc-900/80 border border-zinc-800 rounded-2xl overflow-hidden hover:border-emerald-800 transition">
+        <div class="pillar-carousel" data-carousel data-store="feline" data-category="Apparel"></div>
+        <div class="p-5"><h3 class="text-xl font-bold mb-2 text-emerald-400">Apparel</h3><p class="text-zinc-400 text-sm">Apex feline gear drops.</p></div>
+      </div>
     </div>
   </section>
 </main>
-
 <footer class="apex-layer border-t border-emerald-900/30 py-10 px-6">
   <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 justify-between text-sm text-zinc-500">
     <div>
@@ -90,7 +95,7 @@
     </div>
   </div>
 </footer>
-
 <script src="assets/js/particle-emoji-bg.js?v=bright2" data-apex-bg="feline"></script>
+<script src="assets/js/pillar-carousel.js?v=store5" defer></script>
 </body>
 </html>
