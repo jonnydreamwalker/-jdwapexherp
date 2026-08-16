@@ -5,6 +5,7 @@
  * -B = Bulk FOB Origin | -A = accessory flat $7.95 per 35 units (ceil)
  * Free $100+ requires 3+ items; lone -64 diets ship flat (free OK if 3+ items in cart)
  * RSC in SKU = rate from 75418 (internal only — never shown to customer)
+ * Trailing -2..-9 = units per ship box (e.g. cork -3)
  * Require: const ship = require("./ship-sku-engine");
  *
  * Rates (2026-08):
@@ -67,6 +68,12 @@ function parseSku(sku) {
   if (segs.length && segs[segs.length - 1] === "A") {
     out.accessoryA = true;
   }
+  if (segs.length && !out.bulk && !out.accessoryA) {
+    var last = segs[segs.length - 1];
+    if (/^[2-9]$/.test(last)) {
+      out.unitsPerBox = parseInt(last, 10);
+    }
+  }
   return out;
 }
 
@@ -115,11 +122,19 @@ function cartHasBulkFob(items) {
   });
 }
 
+function shipBoxCount(it) {
+  var meta = parseSku(it && it.sku);
+  var qty = Number(it && it.quantity) || Number(it && it.qty) || 1;
+  var per = meta.unitsPerBox || 0;
+  if (per >= 2) {
+    return Math.ceil(qty / per) * (meta.packQty || 1);
+  }
+  return (meta.packQty || 1) * qty;
+}
+
 function rateMultiplierFromSkus(items) {
   return (items || []).reduce(function (s, it) {
-    var meta = parseSku(it.sku);
-    var qty = Number(it.quantity) || 1;
-    return s + meta.packQty * qty;
+    return s + shipBoxCount(it);
   }, 0) || 1;
 }
 
@@ -200,8 +215,16 @@ function buildUpsPackages(items) {
   (items || []).forEach(function (it) {
     var u = unitBillableLbs(it);
     var qty = Number(it.quantity) || 1;
-    var packs = Math.max(1, (u.meta.packQty || 1) * qty);
-    var wEach = Math.max(1, Math.ceil(u.lbs));
+    var per = u.meta.unitsPerBox || 0;
+    var packs;
+    var wEach;
+    if (per >= 2) {
+      packs = Math.max(1, Math.ceil(qty / per) * (u.meta.packQty || 1));
+      wEach = Math.max(1, Math.ceil(u.lbs * per));
+    } else {
+      packs = Math.max(1, (u.meta.packQty || 1) * qty);
+      wEach = Math.max(1, Math.ceil(u.lbs));
+    }
     for (var i = 0; i < packs; i++) {
       var pkg = {
         PackagingType: { Code: "02", Description: "Package" },
@@ -478,6 +501,7 @@ module.exports = {
   isRscSku,
   cartHasRsc,
   originZipForItems,
+  shipBoxCount,
   ORIGIN_LOCAL,
   ORIGIN_RSC
 };
