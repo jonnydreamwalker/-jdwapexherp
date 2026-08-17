@@ -2,13 +2,15 @@
 window.APEX_API_BASE = window.APEX_API_BASE || "https://freeport.jdwapexherp.com";
 function apexCartPayload() {
   var cart = JSON.parse(localStorage.getItem("jdw_cart") || "[]") || [];
+  var storeGuess = (window.APEX_STORE || "herp");
   return cart.map(function (i) {
     return {
       name: i.name,
       sku: i.sku,
       price: Number(i.price) || 0,
       quantity: Number(i.quantity) || 1,
-      preorder: !!i.preorder
+      preorder: !!i.preorder,
+      store: i.store || storeGuess
     };
   });
 }
@@ -24,6 +26,7 @@ function startCheckout(path, label) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       items: items,
+      channel: window.APEX_STORE || "retail",
       successUrl: location.origin + location.pathname + "?paid=1",
       cancelUrl: location.href
     })
