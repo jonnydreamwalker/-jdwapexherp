@@ -3,6 +3,7 @@
  * SKU: [PREFIX]-[WEIGHT]-[BOX|UNS]-[QTY]-[MAT]-[SUFFIX]
  * Examples: HS-050-361617-001-CK-B | HS-050-UNS-001-CK-B | AP-001-UNS-001-XX-A
  * -B = Bulk FOB Origin | -A = accessory flat $7.95 per 35 units (ceil)
+ * When -A is in cart, each -64 unit counts as 4 toward that /35 ladder
  * Free $100+ requires 3+ items; lone -64 diets ship flat (free OK if 3+ items in cart)
  * RSC in SKU = rate from 75418 (internal only — never shown to customer)
  * Trailing -2..-9 = units per ship box (e.g. cork -3)
@@ -335,9 +336,15 @@ function isAccessoryA(it) {
 }
 
 function accessoryAQuantity(items) {
-  return (items || []).reduce(function (s, it) {
-    if (!isAccessoryA(it)) return s;
-    return s + (Number(it.quantity) || 1);
+  var list = items || [];
+  var hasA = list.some(function (it) { return isAccessoryA(it); });
+  return list.reduce(function (s, it) {
+    var qty = Number(it.quantity) || Number(it.qty) || 1;
+    if (isAccessoryA(it)) return s + qty;
+    // When cart includes -A, each -64 unit counts as 4 toward the /35 flat ladder
+    var sku = String((it && it.sku) || "").toUpperCase().replace(/\s+/g, "");
+    if (hasA && sku.endsWith("-64")) return s + qty * 4;
+    return s;
   }, 0);
 }
 
