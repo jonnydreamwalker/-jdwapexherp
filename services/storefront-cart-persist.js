@@ -1,7 +1,7 @@
 /**
  * Apex storefront cart — local mirror + FreePort master cart
  * Survives page changes and (with ?cart= id) sister sites.
- * Page load uses GET only — never re-merge full local (merge ADDS qty).
+ * Page load GET only — never merge. FreePort is sole source of truth across sister sites.
  */
 (function apexCartBootstrap() {
   "use strict";
@@ -209,40 +209,19 @@
   }
 
   function syncFromServer() {
-    var local = readLocal();
     return ensureCartId().then(function (id) {
       return api("GET", "/api/cart/" + encodeURIComponent(id)).then(function (x) {
         if (x.status === 404) {
           return api("POST", "/api/cart", {}).then(function (c) {
             if (c.ok && c.j && c.j.id) {
               setCartId(c.j.id);
-              if (local.length) {
-                return api("POST", "/api/cart/" + encodeURIComponent(c.j.id) + "/merge", {
-                  items: local
-                }).then(function (m) {
-                  if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
-                  return m.j;
-                });
-              }
-              writeLocal([]);
               return c.j;
             }
             return null;
           });
         }
         if (x.ok && x.j) {
-          var remote = x.j.items || [];
-          // Server is source of truth on page load. Do not re-merge full local
-          // (merge used to ADD quantities → double every navigation).
-          if (!remote.length && local.length) {
-            return api("POST", "/api/cart/" + encodeURIComponent(id) + "/merge", {
-              items: local
-            }).then(function (m) {
-              if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
-              return m.j;
-            });
-          }
-          writeLocal(remote);
+          writeLocal(x.j.items || []);
           return x.j;
         }
         return null;
