@@ -9,7 +9,7 @@
  * PUT    /api/cart/:id/items       { sku, quantity }  (set qty; 0 removes)
  * DELETE /api/cart/:id/items/:sku
  * POST   /api/cart/:id/clear
- * POST   /api/cart/:id/merge       { items: [...] }  (import local lines)
+ * POST   /api/cart/:id/merge       { items: [...] }  (REPLACE cart — never ADD qty)
  */
 "use strict";
 
@@ -259,22 +259,25 @@ module.exports = function mountCart(app) {
       const d = readAll();
       const c = getOrCreate(d, req.params.id);
       const incoming = Array.isArray(req.body && req.body.items) ? req.body.items : [];
+      // REPLACE semantics (idempotent): never ADD on merge — page reloads must not double qty
+      const map = {};
       incoming.forEach(function (raw) {
         const line = normalizeLine(raw);
         if (!line) return;
-        let found = null;
-        (c.items || []).forEach(function (it) {
-          if (it.sku === line.sku && (it.store || "herp") === line.store) found = it;
-        });
-        if (found) {
-          found.quantity = Math.min(999, (Number(found.quantity) || 0) + line.quantity);
-          found.price = line.price;
-          found.name = line.name;
-        } else if ((c.items || []).length < MAX_LINES) {
-          c.items = c.items || [];
-          c.items.push(line);
+        const k = line.sku + "::" + (line.store || "herp");
+        if (!map[k]) {
+          map[k] = line;
+        } else {
+          map[k].quantity = Math.min(999, Math.max(map[k].quantity, line.quantity));
+          map[k].price = line.price || map[k].price;
+          map[k].name = line.name || map[k].name;
         }
       });
+      const next = Object.keys(map).map(function (k) { return map[k]; });
+      if (next.length > MAX_LINES) {
+        return res.status(400).json({ error: "cart_full" });
+      }
+      c.items = next;
       touch(c);
       d.carts[c.id] = c;
       writeAll(d);
