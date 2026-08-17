@@ -1,6 +1,7 @@
 /**
  * Apex storefront cart — local mirror + FreePort master cart
  * Survives page changes and (with ?cart= id) sister sites.
+ * Page load uses GET only — never re-merge full local (merge ADDS qty).
  */
 (function apexCartBootstrap() {
   "use strict";
@@ -207,79 +208,45 @@
       .catch(function () {});
   }
 
-  function mergeLists(a, b) {
-    var map = {};
-    function key(it) {
-      return String(it.sku) + "::" + String(it.store || "herp");
-    }
-    (a || []).concat(b || []).forEach(function (it) {
-      if (!it || !it.sku) return;
-      var k = key(it);
-      if (!map[k]) {
-        map[k] = {
-          name: it.name,
-          sku: it.sku,
-          price: Number(it.price) || 0,
-          quantity: Number(it.quantity) || 1,
-          preorder: !!it.preorder,
-          store: it.store || "herp"
-        };
-      } else {
-        map[k].quantity = Math.max(map[k].quantity, Number(it.quantity) || 1);
-        if (it.price) map[k].price = Number(it.price) || map[k].price;
-        if (it.name) map[k].name = it.name;
-      }
-    });
-    return Object.keys(map).map(function (k) {
-      return map[k];
-    });
-  }
-
   function syncFromServer() {
     var local = readLocal();
     return ensureCartId().then(function (id) {
-      var push =
-        local.length > 0
-          ? api("POST", "/api/cart/" + encodeURIComponent(id) + "/merge", { items: local })
-          : Promise.resolve({ ok: true, j: null });
-      return push
-        .then(function () {
-          return api("GET", "/api/cart/" + encodeURIComponent(id));
-        })
-        .then(function (x) {
-          if (x.status === 404) {
-            return api("POST", "/api/cart", {}).then(function (c) {
-              if (c.ok && c.j && c.j.id) {
-                setCartId(c.j.id);
-                if (local.length) {
-                  return api("POST", "/api/cart/" + encodeURIComponent(c.j.id) + "/merge", {
-                    items: local
-                  }).then(function (m) {
-                    if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
-                    return m.j;
-                  });
-                }
-                writeLocal([]);
-                return c.j;
+      return api("GET", "/api/cart/" + encodeURIComponent(id)).then(function (x) {
+        if (x.status === 404) {
+          return api("POST", "/api/cart", {}).then(function (c) {
+            if (c.ok && c.j && c.j.id) {
+              setCartId(c.j.id);
+              if (local.length) {
+                return api("POST", "/api/cart/" + encodeURIComponent(c.j.id) + "/merge", {
+                  items: local
+                }).then(function (m) {
+                  if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
+                  return m.j;
+                });
               }
-              return null;
+              writeLocal([]);
+              return c.j;
+            }
+            return null;
+          });
+        }
+        if (x.ok && x.j) {
+          var remote = x.j.items || [];
+          // Server is source of truth on page load. Do not re-merge full local
+          // (merge used to ADD quantities → double every navigation).
+          if (!remote.length && local.length) {
+            return api("POST", "/api/cart/" + encodeURIComponent(id) + "/merge", {
+              items: local
+            }).then(function (m) {
+              if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
+              return m.j;
             });
           }
-          if (x.ok && x.j) {
-            var merged = mergeLists(local, x.j.items || []);
-            writeLocal(merged);
-            if (merged.length > (x.j.items || []).length) {
-              return api("POST", "/api/cart/" + encodeURIComponent(id) + "/merge", {
-                items: merged
-              }).then(function (m) {
-                if (m.ok && m.j && m.j.items) writeLocal(m.j.items);
-                return m.j || x.j;
-              });
-            }
-            return x.j;
-          }
-          return null;
-        });
+          writeLocal(remote);
+          return x.j;
+        }
+        return null;
+      });
     });
   }
 
