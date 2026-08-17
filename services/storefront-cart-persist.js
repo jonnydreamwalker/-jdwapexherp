@@ -2,6 +2,7 @@
  * Apex storefront cart — local mirror + FreePort master cart
  * Survives page changes and (with ?cart= id) sister sites.
  * Page load GET only — never merge. FreePort is sole source of truth across sister sites.
+ * Cart lines: − / + quantity arrows (PUT to FreePort).
  */
 (function apexCartBootstrap() {
   "use strict";
@@ -106,24 +107,53 @@
       var qty = Number(item.quantity) || 1;
       total += price * qty;
       var name = String(item.name || item.sku || "Item").replace(/</g, "<");
+      var meta = [];
+      if (item.preorder) meta.push("Preorder");
+      if (item.store && item.store !== "herp") meta.push(item.store);
       list.innerHTML +=
         '<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-xl gap-3">' +
-        '<div class="min-w-0"><h4 class="font-bold truncate">' +
-        name +
-        "</h4>" +
-        '<p class="text-xs text-emerald-400">$' +
-        price.toFixed(2) +
-        " × " +
-        qty +
-        (item.preorder ? " · Preorder" : "") +
-        (item.store && item.store !== "herp" ? " · " + item.store : "") +
-        "</p></div>" +
-        '<button type="button" onclick="removeSingleCartItem(' +
-        i +
-        ')" class="text-red-400 flex-shrink-0" aria-label="Remove">' +
+        '<div class="min-w-0 flex-1">' +
+        '<h4 class="font-bold truncate">' + name + "</h4>" +
+        '<p class="text-xs text-emerald-400">$' + price.toFixed(2) +
+        (meta.length ? " · " + meta.join(" · ") : "") +
+        "</p>" +
+        '<div class="mt-2 flex items-center gap-2">' +
+        '<button type="button" onclick="changeCartQty(' + i + ',-1)" class="w-8 h-8 rounded-lg border border-emerald-800 text-emerald-400 hover:bg-emerald-950 font-bold text-lg leading-none" aria-label="Decrease quantity">−</button>' +
+        '<span class="min-w-[2rem] text-center font-bold text-white">' + qty + "</span>" +
+        '<button type="button" onclick="changeCartQty(' + i + ',1)" class="w-8 h-8 rounded-lg border border-emerald-800 text-emerald-400 hover:bg-emerald-950 font-bold text-lg leading-none" aria-label="Increase quantity">+</button>' +
+        "</div></div>" +
+        '<button type="button" onclick="removeSingleCartItem(' + i + ')" class="text-red-400 flex-shrink-0 p-2" aria-label="Remove">' +
         '<i class="fas fa-trash-alt"></i></button></div>';
     });
     if (totalEl) totalEl.innerText = "$" + total.toFixed(2);
+  }
+
+  function changeCartQty(idx, delta) {
+    var cart = readLocal();
+    var item = cart[idx];
+    if (!item || !item.sku) return;
+    var next = (Number(item.quantity) || 1) + (Number(delta) || 0);
+    if (next <= 0) {
+      removeSingleCartItem(idx);
+      return;
+    }
+    if (next > 999) next = 999;
+    item.quantity = next;
+    writeLocal(cart);
+    renderCart();
+    ensureCartId()
+      .then(function (id) {
+        return api("PUT", "/api/cart/" + encodeURIComponent(id) + "/items", {
+          sku: item.sku,
+          quantity: next,
+          store: item.store || storeGuess()
+        });
+      })
+      .then(function (x) {
+        if (x.ok && x.j && x.j.items) writeLocal(x.j.items);
+        renderCart();
+      })
+      .catch(function () {});
   }
 
   function openCartModal() {
@@ -248,6 +278,7 @@
   window.openCartModal = openCartModal;
   window.closeCartModal = closeCartModal;
   window.removeSingleCartItem = removeSingleCartItem;
+  window.changeCartQty = changeCartQty;
   window.addToCart = addToCart;
   window.apexCartSync = syncFromServer;
 
